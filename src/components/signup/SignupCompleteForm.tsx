@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { createClient } from "@/utils/supabase/browser";
 
 interface Channel {
@@ -243,116 +251,102 @@ export default function SignupCompleteForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {/* Profile Section */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Profile Information
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="nickname">Nickname *</Label>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Profile</CardTitle>
+          <CardDescription>
+            This information will be used to identify you in the system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="space-y-3">
+            <Label htmlFor="nickname" className="text-sm font-medium">
+              Nickname
+            </Label>
             <Input
               id="nickname"
-              type="text"
               value={formData.nickname}
-              onChange={(e) => handleInputChange("nickname", e.target.value)}
-              placeholder="How should we call you?"
+              onChange={(e) => handleInputChange('nickname', e.target.value)}
+              placeholder="e.g., Johnny"
               required
+              className="h-11"
             />
           </div>
-          <div>
-            <Label htmlFor="first_name">First Name *</Label>
+          <div className="space-y-3">
+            <Label htmlFor="first_name" className="text-sm font-medium">
+              First Name
+            </Label>
             <Input
               id="first_name"
-              type="text"
               value={formData.first_name}
-              onChange={(e) => handleInputChange("first_name", e.target.value)}
-              placeholder="Your first name"
+              onChange={(e) => handleInputChange('first_name', e.target.value)}
+              placeholder="e.g., John"
               required
+              className="h-11"
             />
           </div>
-          <div className="sm:col-span-2">
-            <Label htmlFor="last_name">Last Name *</Label>
+          <div className="space-y-3 sm:col-span-2">
+            <Label htmlFor="last_name" className="text-sm font-medium">
+              Last Name
+            </Label>
             <Input
               id="last_name"
-              type="text"
               value={formData.last_name}
-              onChange={(e) => handleInputChange("last_name", e.target.value)}
-              placeholder="Your last name"
+              onChange={(e) => handleInputChange('last_name', e.target.value)}
+              placeholder="e.g., Doe"
               required
+              className="h-11"
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Channels Section */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Connect Your Channels
-        </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Connect all mandatory channels to access AnthonChat AI features.
-        </p>
-
-        <div className="space-y-4">
-          {mandatoryChannels.map((channel) => (
-            <div key={channel.id} className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Label htmlFor={channel.id} className="flex items-center">
-                  {channel.name}
-                  <span className="text-red-500 ml-1">*</span>
-                  {channel.name.toLowerCase() === "whatsapp" && (
-                    <span className="text-xs text-gray-500 ml-2">
-                      (Phone number with country code)
-                    </span>
-                  )}
+      {mandatoryChannels.length > 0 && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Connect Your Accounts</CardTitle>
+            <CardDescription>
+              We need this to send and receive messages on your behalf.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            {mandatoryChannels.map((channel) => (
+              <div className="space-y-3" key={channel.id}>
+                <Label htmlFor={`channel-${channel.id}`} className="text-sm font-medium">
+                  {channel.name} User ID
                 </Label>
                 <Input
-                  id={channel.id}
-                  type={
-                    channel.name.toLowerCase() === "whatsapp" ? "tel" : "text"
-                  }
-                  value={channelInputs[channel.id] || ""}
+                  id={`channel-${channel.id}`}
+                  value={channelInputs[channel.id] || ''}
                   onChange={(e) =>
                     handleChannelInputChange(channel.id, e.target.value)
                   }
                   placeholder={
-                    channel.name.toLowerCase() === "whatsapp"
-                      ? "+1234567890"
-                      : `Enter your ${channel.name} username`
+                    channel.name.toLowerCase() === 'whatsapp'
+                      ? 'e.g., +1234567890'
+                      : `Your ${channel.name} user ID`
                   }
                   required
+                  className="h-11"
                 />
               </div>
-              <div className="flex-shrink-0">
-                {channelInputs[channel.id]?.trim() ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Ready
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    Required
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Submit Button */}
-      <div className="flex justify-end">
-        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-          {loading ? "Setting up..." : "Complete Setup"}
+      <div className="mt-8 space-y-4">
+        {error && (
+          <p className="text-destructive text-sm bg-destructive/10 p-4 rounded-md w-full text-center">
+            {error}
+          </p>
+        )}
+
+        <Button type="submit" disabled={loading} className="w-full h-11">
+          {loading ? 'Completing Setup...' : 'Complete Setup'}
         </Button>
       </div>
     </form>
-  );
+  )
 }

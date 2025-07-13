@@ -5,6 +5,7 @@ import Login from "../login";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function SignupPage({
   searchParams,
@@ -24,25 +25,44 @@ export default async function SignupPage({
   const resolvedSearchParams = await searchParams;
 
   return (
-    <Login action={signUp} message={resolvedSearchParams?.message}>
-      <Label htmlFor="email">Email</Label>
-      <Input
-        className="rounded-md px-4 py-2 bg-inherit border mb-6"
-        name="email"
-        placeholder="you@example.com"
-        required
-      />
-      <Label htmlFor="password">Password</Label>
-      <Input
-        className="rounded-md px-4 py-2 bg-inherit border mb-6"
-        type="password"
-        name="password"
-        placeholder="••••••••"
-        required
-      />
-      <Button className="bg-green-600 rounded-md px-4 py-2 text-foreground mb-2">
-        Sign Up
-      </Button>
+    <Login
+      action={signUp}
+      message={resolvedSearchParams?.message}
+      title="Create an Account"
+      description="Sign up for a new AnthonChat account"
+      footer={
+        <>
+          <Button className="w-full">Sign Up</Button>
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/login">Already have an account? Sign In</Link>
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <Label htmlFor="email" className="text-sm font-medium">
+          Email
+        </Label>
+        <Input
+          name="email"
+          placeholder="you@example.com"
+          required
+          type="email"
+          className="h-11"
+        />
+      </div>
+      <div className="space-y-3">
+        <Label htmlFor="password" className="text-sm font-medium">
+          Password
+        </Label>
+        <Input
+          type="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          className="h-11"
+        />
+      </div>
     </Login>
   );
 }

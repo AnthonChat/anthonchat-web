@@ -46,27 +46,25 @@ export default async function SignupCompletePage() {
     .eq("user_id", user.id);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Complete Your Setup
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Just a few more details to get you started with AnthonChat
-          </p>
-        </div>
-
-        <SignupCompleteForm
-          user={user}
-          userProfile={userProfile}
-          mandatoryChannels={mandatoryChannels || []}
-          existingChannels={(userChannels || []).map((uc) => ({
-            ...uc,
-            channels: Array.isArray(uc.channels) ? uc.channels[0] : uc.channels,
-          }))}
-        />
+    <div className="max-w-2xl w-full space-y-8">
+      <div className="text-center">
+        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          Complete Your Setup
+        </h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Just a few more details to get you started with AnthonChat
+        </p>
       </div>
+
+      <SignupCompleteForm
+        user={user}
+        userProfile={userProfile}
+        mandatoryChannels={mandatoryChannels || []}
+        existingChannels={(userChannels || []).map((uc) => ({
+          ...uc,
+          channels: Array.isArray(uc.channels) ? uc.channels[0] : uc.channels,
+        }))}
+      />
     </div>
   );
 }

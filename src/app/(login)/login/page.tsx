@@ -24,31 +24,44 @@ export default async function LoginPage({
   }
 
   return (
-    <Login action={signIn} message={message}>
-      <Label htmlFor="email">Email</Label>
-      <Input
-        className="rounded-md px-4 py-2 bg-inherit border mb-6"
-        name="email"
-        placeholder="you@example.com"
-        required
-      />
-      <Label htmlFor="password">Password</Label>
-      <Input
-        className="rounded-md px-4 py-2 bg-inherit border mb-6"
-        type="password"
-        name="password"
-        placeholder="••••••••"
-        required
-      />
-      <Button className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2">
-        Sign In
-      </Button>
-      <Link
-        href="/signup"
-        className="border border-foreground/20 rounded-md px-4 py-2 text-foreground no-underline flex justify-center items-center text-sm"
-      >
-        Don&apos;t have an account? Sign Up
-      </Link>
+    <Login
+      action={signIn}
+      message={message}
+      title="Welcome Back!"
+      description="Sign in to your AnthonChat account"
+      footer={
+        <>
+          <Button className="w-full">Sign In</Button>
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/signup">Don&apos;t have an account? Sign Up</Link>
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <Label htmlFor="email" className="text-sm font-medium">
+          Email
+        </Label>
+        <Input
+          name="email"
+          placeholder="you@example.com"
+          required
+          type="email"
+          className="h-11"
+        />
+      </div>
+      <div className="space-y-3">
+        <Label htmlFor="password" className="text-sm font-medium">
+          Password
+        </Label>
+        <Input
+          type="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          className="h-11"
+        />
+      </div>
     </Login>
   );
 }
