@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Clock, Zap, MessageSquare, TrendingUp } from "lucide-react"
 import { UsageData } from "@/lib/queries/usage"
 import { useRouter } from "next/navigation"
+import { getTrialDaysRemaining } from "@/lib/utils/trial-calculations"
+import { formatTrialTimeRemaining } from "@/lib/utils/time-formatting"
 
 interface SubscriptionCardProps {
   subscription: {
     status: string
+    current_period_start?: string
     current_period_end?: string
     tiers?: {
       name: string
@@ -42,16 +45,11 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
     }
   }
   
-  const getTrialTimeRemaining = () => {
-    if (!subscription?.current_period_end) return null
-    
-    const endDate = new Date(subscription.current_period_end)
-    const now = new Date()
-    const diffTime = endDate.getTime() - now.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    return diffDays > 0 ? diffDays : 0
-  }
+  const trialDaysRemaining = getTrialDaysRemaining(subscription)
+  const trialTimeDisplay = formatTrialTimeRemaining(
+    subscription?.current_period_start,
+    subscription?.current_period_end
+  )
   
   const tokensUsagePercent = usage.tokens_limit 
     ? (usage.tokens_used / usage.tokens_limit) * 100
@@ -86,7 +84,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
           <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
             <Clock className="h-4 w-4 text-yellow-600" />
             <span className="text-sm text-yellow-800 dark:text-yellow-200">
-              Trial expires in {getTrialTimeRemaining()} days
+              Trial {trialTimeDisplay}
             </span>
           </div>
         )}
@@ -99,7 +97,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                 Tokens Used
               </span>
               <span className="font-medium">
-                {usage.tokens_used.toLocaleString()} / {usage.tokens_limit.toLocaleString()}
+                {usage.tokens_used.toLocaleString('en-US')} / {usage.tokens_limit.toLocaleString('en-US')}
               </span>
             </div>
             <div className="relative">
@@ -123,7 +121,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                 Requests Used
               </span>
               <span className="font-medium">
-                {usage.requests_used.toLocaleString()} / {usage.requests_limit.toLocaleString()}
+                {usage.requests_used.toLocaleString('en-US')} / {usage.requests_limit.toLocaleString('en-US')}
               </span>
             </div>
             <div className="relative">

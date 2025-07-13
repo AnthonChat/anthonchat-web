@@ -3,6 +3,8 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { BarChart3, TrendingUp, MessageSquare, Zap, Calendar, AlertTriangle } from "lucide-react"
 import { UsageData } from "@/lib/queries/usage"
+import { formatMonthYear } from "@/lib/utils/date-formatting"
+import { formatRelativeTime } from "@/lib/utils/time-formatting"
 
 interface UsageStatsProps {
   usage: UsageData
@@ -24,11 +26,10 @@ export function UsageStats({ usage, warnings = [] }: UsageStatsProps) {
   
   const formatPeriod = () => {
     if (usage.period_start) {
-      const start = new Date(usage.period_start)
-      const monthName = start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-      return monthName
+      const relativeTime = formatRelativeTime(usage.period_start)
+      return `Period started ${relativeTime}`
     }
-    return 'Current Period'
+    return 'Current period'
   }
   
 
@@ -93,15 +94,15 @@ export function UsageStats({ usage, warnings = [] }: UsageStatsProps) {
             
             <div className="space-y-2">
               <div className="text-2xl font-bold">
-                {usage.tokens_used.toLocaleString()}
+                {usage.tokens_used.toLocaleString('en-US')}
               </div>
               
               {usage.tokens_limit ? (
                 <>
                   <Progress value={tokensPercent} className="h-3" />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Used: {usage.tokens_used.toLocaleString()}</span>
-                    <span>Limit: {usage.tokens_limit.toLocaleString()}</span>
+                    <span>Used: {usage.tokens_used.toLocaleString('en-US')}</span>
+                <span>Limit: {usage.tokens_limit.toLocaleString('en-US')}</span>
                   </div>
                 </>
               ) : (
@@ -130,15 +131,15 @@ export function UsageStats({ usage, warnings = [] }: UsageStatsProps) {
             
             <div className="space-y-2">
               <div className="text-2xl font-bold">
-                {usage.requests_used.toLocaleString()}
+                {usage.requests_used.toLocaleString('en-US')}
               </div>
               
               {usage.requests_limit ? (
                 <>
                   <Progress value={requestsPercent} className="h-3" />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Used: {usage.requests_used.toLocaleString()}</span>
-                    <span>Limit: {usage.requests_limit.toLocaleString()}</span>
+                    <span>Used: {usage.requests_used.toLocaleString('en-US')}</span>
+                <span>Limit: {usage.requests_limit.toLocaleString('en-US')}</span>
                   </div>
                 </>
               ) : (

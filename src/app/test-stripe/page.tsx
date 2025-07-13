@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertTriangle, CreditCard, Settings } from "lucide-react"
 import { useStripeCheckout } from '@/hooks/useStripe'
+import { formatTime } from '@/lib/utils/date-formatting'
 
 /**
  * Test page for Stripe integration
@@ -19,7 +20,9 @@ export default function TestStripePage() {
   const [logs, setLogs] = useState<string[]>([])
 
   const addLog = (message: string) => {
-    setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
+    // Use consistent time format to prevent hydration mismatches
+    const timestamp = formatTime()
+    setLogs(prev => [...prev, `${timestamp}: ${message}`])
   }
 
   const testCheckoutSession = async (tierSlug: string) => {

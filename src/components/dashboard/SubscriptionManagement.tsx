@@ -17,6 +17,9 @@ import {
 } from "lucide-react"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { calculateTrialInfo } from "@/lib/utils/trial-calculations"
+import { formatDate } from "@/lib/utils/date-formatting"
+import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod } from "@/lib/utils/time-formatting"
 
 interface SubscriptionManagementProps {
   subscription: {
@@ -55,33 +58,9 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
     }
   }
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString()
-  }
 
-  const getTrialInfo = () => {
-    if (subscription?.status !== 'trialing' || !subscription.current_period_end) {
-      return null
-    }
-    
-    const now = new Date()
-    const trialEnd = new Date(subscription.current_period_end)
-    const trialStart = new Date(subscription.current_period_start || now)
-    
-    const totalTrialDays = Math.ceil((trialEnd.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24))
-    const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    const daysPassed = totalTrialDays - daysRemaining
-    
-    return {
-      daysRemaining: Math.max(0, daysRemaining),
-      daysPassed: Math.max(0, daysPassed),
-      totalDays: totalTrialDays,
-      isExpired: daysRemaining <= 0
-    }
-  }
 
-  const trialInfo = getTrialInfo()
+  const trialInfo = calculateTrialInfo(subscription)
 
   const handleUpgrade = async (tierSlug?: string) => {
     setIsLoading(true)
@@ -304,7 +283,7 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
                 {subscription?.status === 'trialing' 
                   ? (trialInfo?.isExpired 
                       ? 'Trial has expired' 
-                      : `${trialInfo?.daysRemaining} days remaining • ${trialInfo?.daysPassed} days used`
+                      : formatTrialTimeRemaining(subscription.current_period_start, subscription.current_period_end)
                     )
                   : subscription ? 'Subscription Plan' : 'No active subscription'
                 }
@@ -322,9 +301,12 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
                     {subscription.status === 'trialing' ? 'Trial Period' : 'Billing Period'}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
-                </p>
+                <div className="text-sm text-muted-foreground">
+                   {subscription.status === 'trialing' 
+                     ? formatUsagePeriod(subscription.current_period_start, subscription.current_period_end)
+                     : formatNextBilling(subscription.current_period_end)
+                   }
+                 </div>
                 {subscription.status === 'trialing' && trialInfo && (
                   <div className="mt-2">
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
