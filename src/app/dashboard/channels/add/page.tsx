@@ -17,9 +17,9 @@ export default async function AddChannelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-muted">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -52,9 +52,9 @@ export default async function AddChannelPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
                   <CardContent className="p-6 text-center">
-                    <Phone className="h-12 w-12 mx-auto mb-4 text-green-600" />
+                    <Phone className="h-12 w-12 mx-auto mb-4 text-success" />
                     <h3 className="font-semibold mb-2">WhatsApp</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Connect your WhatsApp Business account
@@ -65,9 +65,9 @@ export default async function AddChannelPage() {
                   </CardContent>
                 </Card>
                 
-                <Card className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
                   <CardContent className="p-6 text-center">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+                    <MessageCircle className="h-12 w-12 mx-auto mb-4 text-info" />
                     <h3 className="font-semibold mb-2">Telegram</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Connect your Telegram bot

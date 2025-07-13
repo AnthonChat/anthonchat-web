@@ -251,13 +251,7 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link href="/dashboard">
-        <Button variant="ghost" className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
-        </Button>
-      </Link>
+
 
       {/* Current Subscription Status */}
       <Card>
@@ -309,9 +303,9 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
                  </div>
                 {subscription.status === 'trialing' && trialInfo && (
                   <div className="mt-2">
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                        className="bg-info h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${(trialInfo.daysPassed / trialInfo.totalDays) * 100}%` }}
                       ></div>
                     </div>
@@ -419,10 +413,10 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
                 const isCurrentPlan = subscription?.tiers?.slug === plan.slug
                 
                 return (
-                  <Card key={plan.slug} className={`relative ${isCurrentPlan ? 'ring-2 ring-blue-500' : ''}`}>
+                  <Card key={plan.slug} className={`relative ${isCurrentPlan ? 'ring-2 ring-info' : ''}`}>
                     <CardHeader className="text-center">
-                      <div className="mx-auto p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg w-fit">
-                        <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      <div className="mx-auto p-2 bg-info/10 rounded-lg w-fit">
+                        <IconComponent className="h-6 w-6 text-info" />
                       </div>
                       <CardTitle className="text-lg">{plan.name}</CardTitle>
                       <div className="text-2xl font-bold">{plan.price}</div>

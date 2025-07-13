@@ -82,9 +82,9 @@ export default async function NotificationsPage() {
   const unreadCount = notifications.filter(n => !n.read).length
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-muted">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -150,8 +150,8 @@ export default async function NotificationsPage() {
                     key={notification.id}
                     className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
                       !notification.read 
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
-                        : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+                        ? 'bg-info/10 border-info/20'
+                : 'bg-muted/50 border-border'
                     }`}
                   >
                     <div className="flex-shrink-0 mt-1">
@@ -166,7 +166,7 @@ export default async function NotificationsPage() {
                         </h3>
                         {getNotificationBadge(notification.type)}
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                          <div className="w-2 h-2 bg-info rounded-full"></div>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">

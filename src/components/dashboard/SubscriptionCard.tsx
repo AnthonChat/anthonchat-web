@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { Clock, Zap, MessageSquare, TrendingUp } from "lucide-react"
+import { Clock, Zap, Activity, TrendingUp } from "lucide-react"
 import { UsageData } from "@/lib/queries/usage"
 import { useRouter } from "next/navigation"
 import { getTrialDaysRemaining } from "@/lib/utils/trial-calculations"
@@ -60,108 +60,161 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
     : 0
   
   const getProgressColor = (percent: number) => {
-    if (percent >= 90) return "bg-red-500"
+    if (percent >= 90) return "bg-destructive"
     if (percent >= 75) return "bg-yellow-500"
-    return "bg-green-500"
+    return "bg-primary"
   }
   
   return (
-    <Card>
-      <CardHeader>
+    <Card className="hover-lift overflow-hidden relative border-2">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none" />
+      
+      <CardHeader className="relative">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            Subscription Status
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-3 bg-primary rounded-lg shadow-lg">
+              <Zap className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-bold text-foreground">Subscription Status</span>
           </CardTitle>
-          {getStatusBadge()}
+          <div className="animate-bounce-subtle">
+            {getStatusBadge()}
+          </div>
         </div>
-        <CardDescription>
+        <CardDescription className="text-base font-semibold mt-2 text-muted-foreground">
           {subscription?.tiers?.name || 'No active subscription'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6 relative">
         {isTrialing && (
-          <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-            <Clock className="h-4 w-4 text-yellow-600" />
-            <span className="text-sm text-yellow-800 dark:text-yellow-200">
-              Trial {trialTimeDisplay}
-            </span>
+          <div className="flex items-center gap-3 p-4 bg-yellow-100 border-2 border-yellow-500 rounded-xl text-yellow-900 shadow-warning animate-scale-in">
+            <div className="p-2 bg-yellow-500 rounded-lg">
+              <Clock className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-yellow-900">Trial Period Active</p>
+              <p className="text-sm text-yellow-800">{trialTimeDisplay}</p>
+            </div>
           </div>
         )}
         
         {usage.tokens_limit && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="flex items-center gap-1">
-                <Zap className="h-3 w-3" />
-                Tokens Used
-              </span>
-              <span className="font-medium">
-                {usage.tokens_used.toLocaleString('en-US')} / {usage.tokens_limit.toLocaleString('en-US')}
-              </span>
+          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary rounded-lg">
+                  <Zap className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="font-bold text-foreground text-lg">Tokens Used</span>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-2xl text-foreground">
+                  {usage.tokens_used.toLocaleString('en-US')}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  of {usage.tokens_limit.toLocaleString('en-US')}
+                </div>
+              </div>
             </div>
             <div className="relative">
-              <Progress value={tokensUsagePercent} className="h-2" />
-              <div 
-                className={`absolute top-0 left-0 h-2 rounded-full transition-all ${getProgressColor(tokensUsagePercent)}`}
-                style={{ width: `${Math.min(tokensUsagePercent, 100)}%` }}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {tokensUsagePercent.toFixed(1)}% used
+              <div className="h-3 bg-border rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${getProgressColor(tokensUsagePercent)} relative`}
+                  style={{ width: `${Math.min(tokensUsagePercent, 100)}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-xs text-muted-foreground">
+                  {tokensUsagePercent.toFixed(1)}% used
+                </span>
+                <span className={`text-xs font-medium ${
+                  tokensUsagePercent >= 90 ? 'text-red-500' : 
+                  tokensUsagePercent >= 75 ? 'text-yellow-500' : 'text-green-500'
+                }`}>
+                  {tokensUsagePercent >= 90 ? 'Critical' : 
+                   tokensUsagePercent >= 75 ? 'High' : 'Good'}
+                </span>
+              </div>
             </div>
           </div>
         )}
         
         {usage.requests_limit && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="flex items-center gap-1">
-                <MessageSquare className="h-3 w-3" />
-                Requests Used
-              </span>
-              <span className="font-medium">
-                {usage.requests_used.toLocaleString('en-US')} / {usage.requests_limit.toLocaleString('en-US')}
-              </span>
+          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-secondary rounded-lg">
+                  <Activity className="h-5 w-5 text-secondary-foreground" />
+                </div>
+                <span className="font-bold text-foreground text-lg">Requests Used</span>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-2xl text-foreground">
+                  {usage.requests_used.toLocaleString('en-US')}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  of {usage.requests_limit.toLocaleString('en-US')}
+                </div>
+              </div>
             </div>
             <div className="relative">
-              <Progress value={requestsUsagePercent} className="h-2" />
-              <div 
-                className={`absolute top-0 left-0 h-2 rounded-full transition-all ${getProgressColor(requestsUsagePercent)}`}
-                style={{ width: `${Math.min(requestsUsagePercent, 100)}%` }}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {requestsUsagePercent.toFixed(1)}% used
+              <div className="h-3 bg-border rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${getProgressColor(requestsUsagePercent)} relative`}
+                  style={{ width: `${Math.min(requestsUsagePercent, 100)}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span className="text-xs text-muted-foreground">
+                  {requestsUsagePercent.toFixed(1)}% used
+                </span>
+                <span className={`text-xs font-medium ${
+                  requestsUsagePercent >= 90 ? 'text-red-500' : 
+                  requestsUsagePercent >= 75 ? 'text-yellow-500' : 'text-green-500'
+                }`}>
+                  {requestsUsagePercent >= 90 ? 'Critical' : 
+                   requestsUsagePercent >= 75 ? 'High' : 'Good'}
+                </span>
+              </div>
             </div>
           </div>
         )}
         
         {!usage.tokens_limit && !usage.requests_limit && (
-          <div className="text-center py-4 text-muted-foreground">
-            <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No usage limits set</p>
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="p-4 bg-muted/30 rounded-full w-fit mx-auto mb-4">
+              <TrendingUp className="h-8 w-8 opacity-50" />
+            </div>
+            <p className="text-sm font-medium">No usage limits configured</p>
+            <p className="text-xs mt-1">Contact support to set up usage tracking</p>
           </div>
         )}
         
         {(isTrialing || !subscription) && (
-          <div className="pt-4 border-t">
+          <div className="pt-6 border-t border-border/50">
             <Button 
-              className="w-full"
+              className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 hover:shadow-lg group"
               onClick={() => router.push('/dashboard/subscription')}
             >
+              <Zap className="h-5 w-5 mr-2 group-hover:animate-bounce" />
               Upgrade Subscription
             </Button>
           </div>
         )}
         
         {isActive && (
-          <div className="pt-4 border-t">
+          <div className="pt-6 border-t border-border/50">
             <Button 
               variant="outline" 
-              className="w-full"
+              className="w-full h-12 text-base font-semibold bg-card border-2 border-primary hover:bg-primary/10 text-foreground transition-all duration-300 hover:shadow-lg group"
               onClick={() => router.push('/dashboard/subscription')}
             >
+              <TrendingUp className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
               Manage Subscription
             </Button>
           </div>

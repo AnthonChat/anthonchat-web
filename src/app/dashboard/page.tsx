@@ -43,28 +43,30 @@ export default async function DashboardPage() {
   const warnings = checkUsageLimits(user.id)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">
+      {/* Enhanced Header with Glass Effect */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border/50 shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center gap-4 animate-fade-in">
+              <div className="relative">
+                <div className="p-3 bg-gradient-primary rounded-xl shadow-glow animate-glow">
+                  <User className="h-6 w-6 text-primary-foreground" />
+                </div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                   Dashboard
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Welcome back, {user.email}
+                <p className="text-sm text-muted-foreground font-medium">
+                  Welcome back, <span className="text-primary font-semibold">{user.email}</span>
                 </p>
               </div>
             </div>
             
-            <form action="/auth/signout" method="post">
-              <Button type="submit" variant="outline" size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
+            <form action="/auth/signout" method="post" className="animate-fade-in">
+              <Button type="submit" variant="outline" size="sm" className="hover-lift group">
+                <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
                 Sign Out
               </Button>
             </form>
@@ -72,24 +74,47 @@ export default async function DashboardPage() {
         </div>
       </header>
       
-      {/* Main Content */}
+      {/* Enhanced Main Content */}
       <main className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Welcome Banner */}
+        <div className="mb-8 p-8 bg-primary/5 rounded-2xl shadow-xl animate-slide-up border-2 border-primary/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-3 text-foreground">Good to see you again! 👋</h2>
+              <p className="text-muted-foreground text-lg font-medium">Here's what's happening with your AnthonChat account today.</p>
+            </div>
+            <div className="hidden md:block">
+              <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                <User className="h-10 w-10 text-primary-foreground" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Main Stats */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Subscription Status */}
-            <SubscriptionCard subscription={subscription} usage={usage} />
+            <div className="animate-fade-in" style={{animationDelay: '0.1s'}}>
+              <SubscriptionCard subscription={subscription} usage={usage} />
+            </div>
             
             {/* Usage Analytics */}
-            <UsageStats usage={usage} warnings={await warnings} />
+            <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
+              <UsageStats usage={usage} warnings={await warnings} />
+            </div>
             
             {/* Channels Overview */}
-            <ChannelsOverview userChannels={channels} />
+            <div className="animate-fade-in" style={{animationDelay: '0.3s'}}>
+              <ChannelsOverview userChannels={channels} />
+            </div>
           </div>
           
           {/* Right Column - Quick Actions */}
-          <div className="space-y-6">
-            <QuickActions />
+          <div className="space-y-8">
+            <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
+              <QuickActions />
+            </div>
           </div>
         </div>
       </main>

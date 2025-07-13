@@ -138,7 +138,7 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
               {plan.popular && (
                 <Badge 
                   variant="default" 
-                  className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600"
+                  className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-info hover:bg-info/90"
                 >
                   Most Popular
                 </Badge>
@@ -147,15 +147,15 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
               {isCurrentPlan && (
                 <Badge 
                   variant="default" 
-                  className="absolute -top-2 right-4 bg-green-500 hover:bg-green-600"
+                  className="absolute -top-2 right-4 bg-success hover:bg-success/90"
                 >
                   Current Plan
                 </Badge>
               )}
 
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg w-fit mb-4">
-                  <IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <div className="mx-auto p-3 bg-info/10 rounded-lg w-fit mb-4">
+                  <IconComponent className="h-8 w-8 text-info" />
                 </div>
                 <CardTitle className="text-xl">{plan.name}</CardTitle>
                 <CardDescription className="text-sm">
@@ -181,7 +181,7 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
                   onClick={() => handleSelectPlan(plan.slug)}
                   disabled={isCurrentPlan || isLoadingThisPlan}
                   className={`w-full mt-6 ${
-                    plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''
+                    plan.popular ? 'bg-info hover:bg-info/90' : ''
                   }`}
                   variant={plan.popular ? 'default' : 'outline'}
                 >

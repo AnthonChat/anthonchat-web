@@ -238,7 +238,7 @@ export default function TestStripePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-h-64 overflow-y-auto">
+            <div className="bg-muted p-4 rounded-lg max-h-64 overflow-y-auto">
               <pre className="text-sm">
                 {logs.map((log, index) => (
                   <div key={index} className="mb-1">
@@ -265,7 +265,7 @@ export default function TestStripePage() {
             <p className="text-sm text-muted-foreground">
               Set the following in your <code>.env.local</code> file:
             </p>
-            <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs">
+            <pre className="bg-muted p-2 rounded text-xs">
 {`STRIPE_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...`}
@@ -277,7 +277,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...`}
             <p className="text-sm text-muted-foreground">
               Run the setup script to create Stripe products:
             </p>
-            <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs">
+            <pre className="bg-muted p-2 rounded text-xs">
               node scripts/setup-stripe-products.js
             </pre>
           </div>
@@ -287,7 +287,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...`}
             <p className="text-sm text-muted-foreground">
               Add webhook endpoint in Stripe Dashboard:
             </p>
-            <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs">
+            <pre className="bg-muted p-2 rounded text-xs">
               https://yourdomain.com/api/stripe/webhooks
             </pre>
           </div>

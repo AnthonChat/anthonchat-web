@@ -103,43 +103,94 @@ export function QuickActions({ onAction }: QuickActionsProps) {
   }
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Quick Actions
+    <Card className="hover-lift overflow-hidden relative border-2">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10 pointer-events-none" />
+      
+      <CardHeader className="relative">
+        <CardTitle className="flex items-center gap-3">
+          <div className="p-3 bg-accent rounded-lg shadow-lg">
+            <Users className="h-6 w-6 text-accent-foreground" />
+          </div>
+          <span className="text-xl font-bold text-foreground">Quick Actions</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-base font-semibold text-muted-foreground mt-2">
           Common tasks and settings
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {actions.map((action) => {
+      <CardContent className="relative">
+        <div className="grid grid-cols-1 gap-3">
+          {actions.map((action, index) => {
             const IconComponent = action.icon
+            const isHighlighted = action.id === 'manage-subscription'
             return (
               <Button
                 key={action.id}
-                variant={action.variant}
-                className="h-auto p-4 flex flex-col items-start gap-2 text-left"
+                variant={action.id === 'manage-subscription' ? 'default' : 'outline'}
+                className={`
+                  w-full justify-start h-auto p-5 transition-all duration-300 group border-2
+                  ${action.id === 'manage-subscription' 
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                    : 'bg-card hover:bg-accent border-border hover:border-accent text-foreground'
+                  }
+                `}
                 onClick={() => handleAction(action.id)}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex items-center gap-2 w-full">
-                  <IconComponent className="h-4 w-4" />
-                  <span className="font-medium text-sm">{action.title}</span>
+                <div className="flex items-center gap-4 w-full">
+                  <div className={`
+                    p-3 rounded-lg transition-all duration-300
+                    ${action.id === 'manage-subscription'
+                      ? 'bg-primary-foreground/20'
+                      : 'bg-accent group-hover:bg-accent'
+                    }
+                  `}>
+                    <IconComponent className={`
+                      h-6 w-6 transition-all duration-300
+                      ${action.id === 'manage-subscription'
+                        ? 'text-primary-foreground'
+                        : 'text-accent-foreground group-hover:scale-110'
+                      }
+                    `} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className={`
+                      font-bold text-lg transition-all duration-300
+                      ${action.id === 'manage-subscription'
+                        ? 'text-primary-foreground'
+                        : 'text-foreground group-hover:text-accent-foreground'
+                      }
+                    `}>
+                      {action.title}
+                    </div>
+                    <div className={`
+                      text-sm font-medium transition-all duration-300
+                      ${action.id === 'manage-subscription'
+                        ? 'text-primary-foreground/90'
+                        : 'text-muted-foreground'
+                      }
+                    `}>
+                      {action.description}
+                    </div>
+                  </div>
+
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {action.description}
-                </span>
               </Button>
             )
           })}
         </div>
         
-        <div className="mt-6 pt-4 border-t">
-          <Button variant="ghost" className="w-full" onClick={() => handleAction('help')}>
-            <HelpCircle className="h-4 w-4 mr-2" />
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <Button 
+            variant="ghost" 
+            className="w-full h-12 text-base font-semibold hover-lift group bg-muted/30 hover:bg-muted/50" 
+            onClick={() => handleAction('help')}
+          >
+            <HelpCircle className="h-5 w-5 mr-3 group-hover:animate-bounce" />
             Need Help?
+            <span className="ml-auto text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+              24/7 Support
+            </span>
           </Button>
         </div>
       </CardContent>

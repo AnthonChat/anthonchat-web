@@ -17,9 +17,9 @@ export default async function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-muted">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-card border-b border-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -116,7 +116,7 @@ export default async function AnalyticsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="h-64 flex items-center justify-center bg-muted rounded-lg">
                   <div className="text-center">
                     <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <p className="text-muted-foreground">Chart visualization coming soon</p>
@@ -133,7 +133,7 @@ export default async function AnalyticsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="h-64 flex items-center justify-center bg-muted rounded-lg">
                   <div className="text-center">
                     <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <p className="text-muted-foreground">Chart visualization coming soon</p>
@@ -154,20 +154,20 @@ export default async function AnalyticsPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h4 className="font-medium text-blue-900 dark:text-blue-100">Tokens Used</h4>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,456</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">of 5,000 limit</p>
+                  <div className="p-4 bg-info/10 rounded-lg">
+                    <h4 className="font-medium text-info-foreground">Tokens Used</h4>
+                      <p className="text-2xl font-bold text-info">2,456</p>
+                      <p className="text-sm text-info">of 5,000 limit</p>
                   </div>
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <h4 className="font-medium text-green-900 dark:text-green-100">Requests Made</h4>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">156</p>
-                    <p className="text-sm text-green-700 dark:text-green-300">of 200 limit</p>
+                  <div className="p-4 bg-success/10 rounded-lg">
+                    <h4 className="font-medium text-success-foreground">Requests Made</h4>
+                      <p className="text-2xl font-bold text-success">156</p>
+                      <p className="text-sm text-success">of 200 limit</p>
                   </div>
-                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <h4 className="font-medium text-purple-900 dark:text-purple-100">Success Rate</h4>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">99.2%</p>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">last 30 days</p>
+                  <div className="p-4 bg-primary/10 rounded-lg">
+                    <h4 className="font-medium text-primary-foreground">Success Rate</h4>
+                      <p className="text-2xl font-bold text-primary">99.2%</p>
+                    <p className="text-sm text-primary">last 30 days</p>
                   </div>
                 </div>
               </div>
