@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { createClient } from "@/utils/supabase/browser";
+import ChannelVerification from "./ChannelVerification";
 
 interface Channel {
   id: string;
@@ -54,7 +55,9 @@ export default function SignupCompleteForm({
 }: SignupCompleteFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileSaved, setProfileSaved] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -63,26 +66,104 @@ export default function SignupCompleteForm({
     last_name: userProfile?.last_name || "",
   });
 
-  // Channel connections state
-  const [channelInputs, setChannelInputs] = useState<Record<string, string>>(
+  // Channel verification state
+  const [verifiedChannels, setVerifiedChannels] = useState<Record<string, string>>(
     () => {
-      const inputs: Record<string, string> = {};
-      mandatoryChannels.forEach((channel) => {
-        const existing = existingChannels.find(
-          (uc) => uc.channel_id === channel.id
-        );
-        inputs[channel.id] = existing?.channel_user_id || "";
+      const verified: Record<string, string> = {};
+      existingChannels.forEach((uc) => {
+        verified[uc.channel_id] = uc.channel_user_id;
       });
-      return inputs;
+      return verified;
     }
   );
+  
+  // Initialize allChannelsVerified based on existing channels
+  const [allChannelsVerified, setAllChannelsVerified] = useState(() => {
+    const mandatoryChannelIds = mandatoryChannels.map(c => c.id);
+    const verifiedChannelIds = existingChannels.map(uc => uc.channel_id);
+    return mandatoryChannelIds.every(id => verifiedChannelIds.includes(id));
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setProfileSaved(false); // Mark as unsaved when data changes
   };
 
-  const handleChannelInputChange = (channelId: string, value: string) => {
-    setChannelInputs((prev) => ({ ...prev, [channelId]: value }));
+  // Check if profile data has changed from initial values
+  const profileDataChanged = 
+    formData.nickname !== (userProfile?.nickname || "") ||
+    formData.first_name !== (userProfile?.first_name || "") ||
+    formData.last_name !== (userProfile?.last_name || "");
+
+  // Check if profile data is complete
+  const profileDataComplete = 
+    formData.nickname.trim() && 
+    formData.first_name.trim() && 
+    formData.last_name.trim();
+
+  const handleVerificationComplete = (channelId: string, channelUserId: string) => {
+    setVerifiedChannels((prev) => ({ ...prev, [channelId]: channelUserId }));
+  };
+
+  const handleAllChannelsVerified = () => {
+    setAllChannelsVerified(true);
+  };
+
+  const saveProfile = async () => {
+    // Validate profile fields only
+    if (
+      !formData.nickname.trim() ||
+      !formData.first_name.trim() ||
+      !formData.last_name.trim()
+    ) {
+      setError("Please fill in all profile fields");
+      return;
+    }
+
+    setProfileSaving(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+
+      // Update user profile
+      const { error: profileError } = await supabase
+        .from("users")
+        .update({
+          nickname: formData.nickname.trim(),
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+        })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      setProfileSaved(true);
+      setError(null);
+    } catch (err: unknown) {
+      console.error("Profile save error:", err);
+      
+      let errorMessage = "Failed to save profile";
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const supabaseError = err as { 
+          message?: string; 
+          error_description?: string; 
+          [key: string]: unknown; 
+        };
+        if (supabaseError.message) {
+          errorMessage = supabaseError.message;
+        } else if (supabaseError.error_description) {
+          errorMessage = supabaseError.error_description;
+        }
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const validateForm = () => {
@@ -96,24 +177,10 @@ export default function SignupCompleteForm({
       return false;
     }
 
-    // Check mandatory channels
-    for (const channel of mandatoryChannels) {
-      const input = channelInputs[channel.id]?.trim();
-      if (!input) {
-        setError(`Please provide your ${channel.name} information`);
-        return false;
-      }
-
-      // Validate WhatsApp phone number format
-      if (channel.name.toLowerCase() === "whatsapp") {
-        const phoneRegex = /^\+[1-9]\d{1,14}$/;
-        if (!phoneRegex.test(input)) {
-          setError(
-            "Please enter a valid WhatsApp phone number with country code (e.g., +1234567890)"
-          );
-          return false;
-        }
-      }
+    // Check if all mandatory channels are verified
+    if (!allChannelsVerified) {
+      setError("Please verify all required channels before continuing");
+      return false;
     }
 
     return true;
@@ -144,13 +211,11 @@ export default function SignupCompleteForm({
 
       if (profileError) throw profileError;
 
-      // Update/insert channel connections
-      for (const channel of mandatoryChannels) {
-        const channelUserId = channelInputs[channel.id].trim();
-
+      // Update/insert channel connections for verified channels
+      for (const [channelId, channelUserId] of Object.entries(verifiedChannels)) {
         // Check if connection already exists
         const existing = existingChannels.find(
-          (uc) => uc.channel_id === channel.id
+          (uc) => uc.channel_id === channelId
         );
 
         if (existing) {
@@ -159,7 +224,7 @@ export default function SignupCompleteForm({
             .from("user_channels")
             .update({ channel_user_id: channelUserId })
             .eq("user_id", user.id)
-            .eq("channel_id", channel.id);
+            .eq("channel_id", channelId);
 
           if (updateError) throw updateError;
         } else {
@@ -168,7 +233,7 @@ export default function SignupCompleteForm({
             .from("user_channels")
             .insert({
               user_id: user.id,
-              channel_id: channel.id,
+              channel_id: channelId,
               channel_user_id: channelUserId,
             });
 
@@ -300,40 +365,36 @@ export default function SignupCompleteForm({
             />
           </div>
         </CardContent>
+        <CardFooter className="flex flex-col space-y-3">
+          {profileSaved && (
+            <div className="w-full p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-green-800 text-sm text-center">
+                ✓ Profile saved successfully!
+              </p>
+            </div>
+          )}
+          
+          <Button
+            type="button"
+            onClick={saveProfile}
+            disabled={profileSaving || !profileDataComplete || (!profileDataChanged && !profileSaved)}
+            variant="outline"
+            className="w-full h-11"
+          >
+            {profileSaving ? 'Saving Profile...' : 'Save Profile'}
+          </Button>
+        </CardFooter>
       </Card>
 
       {mandatoryChannels.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Connect Your Accounts</CardTitle>
-            <CardDescription>
-              We need this to send and receive messages on your behalf.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            {mandatoryChannels.map((channel) => (
-              <div className="space-y-3" key={channel.id}>
-                <Label htmlFor={`channel-${channel.id}`} className="text-sm font-medium">
-                  {channel.name} User ID
-                </Label>
-                <Input
-                  id={`channel-${channel.id}`}
-                  value={channelInputs[channel.id] || ''}
-                  onChange={(e) =>
-                    handleChannelInputChange(channel.id, e.target.value)
-                  }
-                  placeholder={
-                    channel.name.toLowerCase() === 'whatsapp'
-                      ? 'e.g., +1234567890'
-                      : `Your ${channel.name} user ID`
-                  }
-                  required
-                  className="h-11"
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="mt-8">
+          <ChannelVerification
+            channels={mandatoryChannels}
+            onVerificationComplete={handleVerificationComplete}
+            onAllChannelsVerified={handleAllChannelsVerified}
+            existingChannels={existingChannels}
+          />
+        </div>
       )}
 
       <div className="mt-8 space-y-4">
@@ -343,7 +404,11 @@ export default function SignupCompleteForm({
           </p>
         )}
 
-        <Button type="submit" disabled={loading} className="w-full h-11">
+        <Button 
+          type="submit" 
+          disabled={loading || !allChannelsVerified} 
+          className="w-full h-11"
+        >
           {loading ? 'Completing Setup...' : 'Complete Setup'}
         </Button>
       </div>
