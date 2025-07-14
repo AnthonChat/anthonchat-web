@@ -101,8 +101,38 @@ export default function SignupCompleteForm({
     formData.first_name.trim() && 
     formData.last_name.trim();
 
-  const handleVerificationComplete = (channelId: string, channelUserId: string) => {
+  const handleVerificationComplete = async (channelId: string, channelUserId: string) => {
+    // Update local state so the UI marks that tile as "verified"
     setVerifiedChannels((prev) => ({ ...prev, [channelId]: channelUserId }));
+
+    // Now do the one-off upsert for just *this* channel
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("user_channels")
+        .upsert([{
+          user_id: user.id,
+          channel_id: channelId,
+          channel_user_id: channelUserId,
+        }], {
+          onConflict: "channel_user_id, channel_id",
+        });
+
+      if (error) {
+        console.error("Failed to record channel:", error);
+        setError("Could not save channel connection. Try again?");
+      } else {
+        // Check if all mandatory channels are now verified
+        const updatedVerified = { ...verifiedChannels, [channelId]: channelUserId };
+        const allDone = mandatoryChannels.every((c) =>
+          Object.hasOwn(updatedVerified, c.id)
+        );
+        if (allDone) setAllChannelsVerified(true);
+      }
+    } catch (err) {
+      console.error("Channel verification error:", err);
+      setError("Could not save channel connection. Try again?");
+    }
   };
 
   const handleAllChannelsVerified = () => {
@@ -211,35 +241,8 @@ export default function SignupCompleteForm({
 
       if (profileError) throw profileError;
 
-      // Update/insert channel connections for verified channels
-      for (const [channelId, channelUserId] of Object.entries(verifiedChannels)) {
-        // Check if connection already exists
-        const existing = existingChannels.find(
-          (uc) => uc.channel_id === channelId
-        );
-
-        if (existing) {
-          // Update existing connection
-          const { error: updateError } = await supabase
-            .from("user_channels")
-            .update({ channel_user_id: channelUserId })
-            .eq("user_id", user.id)
-            .eq("channel_id", channelId);
-
-          if (updateError) throw updateError;
-        } else {
-          // Insert new connection
-          const { error: insertError } = await supabase
-            .from("user_channels")
-            .insert({
-              user_id: user.id,
-              channel_id: channelId,
-              channel_user_id: channelUserId,
-            });
-
-          if (insertError) throw insertError;
-        }
-      }
+      // Channel connections are now handled in handleVerificationComplete
+      // No need to upsert here since they're already in the database
 
       // Manually check if onboarding is now complete using the database function
       const { data: isComplete, error: checkError } = await supabase
@@ -261,21 +264,40 @@ export default function SignupCompleteForm({
           console.error("Error updating onboarding status:", updateError);
           throw new Error(`Failed to update onboarding status: ${updateError.message}`);
         }
-        // Create trial subscription
-        const { error: subscriptionError } = await supabase
+        // Check if user already has a subscription
+        const { data: existingSubscription, error: checkSubError } = await supabase
           .from("subscriptions")
-          .insert({
-            user_id: user.id,
-            status: "trialing",
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-          });
+          .select("id")
+          .eq("user_id", user.id)
+          .single();
 
-        if (subscriptionError) {
-          console.error(
-            "Failed to create trial subscription:",
-            subscriptionError
-          );
-          // Don't block the flow for subscription creation failure
+        // Only create trial subscription if user doesn't have one
+        if (checkSubError?.code === 'PGRST116' || !existingSubscription) {
+          // Get the free/trial tier
+          const { data: tier, error: tierError } = await supabase
+            .from('tiers')
+            .select('id')
+            .eq('slug', 'free')
+            .single();
+
+          if (!tierError && tier) {
+            const { error: subscriptionError } = await supabase
+              .from("subscriptions")
+              .insert({
+                user_id: user.id,
+                tier_id: tier.id,
+                status: "trialing",
+                current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+              });
+
+            if (subscriptionError) {
+              console.error(
+                "Failed to create trial subscription:",
+                subscriptionError
+              );
+              // Don't block the flow for subscription creation failure
+            }
+          }
         }
 
         router.push("/dashboard");

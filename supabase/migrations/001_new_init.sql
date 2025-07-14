@@ -180,6 +180,11 @@ BEGIN
     updated_at timestamptz NOT NULL DEFAULT now( ),
     verified_at timestamptz
   );
+
+  ALTER TABLE public.user_channels
+  ADD CONSTRAINT user_channels_unique_pair
+    UNIQUE (channel_user_id, channel_id);
+
 END IF;
 END
 $$
