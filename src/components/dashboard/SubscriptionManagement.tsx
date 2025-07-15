@@ -9,17 +9,16 @@ import {
   CreditCard, 
   Calendar, 
   AlertTriangle, 
-  CheckCircle, 
-  ArrowLeft,
+  CheckCircle,
   Crown,
   Zap,
   Shield
 } from "lucide-react"
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { calculateTrialInfo } from "@/lib/utils/trial-calculations"
-import { formatDate } from "@/lib/utils/date-formatting"
 import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod } from "@/lib/utils/time-formatting"
+import { loadStripe } from '@stripe/stripe-js'
+import { toast } from 'sonner'
 
 interface SubscriptionManagementProps {
   subscription: {
@@ -39,7 +38,7 @@ interface SubscriptionManagementProps {
   userId: string
 }
 
-export function SubscriptionManagement({ subscription, userId }: SubscriptionManagementProps) {
+export function SubscriptionManagement({ subscription }: SubscriptionManagementProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -62,168 +61,6 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
 
   const trialInfo = calculateTrialInfo(subscription)
 
-  const handleUpgrade = async (tierSlug?: string) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          tierSlug: tierSlug || 'basic' 
-        }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-      
-      // Redirect to Stripe Checkout
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (error) {
-      console.error('Error upgrading subscription:', error)
-      alert('Failed to start checkout process. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleStartFreeTrial = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/create-trial', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        if (data.error === 'User already has a subscription') {
-          alert('You already have an active subscription or trial!')
-        } else {
-          throw new Error(data.error || 'Failed to start free trial')
-        }
-        return
-      }
-      
-      alert('Free trial started successfully! Redirecting to dashboard...')
-      // Redirect to dashboard to see the updated subscription status
-      window.location.href = '/dashboard'
-    } catch (error) {
-      console.error('Error starting free trial:', error)
-      alert('Failed to start free trial. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
-      return
-    }
-
-    if (!subscription?.stripe_subscription_id) {
-      alert('No active subscription found')
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/cancel-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          subscriptionId: subscription.stripe_subscription_id 
-        }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel subscription')
-      }
-      
-      alert('Subscription canceled successfully. You will retain access until the end of your billing period.')
-      router.refresh()
-    } catch (error) {
-      console.error('Error canceling subscription:', error)
-      alert('Failed to cancel subscription. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleReactivateSubscription = async () => {
-    if (!subscription?.stripe_subscription_id) {
-      alert('No subscription found to reactivate')
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/reactivate-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          subscriptionId: subscription.stripe_subscription_id 
-        }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to reactivate subscription')
-      }
-      
-      alert('Subscription reactivated successfully!')
-      router.refresh()
-    } catch (error) {
-      console.error('Error reactivating subscription:', error)
-      alert('Failed to reactivate subscription. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleManageBilling = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create portal session')
-      }
-      
-      // Redirect to Stripe Customer Portal
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (error) {
-      console.error('Error opening billing portal:', error)
-      alert('Failed to open billing portal. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const availablePlans = [
     {
@@ -231,23 +68,168 @@ export function SubscriptionManagement({ subscription, userId }: SubscriptionMan
       name: 'Basic Plan',
       price: '$9.99/month',
       features: ['5,000 tokens/month', '200 requests/month', '5 channels', 'Email support'],
-      icon: Zap
+      icon: Zap,
+      priceId: 'price_1Rk7GGQH21dH2pp3kspgNYXS'
     },
     {
       slug: 'standard',
       name: 'Standard Plan',
       price: '$19.99/month',
       features: ['15,000 tokens/month', '500 requests/month', '10 channels', 'Priority support'],
-      icon: Crown
+      icon: Crown,
+      priceId: 'price_1Rk7GHQH21dH2pp32TV497AR'
     },
     {
       slug: 'pro',
       name: 'Pro Plan',
       price: '$39.99/month',
       features: ['50,000 tokens/month', '1,500 requests/month', 'Unlimited channels', 'Premium support'],
-      icon: Shield
+      icon: Shield,
+      priceId: 'price_1Rk7GIQH21dH2pp3tWUoyu6Q'
     }
   ]
+
+  const handleUpgrade = async (planSlug?: string) => {
+    if (!planSlug) {
+      // Redirect to pricing page for plan selection
+      router.push('/pricing')
+      return
+    }
+
+    const plan = availablePlans.find(p => p.slug === planSlug)
+    if (!plan?.priceId) {
+      toast.error('Plan configuration error')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      // Create Stripe checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: plan.priceId,
+          tierSlug: planSlug,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+
+      const { sessionId } = await response.json()
+      
+      // Redirect to Stripe Checkout
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId })
+        if (error) {
+          throw error
+        }
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      toast.error('Failed to start checkout process')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleManageBilling = async () => {
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/stripe/billing-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        
+        if (errorData.configurationRequired) {
+          toast.error('Billing portal is not configured yet. Please contact support for subscription management.')
+          return
+        }
+        
+        throw new Error(errorData.message || 'Failed to create billing portal session')
+      }
+
+      const { url } = await response.json()
+      window.location.href = url
+    } catch (error) {
+      console.error('Billing portal error:', error)
+      toast.error('Failed to open billing portal')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription? You will still have access until the end of your current billing period.')) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/stripe/subscription/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel subscription')
+      }
+
+      toast.success('Subscription canceled successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Cancel subscription error:', error)
+      toast.error('Failed to cancel subscription')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleReactivateSubscription = async () => {
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/stripe/subscription/reactivate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reactivate subscription')
+      }
+
+      toast.success('Subscription reactivated successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Reactivate subscription error:', error)
+      toast.error('Failed to reactivate subscription')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleStartFreeTrial = async () => {
+    // This would typically create a trial subscription
+    // For now, redirect to pricing page
+    router.push('/pricing')
+  }
 
   return (
     <div className="space-y-6">

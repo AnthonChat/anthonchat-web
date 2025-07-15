@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserSubscription } from '@/lib/queries/subscription'
 import { SubscriptionManagement } from '@/components/dashboard/SubscriptionManagement'
+import { StripeSuccessHandler } from '@/components/dashboard/StripeSuccessHandler'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, CreditCard } from 'lucide-react'
 import Link from 'next/link'
@@ -68,6 +69,9 @@ export default async function SubscriptionPage() {
           </div>
         </div>
 
+        {/* Stripe Success/Error Handler */}
+        <StripeSuccessHandler />
+        
         {/* Subscription Management Component */}
         <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
           <SubscriptionManagement subscription={subscription} userId={user.id} />

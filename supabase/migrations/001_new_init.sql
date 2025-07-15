@@ -213,7 +213,7 @@ BEGIN
       AND table_name = 'subscriptions') THEN
   CREATE TABLE public.subscriptions(
     id uuid PRIMARY KEY DEFAULT gen_random_uuid( ),
-    user_id uuid NOT NULL REFERENCES public.users(id ) ON DELETE CASCADE,
+    user_id uuid NOT NULL UNIQUE REFERENCES public.users(id ) ON DELETE CASCADE,
     tier_id uuid NOT NULL REFERENCES public.tiers(id ) ON DELETE CASCADE,
     stripe_subscription_id text UNIQUE,
     status subscription_status NOT NULL DEFAULT 'incomplete',

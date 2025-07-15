@@ -5,7 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Crown, Zap, Shield, Star } from "lucide-react"
-import { useStripeCheckout } from '@/hooks/useStripe'
+import { loadStripe } from '@stripe/stripe-js'
+import { toast } from 'sonner'
+
 
 interface PricingPlansProps {
   currentTierSlug?: string
@@ -13,8 +15,13 @@ interface PricingPlansProps {
 }
 
 export function PricingPlans({ currentTierSlug, isAuthenticated = false }: PricingPlansProps) {
-  const { createCheckoutSession, isLoading } = useStripeCheckout()
+  
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Determine which plan should be marked as popular
+  // Only mark Standard as popular if user is not authenticated or doesn't have a current plan
+  const shouldMarkStandardAsPopular = !isAuthenticated || !currentTierSlug
 
   const plans = [
     {
@@ -32,7 +39,8 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
       ],
       icon: Star,
       popular: false,
-      buttonText: 'Start Free Trial'
+      buttonText: 'Start Free Trial',
+      priceId: null
     },
     {
       slug: 'basic',
@@ -49,7 +57,8 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
       ],
       icon: Zap,
       popular: false,
-      buttonText: 'Get Started'
+      buttonText: 'Get Started',
+      priceId: 'price_1Rk7GGQH21dH2pp3kspgNYXS'
     },
     {
       slug: 'standard',
@@ -66,8 +75,9 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
         'Custom integrations'
       ],
       icon: Crown,
-      popular: true,
-      buttonText: 'Upgrade Now'
+      popular: shouldMarkStandardAsPopular,
+      buttonText: 'Get Started',
+      priceId: 'price_1Rk7GHQH21dH2pp32TV497AR'
     },
     {
       slug: 'pro',
@@ -87,7 +97,8 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
       ],
       icon: Shield,
       popular: false,
-      buttonText: 'Go Pro'
+      buttonText: 'Go Pro',
+      priceId: 'price_1Rk7GIQH21dH2pp3tWUoyu6Q'
     }
   ]
 
@@ -98,15 +109,78 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
       return
     }
 
+    // Define tier hierarchy for validation
+    const tierHierarchy = { 'free': 0, 'basic': 1, 'standard': 2, 'pro': 3 }
+    const currentTierLevel = currentTierSlug ? tierHierarchy[currentTierSlug as keyof typeof tierHierarchy] ?? -1 : -1
+    const planTierLevel = tierHierarchy[planSlug as keyof typeof tierHierarchy] ?? -1
+    
+    // Prevent free trial if user already has a paid plan
+    if (planSlug === 'free' && currentTierSlug) {
+      toast.error('Free trial is only available for new users')
+      return
+    }
+    
+    // Prevent same tier selection
+    if (currentTierSlug === planSlug) {
+      toast.info('You are already on this plan')
+      return
+    }
+    
+    // Handle free trial
     if (planSlug === 'free') {
-      // Free trial doesn't need Stripe checkout
-      // This would be handled by the trial creation logic
+      toast.info('Free trial setup coming soon!')
+      return
+    }
+    
+    // Handle downgrades
+    if (currentTierLevel > planTierLevel && currentTierLevel >= 0) {
+      toast.info('Please contact support for downgrades')
       return
     }
 
+    const plan = plans.find(p => p.slug === planSlug)
+    if (!plan?.priceId) {
+      toast.error('Plan configuration error')
+      return
+    }
+
+    setIsLoading(true)
     setSelectedPlan(planSlug)
-    await createCheckoutSession(planSlug)
-    setSelectedPlan(null)
+
+    try {
+      // Create Stripe checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: plan.priceId,
+          tierSlug: planSlug,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+
+      const { sessionId } = await response.json()
+      
+      // Redirect to Stripe Checkout
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId })
+        if (error) {
+          throw error
+        }
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      toast.error('Failed to start checkout process')
+    } finally {
+      setIsLoading(false)
+      setSelectedPlan(null)
+    }
   }
 
   return (
@@ -124,15 +198,18 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
         {plans.map((plan) => {
           const IconComponent = plan.icon
           const isCurrentPlan = currentTierSlug === plan.slug
-          const isLoadingThisPlan = isLoading && selectedPlan === plan.slug
+          
+          
           
           return (
-            <Card 
-              key={plan.slug} 
+            <Card
+              key={plan.slug}
               className={`relative transition-all duration-200 hover:shadow-lg ${
-                plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''
-              } ${
-                isCurrentPlan ? 'ring-2 ring-green-500' : ''
+                isCurrentPlan
+                  ? 'ring-2 ring-primary scale-105'
+                  : plan.popular
+                  ? 'ring-2 ring-blue-500 scale-105'
+                  : ''
               }`}
             >
               {plan.popular && (
@@ -177,22 +254,53 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
                   ))}
                 </ul>
 
-                <Button 
-                  onClick={() => handleSelectPlan(plan.slug)}
-                  disabled={isCurrentPlan || isLoadingThisPlan}
-                  className={`w-full mt-6 ${
-                    plan.popular ? 'bg-info hover:bg-info/90' : ''
-                  }`}
-                  variant={plan.popular ? 'default' : 'outline'}
-                >
-                  {isLoadingThisPlan ? (
-                    'Processing...'
-                  ) : isCurrentPlan ? (
-                    'Current Plan'
-                  ) : (
-                    plan.buttonText
-                  )}
-                </Button>
+                {(() => {
+                  // Define tier hierarchy for comparison
+                  const tierHierarchy = { 'free': 0, 'basic': 1, 'standard': 2, 'pro': 3 }
+                  const currentTierLevel = currentTierSlug ? tierHierarchy[currentTierSlug as keyof typeof tierHierarchy] ?? -1 : -1
+                  const planTierLevel = tierHierarchy[plan.slug as keyof typeof tierHierarchy] ?? -1
+                  
+                  // Determine button state
+                  const isDowngrade = currentTierLevel > planTierLevel
+                  const isSameTier = isCurrentPlan
+                  const cannotStartFreeTrial = currentTierSlug && plan.slug === 'free'
+                  const isUpgrade = currentTierLevel < planTierLevel && currentTierLevel >= 0
+                  
+                  let buttonText = plan.buttonText
+                  let isDisabled = false
+                  let buttonVariant: 'default' | 'outline' | 'secondary' = plan.popular ? 'default' : 'outline'
+                  
+                  if (isLoading && selectedPlan === plan.slug) {
+                    buttonText = 'Processing...'
+                    isDisabled = true
+                  } else if (isSameTier) {
+                    buttonText = 'Current Plan'
+                    isDisabled = true
+                    buttonVariant = 'secondary'
+                  } else if (cannotStartFreeTrial) {
+                    buttonText = 'Not Available'
+                    isDisabled = true
+                    buttonVariant = 'secondary'
+                  } else if (isDowngrade) {
+                    buttonText = 'Downgrade'
+                    buttonVariant = 'outline'
+                  } else if (isUpgrade) {
+                    buttonText = `Upgrade to ${plan.name}`
+                  }
+                  
+                  return (
+                    <Button 
+                      onClick={() => handleSelectPlan(plan.slug)}
+                      disabled={isDisabled}
+                      className={`w-full mt-6 ${
+                        plan.popular && !isDisabled ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' : ''
+                      }`}
+                      variant={plan.popular && !isDisabled ? 'default' : buttonVariant}
+                    >
+                      {buttonText}
+                    </Button>
+                  )
+                })()}
               </CardContent>
             </Card>
           )
