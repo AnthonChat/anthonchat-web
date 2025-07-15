@@ -3,10 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Clock, Zap, Activity, TrendingUp } from "lucide-react"
+import { Clock, Zap, Activity, TrendingUp, Wifi, WifiOff, RefreshCw } from "lucide-react"
 import { UsageData } from "@/lib/queries/usage"
 import { useRouter } from "next/navigation"
 import { formatTrialTimeRemaining } from "@/lib/utils/time-formatting"
+import { useRealtimeUsage } from "@/hooks/useRealtimeUsage"
 
 interface SubscriptionCardProps {
   subscription: {
@@ -21,10 +22,23 @@ interface SubscriptionCardProps {
     }
   } | null
   usage: UsageData
+  userId: string
 }
 
-export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps) {
+export function SubscriptionCard({ subscription, usage, userId }: SubscriptionCardProps) {
   const router = useRouter()
+  
+  // Use real-time usage hook
+  const { 
+    usage: realtimeUsage, 
+    isConnected, 
+    error: realtimeError, 
+    reconnect 
+  } = useRealtimeUsage({
+    userId,
+    initialUsage: usage,
+    enabled: true
+  })
 
   const isTrialing = subscription?.status === 'trialing'
   const isActive = subscription?.status === 'active'
@@ -49,12 +63,13 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
     subscription?.current_period_end
   )
   
-  const tokensUsagePercent = usage.tokens_limit
-    ? (usage.tokens_used / usage.tokens_limit) * 100
+  // Calculate usage percentages using real-time data
+  const tokensUsagePercent = realtimeUsage.tokens_limit
+    ? (realtimeUsage.tokens_used / realtimeUsage.tokens_limit) * 100
     : 0
     
-  const requestsUsagePercent = usage.requests_limit
-    ? (usage.requests_used / usage.requests_limit) * 100
+  const requestsUsagePercent = realtimeUsage.requests_limit
+    ? (realtimeUsage.requests_used / realtimeUsage.requests_limit) * 100
     : 0
   
   const getProgressColor = (percent: number) => {
@@ -78,8 +93,35 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
               <span className="text-xl font-bold text-foreground">Subscription Status</span>
             </div>
           </CardTitle>
-          <div className="animate-bounce-subtle">
-            {getStatusBadge()}
+          <div className="flex items-center gap-2">
+            {/* Real-time connection indicator */}
+            <div className="flex items-center gap-1">
+              {isConnected ? (
+                <div className="flex items-center gap-1 text-green-600">
+                  <Wifi className="h-4 w-4" />
+                  <span className="text-xs font-medium">Live</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-gray-500">
+                  <WifiOff className="h-4 w-4" />
+                  <span className="text-xs font-medium">Offline</span>
+                  {realtimeError && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={reconnect}
+                      className="h-6 w-6 p-0 ml-1"
+                      title="Reconnect to real-time updates"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="animate-bounce-subtle">
+              {getStatusBadge()}
+            </div>
           </div>
         </div>
         <CardDescription className="text-base font-semibold mt-2 text-muted-foreground">
@@ -99,8 +141,14 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
           </div>
         )}
         
-        {usage.tokens_limit && (
-          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl">
+        {realtimeUsage.tokens_limit && (
+          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl relative">
+            {/* Real-time update indicator */}
+            {isConnected && (
+              <div className="absolute top-2 right-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Real-time updates active" />
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary rounded-lg">
@@ -109,11 +157,11 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                 <span className="font-bold text-foreground text-lg">Tokens Used</span>
               </div>
               <div className="text-right">
-                <div className="font-bold text-2xl text-foreground">
-                  {usage.tokens_used.toLocaleString('en-US')}
+                <div className="font-bold text-2xl text-foreground transition-all duration-300">
+                  {realtimeUsage.tokens_used.toLocaleString('en-US')}
                 </div>
                 <div className="text-sm font-medium text-muted-foreground">
-                  of {usage.tokens_limit.toLocaleString('en-US')}
+                  of {realtimeUsage.tokens_limit.toLocaleString('en-US')}
                 </div>
               </div>
             </div>
@@ -142,8 +190,14 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
           </div>
         )}
         
-        {usage.requests_limit && (
-          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl">
+        {realtimeUsage.requests_limit && (
+          <div className="space-y-4 p-5 bg-card border-2 border-border rounded-xl relative">
+            {/* Real-time update indicator */}
+            {isConnected && (
+              <div className="absolute top-2 right-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Real-time updates active" />
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-secondary rounded-lg">
@@ -152,11 +206,11 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                 <span className="font-bold text-foreground text-lg">Requests Used</span>
               </div>
               <div className="text-right">
-                <div className="font-bold text-2xl text-foreground">
-                  {usage.requests_used.toLocaleString('en-US')}
+                <div className="font-bold text-2xl text-foreground transition-all duration-300">
+                  {realtimeUsage.requests_used.toLocaleString('en-US')}
                 </div>
                 <div className="text-sm font-medium text-muted-foreground">
-                  of {usage.requests_limit.toLocaleString('en-US')}
+                  of {realtimeUsage.requests_limit.toLocaleString('en-US')}
                 </div>
               </div>
             </div>
@@ -185,7 +239,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
           </div>
         )}
         
-        {!usage.tokens_limit && !usage.requests_limit && (
+        {!realtimeUsage.tokens_limit && !realtimeUsage.requests_limit && (
           <div className="text-center py-8 text-muted-foreground">
             <div className="p-4 bg-muted/30 rounded-full w-fit mx-auto mb-4">
               <TrendingUp className="h-8 w-8 opacity-50" />

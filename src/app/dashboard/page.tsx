@@ -110,6 +110,7 @@ export default async function DashboardPage() {
 							<SubscriptionCard
 								subscription={subscription}
 								usage={usage}
+								userId={user.id}
 							/>
 						</div>
 
