@@ -2,12 +2,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Clock, Zap, Activity, TrendingUp } from "lucide-react"
 import { UsageData } from "@/lib/queries/usage"
 import { useRouter } from "next/navigation"
-import { getTrialDaysRemaining } from "@/lib/utils/trial-calculations"
 import { formatTrialTimeRemaining } from "@/lib/utils/time-formatting"
 
 interface SubscriptionCardProps {
@@ -27,6 +25,7 @@ interface SubscriptionCardProps {
 
 export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps) {
   const router = useRouter()
+
   const isTrialing = subscription?.status === 'trialing'
   const isActive = subscription?.status === 'active'
   
@@ -45,13 +44,12 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
     }
   }
   
-  const trialDaysRemaining = getTrialDaysRemaining(subscription)
   const trialTimeDisplay = formatTrialTimeRemaining(
     subscription?.current_period_start,
     subscription?.current_period_end
   )
   
-  const tokensUsagePercent = usage.tokens_limit 
+  const tokensUsagePercent = usage.tokens_limit
     ? (usage.tokens_used / usage.tokens_limit) * 100
     : 0
     
@@ -64,7 +62,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
     if (percent >= 75) return "bg-yellow-500"
     return "bg-primary"
   }
-  
+
   return (
     <Card className="hover-lift overflow-hidden relative border-2">
       {/* Background Pattern */}
@@ -72,11 +70,13 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3">
-            <div className="p-3 bg-primary rounded-lg shadow-lg">
-              <Zap className="h-6 w-6 text-primary-foreground" />
+          <CardTitle className="flex flex-col items-start gap-2">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary rounded-lg shadow-lg">
+                <Zap className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-foreground">Subscription Status</span>
             </div>
-            <span className="text-xl font-bold text-foreground">Subscription Status</span>
           </CardTitle>
           <div className="animate-bounce-subtle">
             {getStatusBadge()}
@@ -119,7 +119,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
             </div>
             <div className="relative">
               <div className="h-3 bg-border rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full rounded-full transition-all duration-1000 ease-out ${getProgressColor(tokensUsagePercent)} relative`}
                   style={{ width: `${Math.min(tokensUsagePercent, 100)}%` }}
                 >
@@ -131,10 +131,10 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                   {tokensUsagePercent.toFixed(1)}% used
                 </span>
                 <span className={`text-xs font-medium ${
-                  tokensUsagePercent >= 90 ? 'text-red-500' : 
+                  tokensUsagePercent >= 90 ? 'text-red-500' :
                   tokensUsagePercent >= 75 ? 'text-yellow-500' : 'text-green-500'
                 }`}>
-                  {tokensUsagePercent >= 90 ? 'Critical' : 
+                  {tokensUsagePercent >= 90 ? 'Critical' :
                    tokensUsagePercent >= 75 ? 'High' : 'Good'}
                 </span>
               </div>
@@ -162,7 +162,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
             </div>
             <div className="relative">
               <div className="h-3 bg-border rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full rounded-full transition-all duration-1000 ease-out ${getProgressColor(requestsUsagePercent)} relative`}
                   style={{ width: `${Math.min(requestsUsagePercent, 100)}%` }}
                 >
@@ -174,10 +174,10 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
                   {requestsUsagePercent.toFixed(1)}% used
                 </span>
                 <span className={`text-xs font-medium ${
-                  requestsUsagePercent >= 90 ? 'text-red-500' : 
+                  requestsUsagePercent >= 90 ? 'text-red-500' :
                   requestsUsagePercent >= 75 ? 'text-yellow-500' : 'text-green-500'
                 }`}>
-                  {requestsUsagePercent >= 90 ? 'Critical' : 
+                  {requestsUsagePercent >= 90 ? 'Critical' :
                    requestsUsagePercent >= 75 ? 'High' : 'Good'}
                 </span>
               </div>
@@ -197,7 +197,7 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
         
         {(isTrialing || !subscription) && (
           <div className="pt-6 border-t border-border/50">
-            <Button 
+            <Button
               className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 hover:shadow-lg group"
               onClick={() => router.push('/dashboard/subscription')}
             >
@@ -209,8 +209,8 @@ export function SubscriptionCard({ subscription, usage }: SubscriptionCardProps)
         
         {isActive && (
           <div className="pt-6 border-t border-border/50">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full h-12 text-base font-semibold bg-card border-2 border-primary hover:bg-primary/10 text-foreground transition-all duration-300 hover:shadow-lg group"
               onClick={() => router.push('/dashboard/subscription')}
             >

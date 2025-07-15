@@ -21,7 +21,7 @@ interface ChannelVerificationState {
   nonce?: string;
   deepLink?: string;
   command?: string;
-  channelUserId: string;
+  channelUserId?: string;
   error?: string;
   notified?: boolean;
 }
@@ -46,7 +46,7 @@ export default function ChannelVerification({
         const existingChannel = existingChannels.find(ec => ec.channel_id === channel.id);
         states[channel.id] = {
           status: existingChannel ? 'done' : 'idle',
-          channelUserId: existingChannel?.channel_user_id || '',
+          channelUserId: existingChannel?.channel_user_id,
         };
       });
       return states;
@@ -82,7 +82,11 @@ export default function ChannelVerification({
       const state = channelStates[channel.id];
       if (state.status === 'done' && !state.notified) {
         // tell parent, then mark "notified" so we don't call again
-        onVerificationComplete(channel.id, state.channelUserId);
+        if (state.channelUserId) {
+          onVerificationComplete(channel.id, state.channelUserId);
+        } else {
+          toast.error('Verification failed: No channelUserId found');
+        }
         setChannelStates(cs => ({
           ...cs,
           [channel.id]: { ...cs[channel.id], notified: true }
@@ -105,38 +109,11 @@ export default function ChannelVerification({
     }));
   };
 
-  const handleChannelUserIdChange = (channelId: string, value: string) => {
-    updateChannelState(channelId, { channelUserId: value });
-  };
-
-  const validateChannelUserId = (channel: Channel, channelUserId: string): string | null => {
-    if (!channelUserId.trim()) {
-      return `Please provide your ${channel.name} information`;
-    }
-
-    if (channel.name.toLowerCase() === 'whatsapp') {
-      const phoneRegex = /^\+[1-9]\d{1,14}$/;
-      if (!phoneRegex.test(channelUserId)) {
-        return 'Please enter a valid WhatsApp phone number with country code (e.g., +1234567890)';
-      }
-    }
-
-    return null;
-  };
-
   const startVerification = async (channel: Channel) => {
-    const state = channelStates[channel.id];
-    const validationError = validateChannelUserId(channel, state.channelUserId);
-    
-    if (validationError) {
-      updateChannelState(channel.id, { error: validationError, status: 'error' });
-      return;
-    }
-
     updateChannelState(channel.id, { status: 'pending', error: undefined });
 
     try {
-      console.log('Starting verification for:', channel.name, 'with user ID:', state.channelUserId);
+      console.log('Starting verification for:', channel.name);
       
       const response = await fetch('/api/link/start', {
         method: 'POST',
@@ -145,7 +122,6 @@ export default function ChannelVerification({
         },
         body: JSON.stringify({
           channel_code: channel.name.toLowerCase(),
-          channel_user_id: state.channelUserId,
         }),
       });
 
@@ -206,7 +182,7 @@ export default function ChannelVerification({
           });
           
           // Update status to 'done' - the useEffect will handle notification
-          updateChannelState(channelId, { status: 'done' });
+          updateChannelState(channelId, { status: 'done', channelUserId: data.channel_user_id });
           toast.success('Channel verified successfully!');
         }
         // If status is still 'pending', continue polling
@@ -317,28 +293,11 @@ export default function ChannelVerification({
 
               {state.status === 'idle' && (
                 <div className="space-y-3">
-                  <div>
-                    <Label htmlFor={`channel-${channel.id}`} className="text-sm font-medium">
-                      {channel.name} User ID
-                    </Label>
-                    <Input
-                      id={`channel-${channel.id}`}
-                      value={state.channelUserId}
-                      onChange={(e) => handleChannelUserIdChange(channel.id, e.target.value)}
-                      placeholder={
-                        channel.name.toLowerCase() === 'whatsapp'
-                          ? 'e.g., +1234567890'
-                          : `Your ${channel.name} user ID`
-                      }
-                      className="mt-1"
-                    />
-                  </div>
                   <Button 
                     onClick={() => startVerification(channel)}
-                    disabled={!state.channelUserId.trim()}
                     className="w-full"
                   >
-                    Start Verification
+                    Generate Nonce and Start Verification
                   </Button>
                 </div>
               )}

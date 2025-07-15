@@ -181,9 +181,16 @@ BEGIN
     verified_at timestamptz
   );
 
-  ALTER TABLE public.user_channels
-  ADD CONSTRAINT user_channels_unique_pair
-    UNIQUE (channel_user_id, channel_id);
+  -- one‑time DDL – run once after you have removed any duplicates 
+ALTER TABLE public.user_channels
+    -- unique inside your system
+    ADD CONSTRAINT user_channels_user_uq
+      UNIQUE (user_id, channel_id),
+
+    -- unique for the external account in that same channel
+    ADD CONSTRAINT user_channels_channel_user_uq
+      UNIQUE (channel_user_id, channel_id);
+
 
 END IF;
 END
@@ -349,7 +356,11 @@ AS $$
     (SELECT COUNT(*) 
      FROM public.user_channels uc 
      JOIN public.channels c ON c.id = uc.channel_id 
-     WHERE uc.user_id = user_id_param AND c.mandatory = true)
+     WHERE uc.user_id = user_id_param 
+       AND c.mandatory = true 
+       AND uc.channel_user_id IS NOT NULL 
+       AND uc.channel_user_id != '' 
+       AND uc.verified_at IS NOT NULL)
   FROM public.users u 
   WHERE u.id = user_id_param;
 $$

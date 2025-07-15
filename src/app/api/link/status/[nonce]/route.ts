@@ -34,7 +34,7 @@ export async function GET(
 	// 1️⃣ Fetch the verification record (with both expires_at and verified_at)
 	const { data: ver, error: verErr } = await supabase
 		.from("channel_verifications")
-		.select("expires_at, verified_at")
+		.select("expires_at, verified_at, channel_user_id")
 		.eq("nonce", nonce)
 		.single();
 
@@ -55,7 +55,7 @@ export async function GET(
 
 	// 3️⃣ If verified_at is set → done
 	if (ver.verified_at !== null) {
-		return NextResponse.json({ status: "done" });
+		return NextResponse.json({ status: "done", channel_user_id: ver.channel_user_id });
 	}
 
 	// 4️⃣ Otherwise still pending

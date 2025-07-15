@@ -21,14 +21,10 @@ export async function POST(request: NextRequest) {
 	}
 
 	// 2️⃣ Parse & validate payload
-	const { channel_code, channel_user_id } = await request.json();
-	if (
-		!channel_code ||
-		!channel_user_id ||
-		!["telegram", "whatsapp"].includes(channel_code)
-	) {
+	const { channel_code, channel_user_id: provided_user_id } = await request.json();
+	if (!channel_code || !["telegram", "whatsapp"].includes(channel_code)) {
 		return NextResponse.json(
-			{ error: "Invalid channel_code or channel_user_id" },
+			{ error: "Invalid channel_code" },
 			{ status: 400 }
 		);
 	}
@@ -36,6 +32,7 @@ export async function POST(request: NextRequest) {
 	// 3️⃣ Generate nonce + expiry
 	const nonce = randomUUID();
 	const expiresAt = new Date(Date.now() + 5 * 60_000).toISOString();
+	const channel_user_id = provided_user_id || `pending::${nonce}`;
 
 	// 4️⃣ Upsert into channel_verifications with user_id
 	const { error: upsertError } = await supabase

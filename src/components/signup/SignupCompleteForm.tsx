@@ -78,11 +78,8 @@ export default function SignupCompleteForm({
   );
   
   // Initialize allChannelsVerified based on existing channels
-  const [allChannelsVerified, setAllChannelsVerified] = useState(() => {
-    const mandatoryChannelIds = mandatoryChannels.map(c => c.id);
-    const verifiedChannelIds = existingChannels.map(uc => uc.channel_id);
-    return mandatoryChannelIds.every(id => verifiedChannelIds.includes(id));
-  });
+  const [allChannelsVerified, setAllChannelsVerified] = useState(mandatoryChannels.length === 0);
+  const [processedChannels, setProcessedChannels] = useState<Record<string, boolean>>({});
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -114,8 +111,9 @@ export default function SignupCompleteForm({
           user_id: user.id,
           channel_id: channelId,
           channel_user_id: channelUserId,
+          verified_at: new Date().toISOString(),
         }], {
-          onConflict: "channel_user_id, channel_id",
+          onConflict: "user_id, channel_id",
         });
 
       if (error) {
@@ -123,10 +121,8 @@ export default function SignupCompleteForm({
         setError("Could not save channel connection. Try again?");
       } else {
         // Check if all mandatory channels are now verified
-        const updatedVerified = { ...verifiedChannels, [channelId]: channelUserId };
-        const allDone = mandatoryChannels.every((c) =>
-          Object.hasOwn(updatedVerified, c.id)
-        );
+        const newProcessed = { ...processedChannels, [channelId]: true };
+        const allDone = mandatoryChannels.every((c) => newProcessed[c.id]);
         if (allDone) setAllChannelsVerified(true);
       }
     } catch (err) {
