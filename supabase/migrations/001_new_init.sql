@@ -218,7 +218,7 @@ BEGIN
     stripe_subscription_id text UNIQUE,
     status subscription_status NOT NULL DEFAULT 'incomplete',
     cancel_at_period_end boolean NOT NULL DEFAULT FALSE,
-    current_period_start timestamptz,
+    current_period_start timestamptz DEFAULT now(),
     current_period_end timestamptz,
     created_at timestamptz NOT NULL DEFAULT now( ),
     updated_at timestamptz NOT NULL DEFAULT now( )

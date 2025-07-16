@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
 		);
 
 	if (upsertError) {
-		console.error("Link/start upsert error:", upsertError);
 		return NextResponse.json(
 			{ error: "Failed to initiate link" },
 			{ status: 500 }
