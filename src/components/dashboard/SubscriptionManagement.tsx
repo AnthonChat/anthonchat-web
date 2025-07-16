@@ -63,31 +63,46 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
 
 
   const availablePlans = [
-    {
-      slug: 'basic',
-      name: 'Basic Plan',
-      price: '$9.99/month',
-      features: ['5,000 tokens/month', '200 requests/month', '5 channels', 'Email support'],
-      icon: Zap,
-      priceId: 'price_1Rk7GGQH21dH2pp3kspgNYXS'
-    },
-    {
-      slug: 'standard',
-      name: 'Standard Plan',
-      price: '$19.99/month',
-      features: ['15,000 tokens/month', '500 requests/month', '10 channels', 'Priority support'],
-      icon: Crown,
-      priceId: 'price_1Rk7GHQH21dH2pp32TV497AR'
-    },
-    {
-      slug: 'pro',
-      name: 'Pro Plan',
-      price: '$39.99/month',
-      features: ['50,000 tokens/month', '1,500 requests/month', 'Unlimited channels', 'Premium support'],
-      icon: Shield,
-      priceId: 'price_1Rk7GIQH21dH2pp3tWUoyu6Q'
-    }
-  ]
+		{
+			slug: "basic",
+			name: "Basic Plan",
+			price: "$9.99/month",
+			features: [
+				"5,000 tokens/month",
+				"200 requests/month",
+				"5 channels",
+				"Email support",
+			],
+			icon: Zap,
+			priceId: "price_1RlJF0QH21dH2pp31TcGUhxT",
+		},
+		{
+			slug: "standard",
+			name: "Standard Plan",
+			price: "$19.99/month",
+			features: [
+				"15,000 tokens/month",
+				"500 requests/month",
+				"10 channels",
+				"Priority support",
+			],
+			icon: Crown,
+			priceId: "price_1RlJG1QH21dH2pp3nRV8GEk0",
+		},
+		{
+			slug: "pro",
+			name: "Pro Plan",
+			price: "$39.99/month",
+			features: [
+				"50,000 tokens/month",
+				"1,500 requests/month",
+				"Unlimited channels",
+				"Premium support",
+			],
+			icon: Shield,
+			priceId: "price_1RlJGKQH21dH2pp3AyAeBziC",
+		},
+  ];
 
   const handleUpgrade = async (planSlug?: string) => {
     if (!planSlug) {
