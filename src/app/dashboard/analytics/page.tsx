@@ -185,7 +185,7 @@ export default async function AnalyticsPage() {
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Export functionality will be available soon. You'll be able to download your data in various formats.
+                  Export functionality will be available soon. You&apos;ll be able to download your data in various formats.
                 </p>
                 <div className="flex gap-2">
                   <Button disabled>Export CSV</Button>

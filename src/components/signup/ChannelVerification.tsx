@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -74,7 +73,7 @@ export default function ChannelVerification({
         onVerificationComplete(ec.channel_id, ec.channel_user_id);
       }
     });
-  }, []);
+  }, [channels, existingChannels, onVerificationComplete]);
 
   // Handle verification completion notifications
   useEffect(() => {

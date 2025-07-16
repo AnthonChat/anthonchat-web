@@ -61,7 +61,7 @@ export function useRealtimeUsage({
       console.error('Error in fetchLatestUsage:', err)
       setError('Failed to fetch usage data')
     }
-  }, [userId])
+  }, [userId, supabase])
 
   const setupRealtimeSubscription = useCallback(() => {
     if (!enabled || !userId) return
@@ -85,15 +85,15 @@ export function useRealtimeUsage({
           console.log('Usage update received:', payload)
           
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            const newRecord = payload.new as any
+            const newRecord = payload.new as Record<string, unknown>
             
             // Update usage data with the new values
             setUsage(prev => ({
               ...prev,
-              tokens_used: newRecord.tokens_used || prev.tokens_used,
-              requests_used: newRecord.requests_used || prev.requests_used,
-              period_start: newRecord.period_start || prev.period_start,
-              period_end: newRecord.period_end || prev.period_end
+              tokens_used: (newRecord.tokens_used as number) || prev.tokens_used,
+              requests_used: (newRecord.requests_used as number) || prev.requests_used,
+              period_start: (newRecord.period_start as string) || prev.period_start,
+              period_end: (newRecord.period_end as string) || prev.period_end
             }))
           }
         }
@@ -125,7 +125,7 @@ export function useRealtimeUsage({
       })
     
     setChannel(newChannel)
-  }, [enabled, userId, supabase, reconnectAttempts])
+  }, [enabled, userId, supabase, reconnectAttempts, channel])
 
   const reconnect = useCallback(() => {
     setReconnectAttempts(0)
@@ -148,7 +148,7 @@ export function useRealtimeUsage({
         supabase.removeChannel(channel)
       }
     }
-  }, [enabled, userId, fetchLatestUsage, setupRealtimeSubscription])
+  }, [enabled, userId, fetchLatestUsage, setupRealtimeSubscription, channel, supabase])
 
   // Update usage when initialUsage changes
   useEffect(() => {

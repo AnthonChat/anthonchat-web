@@ -36,7 +36,7 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
         .single()
       tier = tierData
     }
-  } catch (error) {
+  } catch {
     // No active subscription found - use free tier limits
     try {
       const { data: freeTier } = await supabase
@@ -45,7 +45,7 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
         .eq('slug', 'free')
         .single()
       tier = freeTier
-    } catch (freeTierError) {
+    } catch {
       // Fallback if no free tier found
       tier = { max_tokens: 1000, max_requests: 50 }
     }

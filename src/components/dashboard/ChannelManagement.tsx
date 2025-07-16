@@ -30,10 +30,9 @@ interface Channel {
 
 interface ChannelManagementProps {
   channels: Channel[]
-  userId: string
 }
 
-export function ChannelManagement({ channels, userId }: ChannelManagementProps) {
+export function ChannelManagement({ channels }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 

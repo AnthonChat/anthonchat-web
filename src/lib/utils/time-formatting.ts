@@ -67,9 +67,7 @@ export function getTrialTimeInfo(startDate?: string | null, endDate?: string | n
     
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return null
     
-    const totalMs = end.getTime() - start.getTime()
     const remainingMs = end.getTime() - now.getTime()
-    const elapsedMs = now.getTime() - start.getTime()
     
     const isExpired = remainingMs <= 0
     const isPast = isExpired
@@ -133,7 +131,6 @@ export function formatUsagePeriod(startDate?: string | null, endDate?: string | 
   try {
     const start = new Date(startDate)
     const end = endDate ? new Date(endDate) : null
-    const now = new Date()
     
     if (isNaN(start.getTime())) return 'Current period'
     

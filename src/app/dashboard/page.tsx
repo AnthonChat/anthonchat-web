@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserSubscription } from '@/lib/queries/subscription'
 import { getUserChannels } from '@/lib/queries/channels'
-import { getUserUsage, checkUsageLimits } from '@/lib/queries/usage'
+import { getUserUsage } from '@/lib/queries/usage'
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard'
 import { ChannelsOverview } from '@/components/dashboard/ChannelsOverview'
 import { QuickActions } from '@/components/dashboard/QuickActions'
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   ])
   
   // Check for usage warnings
-  const warnings = checkUsageLimits(user.id)
+  // const warnings = checkUsageLimits(user.id)
 
   return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
 								Good to see you again! 👋
 							</h2>
 							<p className="text-muted-foreground text-lg font-medium">
-								Here's what's happening with your AnthonChat
+								Here&apos;s what&apos;s happening with your AnthonChat
 								account today.
 							</p>
 						</div>

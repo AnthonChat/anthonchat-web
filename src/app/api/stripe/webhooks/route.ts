@@ -134,7 +134,7 @@ async function handleSubscriptionChange(
     }
 
     // Upsert subscription
-    const subscriptionData: any = {
+    const subscriptionData: Record<string, unknown> = {
       user_id: userId,
       tier_id: tier.id,
       status: subscription.status,

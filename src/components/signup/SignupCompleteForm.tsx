@@ -67,7 +67,7 @@ export default function SignupCompleteForm({
   });
 
   // Channel verification state
-  const [verifiedChannels, setVerifiedChannels] = useState<Record<string, string>>(
+  const [, setVerifiedChannels] = useState<Record<string, string>>(
     () => {
       const verified: Record<string, string> = {};
       existingChannels.forEach((uc) => {
@@ -79,7 +79,7 @@ export default function SignupCompleteForm({
   
   // Initialize allChannelsVerified based on existing channels
   const [allChannelsVerified, setAllChannelsVerified] = useState(mandatoryChannels.length === 0);
-  const [processedChannels, setProcessedChannels] = useState<Record<string, boolean>>({});
+  const [processedChannels] = useState<Record<string, boolean>>({});
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

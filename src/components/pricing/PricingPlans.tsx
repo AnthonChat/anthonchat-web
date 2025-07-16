@@ -190,7 +190,7 @@ export function PricingPlans({ currentTierSlug, isAuthenticated = false }: Prici
           Choose Your Plan
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Start with our free trial and upgrade when you're ready to scale your messaging automation.
+          Start with our free trial and upgrade when you&apos;re ready to scale your messaging automation.
         </p>
       </div>
 

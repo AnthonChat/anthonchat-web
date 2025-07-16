@@ -32,7 +32,7 @@ interface SubscriptionManagementProps {
       slug: string
       max_tokens?: number
       max_requests?: number
-      features?: any
+      features?: Record<string, unknown>
     }
   } | null
   userId: string

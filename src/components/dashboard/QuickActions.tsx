@@ -122,7 +122,6 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         <div className="grid grid-cols-1 gap-3">
           {actions.map((action, index) => {
             const IconComponent = action.icon
-            const isHighlighted = action.id === 'manage-subscription'
             return (
               <Button
                 key={action.id}

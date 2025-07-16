@@ -46,7 +46,7 @@ export default async function ChannelsPage() {
       
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        <ChannelManagement channels={channels} userId={user.id} />
+        <ChannelManagement channels={channels} />
       </main>
     </div>
   );
