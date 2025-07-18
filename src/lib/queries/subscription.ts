@@ -9,7 +9,7 @@ interface StripeProduct {
 	id: string;
 	name: string;
 	description: string | null;
-	metadata: any;
+	metadata: Record<string, unknown>;
 }
 
 interface StripePrice {
@@ -89,7 +89,7 @@ export async function getUserSubscription(userId: string) {
 	// --- Step 2: Adapt the runtime logic to access objects directly ---
 	const primaryItem = subscriptionData.items.data?.[0];
 	const priceDetails = primaryItem?.price;
-	const productDetails = priceDetails?.product;
+	
 
 	const { data: productData, error: productError } = await supabase
 		.schema("stripe")

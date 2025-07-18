@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
 import { UsageData } from "@/lib/queries/usage";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface UseRealtimeUsageOptions {
 	userId: string;
@@ -63,7 +64,7 @@ export function useRealtimeUsage({
 
 		fetchLatestUsage(); // Fetch initial data
 
-		let channel: any;
+		let channel: RealtimeChannel;
 
 		const setupSubscription = async () => {
 			const { data: channelData, error: channelError } = await supabase
