@@ -1,153 +1,76 @@
-import { createClient } from "@/utils/supabase/server"
+// lib/queries/usage.ts
 
-// Mock usage data structure - in real implementation this would come from your analytics system
+import { createClient } from "@/utils/supabase/server";
+import { getUserSubscription } from "./subscription"; // We still need this for limits
+
+// The UsageData interface remains the same.
 export interface UsageData {
-  tokens_used: number
-  requests_used: number
-  tokens_limit?: number
-  requests_limit?: number
-  period_start?: string
-  period_end?: string
+	tokens_used: number;
+	requests_used: number;
+	tokens_limit?: number | null;
+	requests_limit?: number | null;
+	period_start?: string;
+	period_end?: string;
 }
 
 export async function getUserUsage(userId: string): Promise<UsageData> {
-  const supabase = await createClient()
-  
-  // Get user's current subscription to determine limits
-  let subscription = null
-  let tier = null
-  
-  try {
-    const { data: subscriptionData } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .in('status', ['active', 'trialing'])
-      .single()
-    
-    subscription = subscriptionData
-    
-    // If subscription has a tier_id, fetch the tier details
-    if (subscription?.tier_id) {
-      const { data: tierData } = await supabase
-        .from('tiers')
-        .select('max_tokens, max_requests')
-        .eq('id', subscription.tier_id)
-        .single()
-      tier = tierData
-    }
-  } catch {
-    // No active subscription found - use free tier limits
-    try {
-      const { data: freeTier } = await supabase
-        .from('tiers')
-        .select('max_tokens, max_requests')
-        .eq('slug', 'free')
-        .single()
-      tier = freeTier
-    } catch {
-      // Fallback if no free tier found
-      tier = { max_tokens: 1000, max_requests: 50 }
-    }
-  }
-  
-  // Get current usage from database
-  const { data: currentUsage } = await supabase
-    .rpc('get_current_usage', { user_id_param: userId })
-  
-  const usage = currentUsage?.[0] || {
-    tokens_used: 0,
-    requests_used: 0,
-    period_start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-    period_end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
-  }
-  
-  return {
-    tokens_used: usage.tokens_used,
-    requests_used: usage.requests_used,
-    tokens_limit: tier?.max_tokens || undefined,
-    requests_limit: tier?.max_requests || undefined,
-    period_start: usage.period_start,
-    period_end: usage.period_end
-  }
+	const supabase = await createClient();
+
+	// Fetch subscription details and usage data in parallel for efficiency
+	const [subscription, usageResponse] = await Promise.all([
+		getUserSubscription(userId),
+		supabase.rpc("get_user_tier_and_usage", { p_user_id: userId }),
+	]);
+
+	// Destructure the response from the RPC call
+	const { data: rpcData, error: rpcError } = usageResponse;
+
+	if (rpcError) {
+		console.error(
+			"Error calling get_user_tier_and_usage RPC:",
+			rpcError.message
+		);
+		// If the RPC fails, we still return a valid default object to prevent UI crashes.
+	}
+
+	// We now use the nullish coalescing operator '??' to ensure that if the RPC
+	// data or any nested property is null or undefined, we safely fall back to 0.
+	// This completely prevents `undefined` from being passed to the component.
+
+	const tokensUsed = rpcData?.[0]?.tokens_used ?? 0;
+	const requestsUsed = rpcData?.[0]?.requests_used ?? 0;
+
+	// The period start/end comes from the subscription object, not the usage RPC
+	const periodStart = subscription?.current_period_start
+		? new Date(subscription.current_period_start * 1000).toISOString()
+		: undefined;
+	const periodEnd = subscription?.current_period_end
+		? new Date(subscription.current_period_end * 1000).toISOString()
+		: undefined;
+
+	return {
+		tokens_used: tokensUsed,
+		requests_used: requestsUsed,
+		tokens_limit: rpcData?.[0]?.tier_tokens_limit ?? null,
+		requests_limit: rpcData?.[0]?.tier_requests_limit ?? null,
+		period_start: periodStart,
+		period_end: periodEnd,
+	};
 }
 
-export async function getUserUsageHistory(userId: string, months: number = 6) {
-  const supabase = await createClient()
-  
-  // Calculate date range for the last N months
-  const endDate = new Date()
-  const startDate = new Date(endDate.getFullYear(), endDate.getMonth() - months + 1, 1)
-  
-  const { data: usageHistory } = await supabase
-    .from('usage_records')
-    .select('tokens_used, requests_used, period_start')
-    .eq('user_id', userId)
-    .gte('period_start', startDate.toISOString())
-    .order('period_start', { ascending: true })
-  
-  // Fill in missing months with zero usage
-  const history = []
-  const now = new Date()
-  
-  for (let i = months - 1; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const monthKey = date.toISOString().slice(0, 7) // YYYY-MM format
-    
-    // Find existing usage record for this month
-    const existingRecord = usageHistory?.find(record => 
-      record.period_start?.slice(0, 7) === monthKey
-    )
-    
-    history.push({
-      month: monthKey,
-      tokens_used: existingRecord?.tokens_used || 0,
-      requests_used: existingRecord?.requests_used || 0
-    })
-  }
-  
-  return history
-}
-
-// Function to check if user is approaching limits
-export async function checkUsageLimits(userId: string) {
-  const usage = await getUserUsage(userId)
-  
-  const warnings = []
-  
-  if (usage.tokens_limit) {
-    const tokensPercent = (usage.tokens_used / usage.tokens_limit) * 100
-    if (tokensPercent >= 90) {
-      warnings.push({
-        type: 'tokens',
-        level: 'critical',
-        message: `You've used ${tokensPercent.toFixed(1)}% of your token limit`
-      })
-    } else if (tokensPercent >= 75) {
-      warnings.push({
-        type: 'tokens',
-        level: 'warning',
-        message: `You've used ${tokensPercent.toFixed(1)}% of your token limit`
-      })
-    }
-  }
-  
-  if (usage.requests_limit) {
-    const requestsPercent = (usage.requests_used / usage.requests_limit) * 100
-    if (requestsPercent >= 90) {
-      warnings.push({
-        type: 'requests',
-        level: 'critical',
-        message: `You've used ${requestsPercent.toFixed(1)}% of your request limit`
-      })
-    } else if (requestsPercent >= 75) {
-      warnings.push({
-        type: 'requests',
-        level: 'warning',
-        message: `You've used ${requestsPercent.toFixed(1)}% of your request limit`
-      })
-    }
-  }
-  
-  return warnings
-}
+/**
+ * ! SCHEMA LIMITATION NOTE !
+ *
+ * The current database schema for `usage_records` only stores the usage
+ * for the CURRENT billing period. It does not store historical data. The `created_at`
+ * field is only set once when a user's channel is first used, and the record is
+ * then continuously updated.
+ *
+ * To implement a true usage history (e.g., for the last 6 months), you would need to:
+ * 1.  Create a new table, e.g., `usage_history`, with columns like
+ *     `user_id`, `period_start`, `period_end`, `tokens_used`, `requests_used`.
+ * 2.  Create a scheduled PostgreSQL function (using pg_cron) that runs at the end
+ *     of each month. This function would aggregate the data from `usage_records`,
+ *     insert it into `usage_history`, and then reset the `usage_records` for the new month.
+ *
+ */

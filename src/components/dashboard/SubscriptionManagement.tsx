@@ -19,22 +19,10 @@ import { calculateTrialInfo } from "@/lib/utils/trial-calculations"
 import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod } from "@/lib/utils/time-formatting"
 import { loadStripe } from '@stripe/stripe-js'
 import { toast } from 'sonner'
+import { UserSubscription } from '@/lib/queries/subscription'
 
 interface SubscriptionManagementProps {
-  subscription: {
-    status: string
-    current_period_end?: string
-    current_period_start?: string
-    cancel_at_period_end?: boolean
-    stripe_subscription_id?: string
-    tiers?: {
-      name: string
-      slug: string
-      max_tokens?: number
-      max_requests?: number
-      features?: Record<string, unknown>
-    }
-  } | null
+  subscription: UserSubscription
   userId: string
 }
 
@@ -59,8 +47,29 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
 
 
 
-  const trialInfo = calculateTrialInfo(subscription)
+  const trialInfo = calculateTrialInfo({
+    status: subscription?.status || '',
+    current_period_start: subscription?.current_period_start 
+      ? new Date(subscription.current_period_start * 1000).toISOString()
+      : undefined,
+    current_period_end: subscription?.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toISOString()
+      : undefined,
+  })
 
+  const nextBillingDate = subscription?.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : null
+
+
+  const activePlan = {
+    name: subscription?.product?.name ?? 'No active plan',
+    features: [
+      `Tokens: ${subscription?.features?.tokens_limit?.toLocaleString() ?? 'N/A'} per month`,
+      `Requests: ${subscription?.features?.requests_limit?.toLocaleString() ?? 'N/A'} per month`,
+      `History: ${subscription?.features?.history_limit ?? 'N/A'} days`,
+    ],
+  };
 
   const availablePlans = [
 		{
@@ -266,15 +275,22 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
             <div>
               <h3 className="font-semibold text-lg">
                 {subscription?.status === 'trialing' 
-                  ? `${subscription?.tiers?.name || 'Free Trial'} (Trial)` 
-                  : subscription ? subscription?.tiers?.name || 'Active Subscription' : 'No Active Subscription'
+                  ? `${subscription?.product?.name || 'Free Trial'} (Trial)` 
+                  : subscription ? subscription?.product?.name || 'Active Subscription' : 'No Active Subscription'
                 }
               </h3>
               <p className="text-sm text-muted-foreground">
                 {subscription?.status === 'trialing' 
                   ? (trialInfo?.isExpired 
                       ? 'Trial has expired' 
-                      : formatTrialTimeRemaining(subscription.current_period_start, subscription.current_period_end)
+                      : formatTrialTimeRemaining(
+                          subscription.current_period_start 
+                            ? new Date(subscription.current_period_start * 1000).toISOString()
+                            : undefined,
+                          subscription.current_period_end
+                            ? new Date(subscription.current_period_end * 1000).toISOString()
+                            : undefined
+                        )
                     )
                   : subscription ? 'Subscription Plan' : 'No active subscription'
                 }
@@ -294,9 +310,16 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                 </div>
                 <div className="text-sm text-muted-foreground">
                    {subscription.status === 'trialing' 
-                     ? formatUsagePeriod(subscription.current_period_start, subscription.current_period_end)
-                     : formatNextBilling(subscription.current_period_end)
-                   }
+                   ? formatUsagePeriod(
+                       subscription.current_period_start 
+                         ? new Date(subscription.current_period_start * 1000).toISOString()
+                         : undefined,
+                       subscription.current_period_end
+                         ? new Date(subscription.current_period_end * 1000).toISOString()
+                         : undefined
+                     )
+                   : formatNextBilling(nextBillingDate)
+                 }
                  </div>
                 {subscription.status === 'trialing' && trialInfo && (
                   <div className="mt-2">
@@ -324,27 +347,16 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
             </div>
           )}
 
-          {subscription?.tiers?.features && (
+          {subscription?.features && (
             <div>
               <h4 className="font-medium mb-2">Plan Features</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {(() => {
-                  try {
-                    const features = typeof subscription.tiers.features === 'string' 
-                      ? JSON.parse(subscription.tiers.features) 
-                      : subscription.tiers.features;
-                    const featureList = features?.features || features || [];
-                    return featureList.map((feature: string, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ));
-                  } catch (error) {
-                    console.error('Error parsing features:', error);
-                    return null;
-                  }
-                })()}
+                {activePlan.features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">{feature}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -407,7 +419,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {availablePlans.map((plan) => {
                 const IconComponent = plan.icon
-                const isCurrentPlan = subscription?.tiers?.slug === plan.slug
+                const isCurrentPlan = subscription?.product?.slug === plan.slug
                 
                 return (
                   <Card key={plan.slug} className={`relative ${isCurrentPlan ? 'ring-2 ring-info' : ''}`}>

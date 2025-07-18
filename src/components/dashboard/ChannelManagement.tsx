@@ -16,28 +16,30 @@ import {
   Edit
 } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { UserSubscription } from '@/lib/queries/subscription'
 
 interface Channel {
   id: string
-  channel_user_id: string
+  link: string
+  verified_at: string | null
   channels: {
     id: string
-    name: string
-    icon_url?: string
-    mandatory: boolean
+    link_method: string
+    is_active: boolean
   }
 }
 
 interface ChannelManagementProps {
   channels: Channel[]
+  subscription: UserSubscription
 }
 
-export function ChannelManagement({ channels }: ChannelManagementProps) {
+export function ChannelManagement({ channels, subscription }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const getChannelIcon = (channelName: string) => {
-    switch (channelName.toLowerCase()) {
+  const getChannelIcon = (channelId: string) => {
+    switch (channelId.toLowerCase()) {
       case 'whatsapp':
         return <Phone className="h-5 w-5" />
       case 'telegram':
@@ -73,14 +75,14 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
     }
   }
   
-  const formatChannelId = (channelName: string, channelUserId: string) => {
-    switch (channelName.toLowerCase()) {
+  const formatChannelId = (channelId: string, link: string) => {
+    switch (channelId.toLowerCase()) {
       case 'whatsapp':
-        return channelUserId // Phone number
+        return link // Phone number
       case 'telegram':
-        return `@${channelUserId}` // Username with @
+        return `@${link}` // Username with @
       default:
-        return channelUserId
+        return link
     }
   }
 
@@ -150,7 +152,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
             Connected Channels ({channels.length})
           </CardTitle>
           <CardDescription>
-            Manage your active communication channels
+            You have {channels.length} of {subscription?.features?.requests_limit ?? 'N/A'} channels.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -163,27 +165,22 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                 >
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-muted rounded-lg">
-                      {getChannelIcon(userChannel.channels.name)}
+                      {getChannelIcon(userChannel.channels.id)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium capitalize">
-                          {userChannel.channels.name}
+                          {userChannel.channels.id}
                         </h3>
-                        {userChannel.channels.mandatory && (
-                          <Badge variant="outline" className="text-xs">
-                            Required
-                          </Badge>
-                        )}
-                        {getStatusIcon('connected')}
+                        {getStatusIcon(userChannel.verified_at ? 'connected' : 'pending')}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {formatChannelId(userChannel.channels.name, userChannel.channel_user_id)}
+                        {formatChannelId(userChannel.channels.id, userChannel.link)}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        {getStatusBadge('connected')}
+                        {getStatusBadge(userChannel.verified_at ? 'connected' : 'pending')}
                         <span className="text-xs text-muted-foreground">
-                          Last active: 2 hours ago
+                          {userChannel.verified_at ? `Verified ${new Date(userChannel.verified_at).toLocaleDateString()}` : 'Pending verification'}
                         </span>
                       </div>
                     </div>
@@ -206,17 +203,15 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {!userChannel.channels.mandatory && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteChannel(userChannel.id, userChannel.channels.name)}
-                        disabled={isLoading}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteChannel(userChannel.id, userChannel.channels.id)}
+                      disabled={isLoading}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}

@@ -39,195 +39,150 @@ export type Database = {
   }
   public: {
     Tables: {
+      channel_verifications: {
+        Row: {
+          channel_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          nonce: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          nonce: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_verifications_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channels: {
         Row: {
           created_at: string
-          icon_url: string | null
           id: string
           is_active: boolean
-          mandatory: boolean
-          name: string
+          link_method: Database["public"]["Enums"]["link_method"]
         }
         Insert: {
           created_at?: string
-          icon_url?: string | null
-          id?: string
+          id: string
           is_active?: boolean
-          mandatory?: boolean
-          name: string
+          link_method: Database["public"]["Enums"]["link_method"]
         }
         Update: {
           created_at?: string
-          icon_url?: string | null
           id?: string
           is_active?: boolean
-          mandatory?: boolean
-          name?: string
+          link_method?: Database["public"]["Enums"]["link_method"]
         }
         Relationships: []
       }
       chat_messages: {
         Row: {
+          content: string
           created_at: string
           id: number
-          message: string
-          role: string
-          user_channel_id: string
+          role: Database["public"]["Enums"]["chat_role"]
+          user_channel: string
         }
         Insert: {
+          content: string
           created_at?: string
           id?: number
-          message: string
-          role?: string
-          user_channel_id: string
+          role: Database["public"]["Enums"]["chat_role"]
+          user_channel: string
         }
         Update: {
+          content?: string
           created_at?: string
           id?: number
-          message?: string
-          role?: string
-          user_channel_id?: string
+          role?: Database["public"]["Enums"]["chat_role"]
+          user_channel?: string
         }
         Relationships: [
           {
-            foreignKeyName: "chat_messages_user_channel_id_fkey"
-            columns: ["user_channel_id"]
+            foreignKeyName: "chat_messages_user_channel_fkey"
+            columns: ["user_channel"]
             isOneToOne: false
             referencedRelation: "user_channels"
             referencedColumns: ["id"]
           },
         ]
       }
-      subscriptions: {
+      tiers_features: {
         Row: {
-          cancel_at_period_end: boolean
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          id: string
-          status: Database["public"]["Enums"]["subscription_status"]
-          stripe_subscription_id: string | null
-          tier_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          cancel_at_period_end?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_subscription_id?: string | null
-          tier_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          cancel_at_period_end?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_subscription_id?: string | null
-          tier_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_tier_id_fkey"
-            columns: ["tier_id"]
-            isOneToOne: false
-            referencedRelation: "tiers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tiers: {
-        Row: {
-          created_at: string
-          features: Json | null
           history_limit: number | null
           id: string
-          is_active: boolean
-          max_requests: number | null
-          max_tokens: number | null
-          name: string
-          slug: string
-          stripe_price_id: string | null
+          requests_limit: number | null
+          tokens_limit: number | null
         }
         Insert: {
-          created_at?: string
-          features?: Json | null
           history_limit?: number | null
-          id?: string
-          is_active?: boolean
-          max_requests?: number | null
-          max_tokens?: number | null
-          name: string
-          slug: string
-          stripe_price_id?: string | null
+          id: string
+          requests_limit?: number | null
+          tokens_limit?: number | null
         }
         Update: {
-          created_at?: string
-          features?: Json | null
           history_limit?: number | null
           id?: string
-          is_active?: boolean
-          max_requests?: number | null
-          max_tokens?: number | null
-          name?: string
-          slug?: string
-          stripe_price_id?: string | null
+          requests_limit?: number | null
+          tokens_limit?: number | null
         }
         Relationships: []
       }
       usage_records: {
         Row: {
           created_at: string
-          id: string
-          period_end: string
-          period_start: string
           requests_used: number
           tokens_used: number
           updated_at: string
-          user_id: string
+          user_channel_id: string
         }
         Insert: {
           created_at?: string
-          id?: string
-          period_end: string
-          period_start: string
           requests_used?: number
           tokens_used?: number
           updated_at?: string
-          user_id: string
+          user_channel_id: string
         }
         Update: {
           created_at?: string
-          id?: string
-          period_end?: string
-          period_start?: string
           requests_used?: number
           tokens_used?: number
           updated_at?: string
-          user_id?: string
+          user_channel_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "usage_records_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
+            foreignKeyName: "usage_records_user_channel_id_fkey"
+            columns: ["user_channel_id"]
+            isOneToOne: true
+            referencedRelation: "user_channels"
             referencedColumns: ["id"]
           },
         ]
@@ -235,27 +190,30 @@ export type Database = {
       user_channels: {
         Row: {
           channel_id: string
-          channel_user_id: string
           created_at: string
           id: string
+          link: string
           updated_at: string
           user_id: string
+          verified_at: string | null
         }
         Insert: {
           channel_id: string
-          channel_user_id: string
           created_at?: string
           id?: string
+          link: string
           updated_at?: string
           user_id: string
+          verified_at?: string | null
         }
         Update: {
           channel_id?: string
-          channel_user_id?: string
           created_at?: string
           id?: string
+          link?: string
           updated_at?: string
           user_id?: string
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -263,6 +221,13 @@ export type Database = {
             columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_channels_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "user_channels"
             referencedColumns: ["id"]
           },
           {
@@ -279,24 +244,24 @@ export type Database = {
           content: string
           created_at: string
           id: number
-          role: Database["public"]["Enums"]["memory_role"]
-          updated_at: string
+          role: Database["public"]["Enums"]["chat_role"]
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: never
-          role: Database["public"]["Enums"]["memory_role"]
-          updated_at?: string
+          role: Database["public"]["Enums"]["chat_role"]
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: never
-          role?: Database["public"]["Enums"]["memory_role"]
-          updated_at?: string
+          role?: Database["public"]["Enums"]["chat_role"]
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -317,7 +282,6 @@ export type Database = {
           id: string
           last_name: string
           nickname: string
-          onboarding_complete: boolean
           stripe_customer_id: string | null
           updated_at: string
         }
@@ -328,7 +292,6 @@ export type Database = {
           id: string
           last_name: string
           nickname: string
-          onboarding_complete?: boolean
           stripe_customer_id?: string | null
           updated_at?: string
         }
@@ -339,7 +302,6 @@ export type Database = {
           id?: string
           last_name?: string
           nickname?: string
-          onboarding_complete?: boolean
           stripe_customer_id?: string | null
           updated_at?: string
         }
@@ -350,70 +312,97 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      armor: {
-        Args: { "": string }
-        Returns: string
-      }
       check_onboarding_complete: {
         Args: { user_id_param: string }
         Returns: boolean
       }
-      dearmor: {
-        Args: { "": string }
-        Returns: string
-      }
-      gen_random_bytes: {
-        Args: { "": number }
-        Returns: string
-      }
-      gen_random_uuid: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      gen_salt: {
-        Args: { "": string }
-        Returns: string
-      }
-      get_current_usage: {
-        Args: { user_id_param: string }
-        Returns: {
-          tokens_used: number
-          requests_used: number
-          period_start: string
-          period_end: string
-        }[]
-      }
-      increment_usage: {
-        Args: {
-          user_id_param: string
-          tokens_increment?: number
-          requests_increment?: number
-        }
-        Returns: undefined
-      }
-      num_tokens: {
+      count_tokens: {
         Args: { txt: string }
         Returns: number
       }
-      pgp_armor_headers: {
-        Args: { "": string }
-        Returns: Record<string, unknown>[]
+      finalize_channel_link: {
+        Args: { p_nonce: string; p_link: string }
+        Returns: Json
       }
-      pgp_key_id: {
-        Args: { "": string }
+      get_current_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          user_id: string
+          subscription_id: string
+          subscription_period_start: string
+          subscription_period_end: string
+          total_tokens_used: number
+          total_requests_used: number
+        }[]
+      }
+      get_user_activity: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      get_user_subscription_plan: {
+        Args: { p_user_id: string }
         Returns: string
+      }
+      get_user_tier_and_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          tokens_used: number
+          requests_used: number
+          tier_tokens_limit: number
+          tier_requests_limit: number
+          tier_history_limit: number
+        }[]
+      }
+      get_user_total_usage: {
+        Args: { input_user_id: string }
+        Returns: Json
+      }
+      increment_usage: {
+        Args: {
+          p_tokens_increment: number
+          p_requests_increment: number
+          p_user_channel_id: string
+        }
+        Returns: undefined
+      }
+      insert_message: {
+        Args: {
+          p_user_id: string
+          p_channel_id: string
+          p_content: string
+          p_role: Database["public"]["Enums"]["chat_role"]
+        }
+        Returns: {
+          content: string
+          created_at: string
+          id: number
+          role: Database["public"]["Enums"]["chat_role"]
+          user_channel: string
+        }
+      }
+      insert_message_and_return: {
+        Args: {
+          p_user_id: string
+          p_channel_id: string
+          p_content: string
+          p_role: Database["public"]["Enums"]["chat_role"]
+        }
+        Returns: {
+          content: string
+          created_at: string
+          id: number
+          role: Database["public"]["Enums"]["chat_role"]
+          user_channel: string
+        }
+      }
+      reset_daily_usage_records: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
-      memory_role: "user" | "assistant"
-      subscription_status:
-        | "incomplete"
-        | "incomplete_expired"
-        | "trialing"
-        | "active"
-        | "past_due"
-        | "canceled"
-        | "unpaid"
+      chat_role: "user" | "assistant"
+      link_method: "phone_number" | "username" | "id"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -544,16 +533,8 @@ export const Constants = {
   },
   public: {
     Enums: {
-      memory_role: ["user", "assistant"],
-      subscription_status: [
-        "incomplete",
-        "incomplete_expired",
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "unpaid",
-      ],
+      chat_role: ["user", "assistant"],
+      link_method: ["phone_number", "username", "id"],
     },
   },
 } as const

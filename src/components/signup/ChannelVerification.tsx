@@ -12,7 +12,8 @@ import { toast } from "sonner";
 interface Channel {
   id: string;
   name: string;
-  mandatory: boolean;
+  active: boolean;
+  link_method: string;
 }
 
 interface ChannelVerificationState {
@@ -20,22 +21,20 @@ interface ChannelVerificationState {
   nonce?: string;
   deepLink?: string;
   command?: string;
-  channelUserId?: string;
+  link?: string;
   error?: string;
   notified?: boolean;
 }
 
 interface ChannelVerificationProps {
   channels: Channel[];
-  onVerificationComplete: (channelId: string, channelUserId: string) => void;
-  onAllChannelsVerified: () => void;
-  existingChannels?: { channel_id: string; channel_user_id: string }[];
+  onVerificationComplete: (channelId: string, link: string) => void;
+  existingChannels?: { channel_id: string; link: string }[];
 }
 
 export default function ChannelVerification({
   channels,
   onVerificationComplete,
-  onAllChannelsVerified,
   existingChannels = [],
 }: ChannelVerificationProps) {
   const [channelStates, setChannelStates] = useState<Record<string, ChannelVerificationState>>(
@@ -45,7 +44,7 @@ export default function ChannelVerification({
         const existingChannel = existingChannels.find(ec => ec.channel_id === channel.id);
         states[channel.id] = {
           status: existingChannel ? 'done' : 'idle',
-          channelUserId: existingChannel?.channel_user_id,
+          link: existingChannel?.link,
         };
       });
       return states;
@@ -54,23 +53,12 @@ export default function ChannelVerification({
 
   const [pollingIntervals, setPollingIntervals] = useState<Record<string, NodeJS.Timeout>>({});
 
-  // Check if all mandatory channels are verified
-  const allMandatoryChannelsVerified = channels
-    .filter(channel => channel.mandatory)
-    .every(channel => channelStates[channel.id]?.status === 'done');
-
-  useEffect(() => {
-    if (allMandatoryChannelsVerified) {
-      onAllChannelsVerified();
-    }
-  }, [allMandatoryChannelsVerified, onAllChannelsVerified]);
-
   // Notify parent about existing verified channels on mount
   useEffect(() => {
     existingChannels.forEach(ec => {
       const channel = channels.find(c => c.id === ec.channel_id);
       if (channel) {
-        onVerificationComplete(ec.channel_id, ec.channel_user_id);
+        onVerificationComplete(ec.channel_id, ec.link);
       }
     });
   }, [channels, existingChannels, onVerificationComplete]);
@@ -81,10 +69,10 @@ export default function ChannelVerification({
       const state = channelStates[channel.id];
       if (state.status === 'done' && !state.notified) {
         // tell parent, then mark "notified" so we don't call again
-        if (state.channelUserId) {
-          onVerificationComplete(channel.id, state.channelUserId);
+        if (state.link) {
+          onVerificationComplete(channel.id, state.link);
         } else {
-          toast.error('Verification failed: No channelUserId found');
+          toast.error('Verification failed: No link found');
         }
         setChannelStates(cs => ({
           ...cs,
@@ -120,7 +108,7 @@ export default function ChannelVerification({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          channel_code: channel.name.toLowerCase(),
+          channel_id: channel.name.toLowerCase(),
         }),
       });
 
@@ -181,7 +169,7 @@ export default function ChannelVerification({
           });
           
           // Update status to 'done' - the useEffect will handle notification
-          updateChannelState(channelId, { status: 'done', channelUserId: data.channel_user_id });
+          updateChannelState(channelId, { status: 'done', link: data.link });
           toast.success('Channel verified successfully!');
         }
         // If status is still 'pending', continue polling
@@ -282,9 +270,8 @@ export default function ChannelVerification({
                   {getStatusIcon(state.status)}
                   <div>
                     <h3 className="font-medium">{channel.name}</h3>
-                    {channel.mandatory && (
-                      <p className="text-sm text-muted-foreground">Required</p>
-                    )}
+                    
+                    
                   </div>
                 </div>
                 {getStatusBadge(state.status)}
@@ -379,14 +366,7 @@ export default function ChannelVerification({
           );
         })}
         
-        {!allMandatoryChannelsVerified && (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please verify all required channels to continue with the setup.
-            </AlertDescription>
-          </Alert>
-        )}
+
       </CardContent>
     </Card>
   );

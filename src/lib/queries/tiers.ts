@@ -1,3 +1,5 @@
+// lib/queries/tiers.ts
+
 import { createClient } from '@/utils/supabase/server'
 
 export async function getTierByPriceId(priceId: string) {

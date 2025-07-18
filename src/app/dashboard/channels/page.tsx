@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserChannels } from '@/lib/queries/channels'
+import { getUserSubscription } from '@/lib/queries/subscription'
 import { ChannelManagement } from '@/components/dashboard/ChannelManagement'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -17,8 +18,11 @@ export default async function ChannelsPage() {
     return redirect("/login");
   }
 
-  // Fetch channels data
-  const channels = await getUserChannels(user.id)
+  // Fetch channels and subscription data
+  const [channels, subscription] = await Promise.all([
+    getUserChannels(user.id),
+    getUserSubscription(user.id)
+  ])
 
   return (
     <div className="min-h-screen bg-muted">
@@ -46,7 +50,7 @@ export default async function ChannelsPage() {
       
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        <ChannelManagement channels={channels} />
+        <ChannelManagement channels={channels} subscription={subscription} />
       </main>
     </div>
   );
