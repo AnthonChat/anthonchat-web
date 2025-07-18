@@ -3,14 +3,9 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { LogOut, User } from "lucide-react";
-
-// --- Step 1: Import the refactored query functions ---
-// These functions now correctly query the new database schema.
 import { getUserSubscription } from "@/lib/queries/subscription";
-import { getUserChannels } from "@/lib/queries/channels"; // Assuming this file is correctly implemented
+import { getUserChannels } from "@/lib/queries/channels";
 import { getUserUsage } from "@/lib/queries/usage";
-
-// --- Step 2: Import your UI components ---
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { ChannelsOverview } from "@/components/dashboard/ChannelsOverview";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -27,7 +22,6 @@ export default async function DashboardPage() {
 		return redirect("/login");
 	}
 
-	// --- Step 3: Check onboarding status ---
 	// This RPC call remains unchanged and is a robust way to enforce profile completion.
 	const { data: isOnboarded, error: rpcError } = await supabase.rpc(
 		"check_onboarding_complete",
@@ -54,39 +48,6 @@ export default async function DashboardPage() {
 		getUserChannels(user.id),
 		getUserUsage(user.id),
 	]);
-
-	/*
-	  --- IMPORTANT: New Data Structures ---
-	
-	  The `subscription` object now looks like this:
-	  {
-		id: string,
-		status: 'active' | 'trialing',
-		product: {
-		  id: string,
-		  name: string,
-		  description: string
-		},
-		features: {
-		  tokens_limit: number,
-		  requests_limit: number,
-		  history_limit: number
-		},
-		...and other fields
-	  }
-	
-	  The `usage` object now looks like this:
-	  {
-		tokens_used: number,
-		requests_used: number,
-		tokens_limit: number,  // This comes from subscription.features
-		requests_limit: number, // This also comes from subscription.features
-		...and other fields
-	  }
-	
-	  You will need to update the components that receive these props,
-	  primarily `SubscriptionCard`.
-	*/
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">

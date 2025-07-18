@@ -35,9 +35,6 @@ export default async function SubscriptionPage() {
                 </Button>
               </Link>
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-primary rounded-xl shadow-glow animate-glow">
-                  <CreditCard className="h-6 w-6 text-primary-foreground" />
-                </div>
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                     Subscription Management
