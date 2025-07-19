@@ -1,148 +1,301 @@
-// lib/queries/subscription.ts:
+import { createClient } from '@/utils/supabase/server'
+import type { Database as PublicDatabase } from '@/utils/supabase/schemas/public'
+import type { Database as StripeDatabase } from '@/utils/supabase/schemas/stripe'
 
-import { createClient } from "@/utils/supabase/server";
+// Type aliases for better readability
+type StripeSubscription = StripeDatabase["stripe"]["Tables"]["subscriptions"]["Row"];
+type StripeProduct = StripeDatabase["stripe"]["Tables"]["products"]["Row"];
+type TierFeatures = PublicDatabase["public"]["Tables"]["tiers_features"]["Row"];
 
-// --- Step 1: Define types that EXACTLY match the REAL data structure ---
-// This is updated based on the runtime log you provided.
-
-interface StripeProduct {
-	id: string;
-	name: string;
-	description: string | null;
-	metadata: Record<string, unknown>;
-}
-
-interface StripePrice {
-	id: string;
-	unit_amount: number | null;
-	// 'product' is a single object, NOT an array.
-	product: StripeProduct;
+// Interfaces for complex types
+interface StripeSubscriptionItemPrice {
+  id: string;
+  product?: string; // Product ID that this price belongs to
+  unit_amount: number | null;
+  currency: string;
+  recurring: {
+    interval: string;
+    interval_count: number;
+  } | null;
 }
 
 interface StripeSubscriptionItem {
-	// 'price' is a single object, NOT an array.
-	price: StripePrice;
-	current_period_start: number;
-	current_period_end: number;
+  id: string;
+  price: StripeSubscriptionItemPrice;
+  quantity: number | null;
 }
 
-// This is the true shape of the object returned by our query
-interface SubscriptionWithDetails {
-	id: string;
-	status: string;
-	cancel_at_period_end: boolean;
-	items: { data: StripeSubscriptionItem[] };
+// Combined types for API responses
+export type UserSubscriptionResult = {
+  subscription: StripeSubscription | null;
+  product: StripeProduct | null;
+  features: TierFeatures | null;
 }
 
-export type UserSubscription = Awaited<ReturnType<typeof getUserSubscription>>;
+export type UserSubscription = {
+  id: string;
+  status: string;
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+  items: StripeSubscriptionItem[];
+  product: StripeProduct | null;
+  features: TierFeatures | null;
+  billing_interval?: string; // e.g., "month", "year"
+  billing_interval_count?: number; // e.g., 1 for monthly, 12 for yearly
+}
 
-export async function getUserSubscription(userId: string) {
-	const supabase = await createClient();
+/**
+ * Gets the Stripe customer ID for a user.
+ */
+export async function getUserStripeCustomerId(userId: string): Promise<string | null> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('users')
+    .select('stripe_customer_id')
+    .eq('id', userId)
+    .single()
+    
+  if (error) {
+    console.error('Error fetching user Stripe customer ID:', error)
+    return null
+  }
+  
+  return data?.stripe_customer_id || null
+}
 
-	const { data: userData, error: userError } = await supabase
-		.from("users")
-		.select("stripe_customer_id")
-		.eq("id", userId)
- 		.single();
+/**
+ * Gets the active subscription for a user.
+ */
+export async function getActiveSubscription(userId: string): Promise<StripeSubscription | null> {
+  const supabase = await createClient()
+  
+  // First get the user's Stripe customer ID
+  const customerId = await getUserStripeCustomerId(userId)
+  
+  if (!customerId) {
+    console.error('User does not have a Stripe customer ID')
+    return null
+  }
 
-	if (userError || !userData?.stripe_customer_id) {
-		console.error(
-			"Error fetching user's Stripe customer ID:",
-			userError?.message
-		);
-		return null;
-	}
+  const { data: activeSubscriptions, error } = await supabase
+    .schema('stripe')
+    .from('subscriptions')
+    .select('*')
+    .eq('customer', customerId)
+    .in('status', ['active', 'trialing'])
+    .order('created', { ascending: false })
+   .limit(1)
 
-	const stripeCustomerId = userData.stripe_customer_id;
+  if (error) {
+    console.error('Error fetching active subscription:', error)
+    return null
+  }
+  
+  
+  // Return the most recent active subscription
+  return activeSubscriptions && activeSubscriptions.length > 0 ? activeSubscriptions[0] : null
+}
 
-	// The query uses hints to ensure single objects are returned where appropriate
-	const { data, error: subscriptionError } = await supabase
-    .schema("stripe")
-		.from("subscriptions")
-		.select(
-			`
-      id,
-      status,
-      cancel_at_period_end,
-      items
-    `
-		)
-		.eq("customer", stripeCustomerId)
-		.in("status", ["active", "trialing"])
-		.single();
+/**
+ * Gets product details by ID.
+ */
+export async function getProductDetails(productId: string): Promise<StripeProduct | null> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .schema('stripe')
+    .from('products')
+    .select('*')
+    .eq('id', productId)
+    .single()
+    
+  if (error) {
+    console.error('Error fetching product details:', error)
+    return null
+  }
+  
+  return data
+}
 
-	if (subscriptionError) {
-		console.error(
-			"Error fetching subscription:",
-			subscriptionError.message
-		);
-		if (subscriptionError.code === "PGRST116") return null;
-		throw subscriptionError;
-	}
+/**
+ * Gets tier features by product ID.
+ */
+export async function getTierFeatures(productId: string): Promise<TierFeatures | null> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('tiers_features')
+    .select('*')
+    .eq('id', productId)
+    .single()
+    
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error fetching tier features:', error)
+    return null
+  }
+  
+  return data
+}
 
-	if (!data) {
-		return null;
-	}
+/**
+ * Extracts subscription item details from Stripe subscription object.
+ */
+function extractSubscriptionItemDetails(subscription: StripeSubscription): StripeSubscriptionItem[] {
+  try {
+    // First try to get items from the items.data array (standard Stripe structure)
+    if (subscription.items && typeof subscription.items === 'object' && 'data' in subscription.items) {
+      const itemsData = (subscription.items as { data: unknown[] }).data
+      if (Array.isArray(itemsData)) {
+        return itemsData.map((item: unknown) => {
+          const stripeItem = item as {
+            id: string;
+            price: StripeSubscriptionItemPrice;
+            quantity: number | null;
+          }
+          return {
+            id: stripeItem.id,
+            price: stripeItem.price,
+            quantity: stripeItem.quantity
+          }
+        })
+      }
+    }
+    
+    // Fallback: try to extract from plan field (legacy structure)
+    if (subscription.plan && typeof subscription.plan === 'string') {
+      const planData = JSON.parse(subscription.plan) as StripeSubscriptionItemPrice
+      return [{
+        id: planData.id,
+        price: planData,
+        quantity: 1
+      }]
+    }
+    
+    // Fallback: try to extract from metadata
+    const metadata = subscription.metadata as Record<string, unknown>
+    const itemsData = metadata?.items
+    
+    if (typeof itemsData === 'string') {
+      return JSON.parse(itemsData) as StripeSubscriptionItem[]
+    } else if (Array.isArray(itemsData)) {
+      return itemsData as StripeSubscriptionItem[]
+    }
+    
+    return []
+  } catch (error) {
+    console.error('Error parsing subscription items:', error)
+    return []
+  }
+}
 
-	// We use type assertion because we know the true shape better than the inference engine.
-	const subscriptionData = data as unknown as SubscriptionWithDetails;
-	// --- Step 2: Adapt the runtime logic to access objects directly ---
-	const primaryItem = subscriptionData.items.data?.[0];
-	const priceDetails = primaryItem?.price;
-	
+/**
+ * Builds a complete subscription result with product and features.
+ */
+async function buildSubscriptionResult(subscription: StripeSubscription): Promise<UserSubscription | null> {
+  const supabase = await createClient()
+  const items = extractSubscriptionItemDetails(subscription)
+  
+  // Get the primary product ID from the first item's price
+  let primaryProductId: string | null = null
+  let billingInterval: string | undefined = undefined
+  let billingIntervalCount: number | undefined = undefined
+  let currentPeriodStart: number | null = subscription.current_period_start || null
+  let currentPeriodEnd: number | null = subscription.current_period_end || null
+  
+  if (items.length > 0 && items[0]?.price) {
+    const priceData = items[0].price
+    
+    // Extract billing interval information
+    if (priceData.recurring) {
+      billingInterval = priceData.recurring.interval
+      billingIntervalCount = priceData.recurring.interval_count
+    }
+    
+    // If the price object has a product field directly
+    if (priceData.product) {
+      primaryProductId = priceData.product
+    } else if (priceData.id) {
+      // Otherwise, look up the product from the price ID
+      const { data: priceRecord } = await supabase
+        .schema('stripe')
+        .from('prices')
+        .select('product')
+        .eq('id', priceData.id)
+        .single()
+      
+      primaryProductId = priceRecord?.product || null
+    }
+  }
+  
+  // If period dates are not in the main subscription object, try to get them from items
+  if ((!currentPeriodStart || !currentPeriodEnd) && items.length > 0) {
+    try {
+      // Parse the items JSON to get period information
+      const itemsJson = subscription.items
+      if (typeof itemsJson === 'string') {
+        const parsedItems = JSON.parse(itemsJson)
+        if (parsedItems.data && Array.isArray(parsedItems.data) && parsedItems.data.length > 0) {
+          const firstItem = parsedItems.data[0]
+          if (firstItem.current_period_start && !currentPeriodStart) {
+            currentPeriodStart = firstItem.current_period_start
+          }
+          if (firstItem.current_period_end && !currentPeriodEnd) {
+            currentPeriodEnd = firstItem.current_period_end
+          }
+        }
+      } else if (typeof itemsJson === 'object' && itemsJson && 'data' in itemsJson) {
+        const itemsData = (itemsJson as { data: unknown[] }).data
+        if (Array.isArray(itemsData) && itemsData.length > 0) {
+          const firstItem = itemsData[0] as { current_period_start?: number; current_period_end?: number }
+          if (firstItem.current_period_start && !currentPeriodStart) {
+            currentPeriodStart = firstItem.current_period_start
+          }
+          if (firstItem.current_period_end && !currentPeriodEnd) {
+            currentPeriodEnd = firstItem.current_period_end
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error extracting period dates from items:', error)
+    }
+  }
+  
+  if (!primaryProductId) {
+    console.error('No primary product ID found')
+    return null
+  }
+  
+  // Get product details and features in parallel
+  const [product, features] = await Promise.all([
+    getProductDetails(primaryProductId),
+    getTierFeatures(primaryProductId)
+  ])
+  
+  return {
+    id: subscription.id,
+    status: subscription.status || '',
+    current_period_start: currentPeriodStart || 0,
+    current_period_end: currentPeriodEnd || 0,
+    cancel_at_period_end: subscription.cancel_at_period_end || false,
+    items,
+    product,
+    features,
+    billing_interval: billingInterval,
+    billing_interval_count: billingIntervalCount
+  }
+}
 
-	const { data: productData, error: productError } = await supabase
-		.schema("stripe")
-		.from("products")
-		.select("id, name, description, metadata")
-		.eq("id", priceDetails.product)
-		.single();
-
-	if (productError) {
-		console.error("Error fetching product details:", productError.message);
-		return null;
-	}
-
-	if (!productData) {
-		console.error(
-			"Runtime check failed: Subscription data is missing nested product details.",
-			subscriptionData
-		);
-		return null;
-	}
-
-	const { data: featureData, error: featureError } = await supabase
-		.from("tiers_features")
-		.select("history_limit, tokens_limit, requests_limit")
-		.eq("id", productData.id);
-
-	if (featureError) {
-		console.error("Error fetching tier features:", featureError.message);
-		return null;
-	}
-
-	const features = Array.isArray(featureData) ? featureData[0] : featureData;
-
-	return {
-		id: subscriptionData.id,
-		status: subscriptionData.status,
-		current_period_start: primaryItem?.current_period_start ?? null,
-		current_period_end: primaryItem?.current_period_end ?? null,
-		cancel_at_period_end: subscriptionData.cancel_at_period_end,
-		price: {
-			id: priceDetails.id,
-			amount: priceDetails.unit_amount,
-		},
-		product: {
-			id: productData.id,
-			name: productData.name,
-			description: productData.description,
-			slug: productData.metadata?.slug,
-		},
-		features: {
-			history_limit: features?.history_limit ?? null,
-			tokens_limit: features?.tokens_limit ?? null,
-			requests_limit: features?.requests_limit ?? null,
-		},
-	};
+/**
+ * Gets complete user subscription information including product and features.
+ */
+export async function getUserSubscription(userId: string): Promise<UserSubscription | null> {
+  const subscription = await getActiveSubscription(userId)
+  
+  if (!subscription) {
+    return null
+  }
+  
+  return buildSubscriptionResult(subscription)
 }

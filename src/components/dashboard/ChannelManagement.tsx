@@ -16,7 +16,6 @@ import {
   Edit
 } from "lucide-react"
 import { useRouter } from 'next/navigation'
-import { UserSubscription } from '@/lib/queries/subscription'
 
 interface Channel {
   id: string
@@ -31,10 +30,9 @@ interface Channel {
 
 interface ChannelManagementProps {
   channels: Channel[]
-  subscription: UserSubscription
 }
 
-export function ChannelManagement({ channels, subscription }: ChannelManagementProps) {
+export function ChannelManagement({ channels }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -149,10 +147,10 @@ export function ChannelManagement({ channels, subscription }: ChannelManagementP
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            Connected Channels ({channels.length})
+            Connected Channels
           </CardTitle>
           <CardDescription>
-            You have {channels.length} of {subscription?.features?.requests_limit ?? 'N/A'} channels.
+            You have {channels.length} connected channels.
           </CardDescription>
         </CardHeader>
         <CardContent>

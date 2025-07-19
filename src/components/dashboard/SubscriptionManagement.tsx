@@ -16,13 +16,13 @@ import {
 } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { calculateTrialInfo } from "@/lib/utils/trial-calculations"
-import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod } from "@/lib/utils/time-formatting"
+import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod, formatBillingPeriod, formatCurrentBillingPeriod } from "@/lib/utils/time-formatting"
 import { loadStripe } from '@stripe/stripe-js'
 import { toast } from 'sonner'
 import { UserSubscription } from '@/lib/queries/subscription'
 
 interface SubscriptionManagementProps {
-  subscription: UserSubscription
+  subscription: UserSubscription | null
   userId: string
 }
 
@@ -300,38 +300,73 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
           </div>
 
           {subscription && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    {subscription.status === 'trialing' ? 'Trial Period' : 'Billing Period'}
+                    {subscription.status === 'trialing' ? 'Trial Period' : 'Billing Information'}
                   </span>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                   {subscription.status === 'trialing' 
-                   ? formatUsagePeriod(
-                       subscription.current_period_start 
-                         ? new Date(subscription.current_period_start * 1000).toISOString()
-                         : undefined,
-                       subscription.current_period_end
-                         ? new Date(subscription.current_period_end * 1000).toISOString()
-                         : undefined
-                     )
-                   : formatNextBilling(nextBillingDate)
-                 }
-                 </div>
-                {subscription.status === 'trialing' && trialInfo && (
-                  <div className="mt-2">
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-info h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(trialInfo.daysPassed / trialInfo.totalDays) * 100}%` }}
-                      ></div>
+                
+                {subscription.status === 'trialing' ? (
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      {formatUsagePeriod(
+                        subscription.current_period_start 
+                          ? new Date(subscription.current_period_start * 1000).toISOString()
+                          : undefined,
+                        subscription.current_period_end
+                          ? new Date(subscription.current_period_end * 1000).toISOString()
+                          : undefined
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {trialInfo.daysPassed} of {trialInfo.totalDays} trial days used
-                    </p>
+                    {trialInfo && (
+                      <div className="space-y-2">
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-info h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${(trialInfo.daysPassed / trialInfo.totalDays) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {trialInfo.daysPassed} of {trialInfo.totalDays} trial days used
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Billing Cycle
+                        </span>
+                        <span className="text-sm font-medium">
+                          {formatBillingPeriod(subscription.billing_interval, subscription.billing_interval_count)}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Current Period
+                        </span>
+                        <span className="text-sm">
+                          {formatCurrentBillingPeriod(subscription.current_period_start, subscription.current_period_end)}
+                        </span>
+                      </div>
+                      
+                      {nextBillingDate && (
+                        <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Next Billing
+                          </span>
+                          <span className="text-sm font-medium text-foreground">
+                            {formatNextBilling(nextBillingDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -419,7 +454,9 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {availablePlans.map((plan) => {
                 const IconComponent = plan.icon
-                const isCurrentPlan = subscription?.product?.slug === plan.slug
+                const productMetadata = subscription?.product?.metadata as Record<string, unknown> | null
+                const productSlug = productMetadata?.slug as string | undefined
+                const isCurrentPlan = productSlug === plan.slug
                 
                 return (
                   <Card key={plan.slug} className={`relative ${isCurrentPlan ? 'ring-2 ring-info' : ''}`}>

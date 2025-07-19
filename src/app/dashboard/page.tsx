@@ -4,7 +4,6 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 import { getUserSubscription } from "@/lib/queries/subscription";
-import { getUserChannels } from "@/lib/queries/channels";
 import { getUserUsage } from "@/lib/queries/usage";
 import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { ChannelsOverview } from "@/components/dashboard/ChannelsOverview";
@@ -43,9 +42,8 @@ export default async function DashboardPage() {
 	// --- Step 4: Fetch all necessary data in parallel ---
 	// This is efficient and leverages our refactored query functions.
 	// The `subscription` and `usage` objects now have a new, more detailed structure.
-	const [subscription, channels, usage] = await Promise.all([
+	const [subscription, usage] = await Promise.all([
 		getUserSubscription(user.id),
-		getUserChannels(user.id),
 		getUserUsage(user.id),
 	]);
 
@@ -123,11 +121,11 @@ export default async function DashboardPage() {
 							/>
 						</div>
 
-						{/* Channels Overview - No changes needed if getUserChannels is correct */}
+						{/* Channels Overview */}
 						<div
 							className="animate-fade-in"
 							style={{ animationDelay: "0.2s" }}>
-							<ChannelsOverview channels={channels} />
+							<ChannelsOverview userId={user.id} />
 						</div>
 					</div>
 

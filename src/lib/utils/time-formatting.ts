@@ -157,3 +157,53 @@ export function formatNextBilling(endDate?: string | null): string {
   const relative = formatRelativeTime(endDate)
   return `Next billing ${relative}`
 }
+
+/**
+ * Format billing period based on interval and count
+ */
+export function formatBillingPeriod(interval?: string, intervalCount?: number): string {
+  if (!interval) return 'Unknown'
+  
+  const count = intervalCount || 1
+  
+  switch (interval) {
+    case 'day':
+      return count === 1 ? 'Daily' : `Every ${count} days`
+    case 'week':
+      return count === 1 ? 'Weekly' : `Every ${count} weeks`
+    case 'month':
+      return count === 1 ? 'Monthly' : `Every ${count} months`
+    case 'year':
+      return count === 1 ? 'Yearly' : `Every ${count} years`
+    default:
+      return `Every ${count} ${interval}${count > 1 ? 's' : ''}`
+  }
+}
+
+/**
+ * Format current billing period dates
+ */
+export function formatCurrentBillingPeriod(startDate?: number | null, endDate?: number | null): string {
+  if (!startDate || !endDate) return 'Period dates unavailable'
+  
+  try {
+    const start = new Date(startDate * 1000)
+    const end = new Date(endDate * 1000)
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 'Invalid period dates'
+    
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }
+    
+    const startFormatted = start.toLocaleDateString('en-US', formatOptions)
+    const endFormatted = end.toLocaleDateString('en-US', formatOptions)
+    
+    return `${startFormatted} - ${endFormatted}`
+  } catch (error) {
+    console.error('Error formatting billing period dates:', error)
+    return 'Period dates unavailable'
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
-import { UsageData } from "@/lib/queries/usage";
+import type { UsageData } from "@/lib/types/usage";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface UseRealtimeUsageOptions {
@@ -31,7 +31,7 @@ export function useRealtimeUsage({
 	const fetchLatestUsage = useCallback(async () => {
 		try {
 			const { data, error } = await supabase.rpc("get_user_tier_and_usage", {
-				p_user_id: userId,
+				user_id: userId,  // Changed from p_user_id to user_id
 			});
 
 			if (error) {

@@ -3,7 +3,6 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -246,6 +245,96 @@ $$;
 ALTER FUNCTION "public"."finalize_channel_link"("p_nonce" "uuid", "p_link" "text") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_current_usage"("p_user_id" "uuid") RETURNS TABLE("user_id" "uuid", "subscription_id" "text", "subscription_period_start" timestamp with time zone, "subscription_period_end" timestamp with time zone, "total_tokens_used" integer, "total_requests_used" integer)
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+    v_user_channel_ids UUID[];
+    v_current_period_start timestamptz;
+    v_current_period_end timestamptz;
+    v_subscription_id text;
+BEGIN
+    -- 1. Find the user's active or trialing subscription and its period.
+    -- We join through customers to link Stripe subscriptions to our users.
+    SELECT
+        s.id,
+        (s.current_period_start)::timestamptz, -- Convert Unix epoch seconds to timestamp with timezone
+        (s.current_period_end)::timestamptz   -- Convert Unix epoch seconds to timestamp with timezone
+    INTO
+        v_subscription_id, v_current_period_start, v_current_period_end
+    FROM
+        stripe.subscriptions s
+    JOIN
+        stripe.customers c ON s.customer = c.id
+    WHERE
+        -- Find the customer ID associated with the user
+        c.id = (SELECT stripe_customer_id FROM public.users WHERE id = p_user_id)
+        AND s.status IN ('active', 'trialing') -- Consider both active and trialing subscriptions
+    ORDER BY s.current_period_start DESC -- In case of multiple active subscriptions, prioritize the most recent one
+    LIMIT 1;
+
+    -- If no active subscription is found for the user, return zero usage and null period details.
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT p_user_id, NULL, NULL, NULL, 0, 0;
+        RETURN;
+    END IF;
+
+    -- 2. Get all user_channel IDs associated with the given user.
+    -- Usage records are tied to user channels, not directly to users.
+    SELECT array_agg(id)
+    INTO v_user_channel_ids
+    FROM public.user_channels
+    WHERE user_id = p_user_id;
+
+    -- If the user has no linked channels, they have no usage.
+    IF v_user_channel_ids IS NULL OR array_length(v_user_channel_ids, 1) IS NULL THEN
+        RETURN QUERY SELECT
+            p_user_id,
+            v_subscription_id,
+            v_current_period_start,
+            v_current_period_end,
+            0,
+            0;
+        RETURN;
+    END IF;
+
+    -- 3. Sum usage records that occurred within the current subscription period.
+    -- The reset function (below) ensures that usage_records are zeroed out when a period ends.
+    -- This query then aggregates the usage that has accumulated *since* the start of the current period.
+    RETURN QUERY
+    SELECT
+        p_user_id AS user_id,
+        v_subscription_id AS subscription_id,
+        v_current_period_start AS subscription_period_start,
+        v_current_period_end AS subscription_period_end,
+        COALESCE(SUM(ur.tokens_used), 0) AS total_tokens_used,
+        COALESCE(SUM(ur.requests_used), 0) AS total_requests_used
+    FROM
+        public.usage_records ur
+    WHERE
+        ur.user_channel_id = ANY(v_user_channel_ids)
+        -- Filter usage records to only include those that occurred within the current subscription period.
+        AND ur.updated_at >= v_current_period_start
+        AND ur.updated_at <= v_current_period_end;
+
+    -- 4. If no usage records were found within the period, return 0 for usage.
+    -- This handles cases where a user has an active subscription but hasn't used resources yet in the current period.
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT
+            p_user_id,
+            v_subscription_id,
+            v_current_period_start,
+            v_current_period_end,
+            0,
+            0;
+    END IF;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_current_usage"("p_user_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_user_activity"("p_user_id" "uuid") RETURNS json
     LANGUAGE "sql" SECURITY DEFINER
     AS $$
@@ -339,34 +428,27 @@ $$;
 ALTER FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_user_tier_and_usage"("p_user_id" "uuid") RETURNS TABLE("tokens_used" integer, "requests_used" integer, "tier_tokens_limit" integer, "tier_requests_limit" integer, "tier_history_limit" integer)
+CREATE OR REPLACE FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") RETURNS TABLE("tokens_used" integer, "requests_used" integer, "tier_tokens_limit" integer, "tier_requests_limit" integer, "tier_history_limit" integer)
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
-    AS $$
-DECLARE
+    AS $$DECLARE
     v_usage RECORD;
     v_tier_features RECORD;
     v_user_channel_id UUID;
 BEGIN
-    -- Step 1: Get the user's current usage for the period.
-    -- We first need to find a user_channel to look up the usage record.
     SELECT id INTO v_user_channel_id
     FROM public.user_channels
-    WHERE user_id = p_user_id
+    WHERE user_id = user_id
     LIMIT 1;
 
-    -- If a user channel exists, get the usage, otherwise default to 0.
     IF v_user_channel_id IS NOT NULL THEN
         SELECT ur.tokens_used, ur.requests_used
         INTO v_usage
         FROM public.usage_records ur
         WHERE ur.user_channel_id = v_user_channel_id;
     ELSE
-        -- If no usage record is found, assume usage is 0.
         SELECT 0 AS tokens_used, 0 AS requests_used INTO v_usage;
     END IF;
 
-    -- Step 2: Get the user's current subscription tier and its limits.
-    -- This requires joining from our public users table through to the Stripe tables and back to our public tiers_features table.
     SELECT
         tf.history_limit,
         tf.tokens_limit,
@@ -377,14 +459,11 @@ BEGIN
     JOIN stripe.subscription_items si ON s.id = si.subscription
     JOIN stripe.prices p ON si.price = p.id
     JOIN public.tiers_features tf ON p.product = tf.id
-    WHERE u.id = p_user_id
-      AND s.status IN ('active', 'trialing') -- Find the current active or trialing subscription
-    ORDER BY s.created DESC -- In case of multiple subscriptions, take the most recent one
+    WHERE u.id = user_id
+      AND s.status IN ('active', 'trialing')
+    ORDER BY s.created DESC
     LIMIT 1;
 
-    -- Step 3: Return the combined results.
-    -- Note: The schema does not contain a separate 'user_history_limit'.
-    -- We are returning the tier's history limit for both 'user_history_limit' and 'tier_history_limit'.
     RETURN QUERY
     SELECT
         COALESCE(v_usage.tokens_used, 0),
@@ -392,11 +471,10 @@ BEGIN
         v_tier_features.tokens_limit,
         v_tier_features.requests_limit,
         v_tier_features.history_limit;
-END;
-$$;
+END;$$;
 
 
-ALTER FUNCTION "public"."get_user_tier_and_usage"("p_user_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") RETURNS "jsonb"
@@ -556,6 +634,55 @@ $$;
 ALTER FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."reset_daily_usage_records"() RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+    v_user_id uuid;
+    v_user_channel_ids UUID[];
+BEGIN
+    -- Find all user_ids whose active subscription period has ended *before* the current time.
+    -- This ensures we only reset for periods that have completed.
+    FOR v_user_id IN
+        SELECT DISTINCT
+            uc.user_id
+        FROM
+            public.user_channels uc
+        JOIN
+            public.users u ON uc.user_id = u.id
+        JOIN
+            -- We only need to check subscriptions, not customers directly in the main query
+            stripe.subscriptions s ON u.stripe_customer_id = s.customer
+        WHERE
+            s.status IN ('active', 'trialing')
+            -- Check if the subscription period's end date has passed relative to the current time.
+            -- EXTRACT(EPOCH FROM NOW()) converts the current timestamp to Unix epoch seconds.
+            AND s.current_period_end < EXTRACT(EPOCH FROM NOW())::integer
+    LOOP
+        -- Get all channel IDs for this user
+        SELECT array_agg(id)
+        INTO v_user_channel_ids
+        FROM public.user_channels
+        WHERE user_id = v_user_id;
+
+        -- If the user has linked channels, reset their usage records.
+        IF v_user_channel_ids IS NOT NULL AND array_length(v_user_channel_ids, 1) IS NOT NULL THEN
+            UPDATE public.usage_records
+            SET
+                tokens_used = 0,
+                requests_used = 0,
+                updated_at = NOW() -- Mark the reset time
+            WHERE
+                user_channel_id = ANY(v_user_channel_ids);
+        END IF;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."reset_daily_usage_records"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."set_updated_at"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -649,12 +776,11 @@ ALTER TABLE "public"."chat_messages" ALTER COLUMN "id" ADD GENERATED BY DEFAULT 
 
 
 
-CREATE TABLE IF NOT EXISTS "public"."product_features" (
-    "product_id" "text" NOT NULL,
-    "history_days" integer,
-    "monthly_token_limit" integer,
-    "monthly_request_limit" integer,
-    "channel_limit" integer
+CREATE TABLE IF NOT EXISTS "public"."tiers_features" (
+    "id" "text" NOT NULL,
+    "history_limit" integer,
+    "tokens_limit" integer,
+    "requests_limit" integer
 );
 
 
@@ -1365,8 +1491,8 @@ ALTER TABLE ONLY "public"."chat_messages"
 
 
 
-ALTER TABLE ONLY "public"."product_features"
-    ADD CONSTRAINT "product_features_pkey" PRIMARY KEY ("product_id");
+ALTER TABLE ONLY "public"."tiers_features"
+    ADD CONSTRAINT "tiers_pkey" PRIMARY KEY ("id");
 
 
 
@@ -1684,8 +1810,8 @@ ALTER TABLE ONLY "public"."chat_messages"
 
 
 
-ALTER TABLE ONLY "public"."product_features"
-    ADD CONSTRAINT "product_features_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "stripe"."products"("id") ON DELETE CASCADE;
+ALTER TABLE ONLY "public"."tiers_features"
+    ADD CONSTRAINT "tiers_id_fkey" FOREIGN KEY ("id") REFERENCES "stripe"."products"("id") ON UPDATE CASCADE;
 
 
 
@@ -1824,6 +1950,10 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."usage_records";
 
 
 
@@ -2166,6 +2296,12 @@ GRANT ALL ON FUNCTION "public"."finalize_channel_link"("p_nonce" "uuid", "p_link
 
 
 
+GRANT ALL ON FUNCTION "public"."get_current_usage"("p_user_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_current_usage"("p_user_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_current_usage"("p_user_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "service_role";
@@ -2178,9 +2314,9 @@ GRANT ALL ON FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") 
 
 
 
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("p_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("p_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("p_user_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "service_role";
 
 
 
@@ -2217,6 +2353,12 @@ GRANT ALL ON FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_channel_i
 GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "anon";
 GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."reset_daily_usage_records"() TO "anon";
+GRANT ALL ON FUNCTION "public"."reset_daily_usage_records"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."reset_daily_usage_records"() TO "service_role";
 
 
 
