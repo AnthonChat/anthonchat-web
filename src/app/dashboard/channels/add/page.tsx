@@ -1,9 +1,11 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { getAllChannels, getUserChannels } from '@/lib/queries/channels'
+import { AddChannelForm } from '@/components/dashboard/AddChannelForm'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, MessageCircle, Phone } from 'lucide-react'
-import Link from 'next/link'
+import { Plus } from 'lucide-react'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 
 export default async function AddChannelPage() {
   const supabase = await createClient();
@@ -16,80 +18,51 @@ export default async function AddChannelPage() {
     return redirect("/login");
   }
 
+  // Fetch available channels and user's existing channels
+  const [availableChannels, userChannels] = await Promise.all([
+    getAllChannels(),
+    getUserChannels(user.id),
+  ])
+
   return (
-    <div className="min-h-screen bg-muted">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Add New Channel
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Connect a new communication channel
-              </p>
-            </div>
-            <Link href="/dashboard/channels">
-              <Button variant="ghost">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Channels
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <DashboardLayout>
+      <DashboardHeader
+        title="Add Channel"
+        description="Connect a new channel to start receiving messages"
+        backHref="/dashboard/channels"
+        icon={<Plus className="h-5 w-5" />}
+      />
       
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Choose Channel Type</CardTitle>
-              <CardDescription>
-                Select the type of communication channel you want to add
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                  <CardContent className="p-6 text-center">
-                    <Phone className="h-12 w-12 mx-auto mb-4 text-success" />
-                    <h3 className="font-semibold mb-2">WhatsApp</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Connect your WhatsApp Business account
-                    </p>
-                    <Button className="w-full" disabled>
-                      Coming Soon
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                  <CardContent className="p-6 text-center">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-4 text-info" />
-                    <h3 className="font-semibold mb-2">Telegram</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Connect your Telegram bot
-                    </p>
-                    <Button className="w-full" disabled>
-                      Coming Soon
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  Channel integration is currently under development. 
-                  <br />
-                  Contact support for early access.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="mx-auto max-w-4xl space-y-8">
+          {/* Description */}
+          <div className="text-center">
+            <h2 className="text-xl font-medium text-foreground">
+              Choose Your Communication Platform
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Select from our supported channels to start engaging with your audience
+            </p>
+          </div>
+
+          {/* Form */}
+          <AddChannelForm 
+            availableChannels={availableChannels}
+            existingChannels={userChannels}
+          />
+
+          {/* Help */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Need help setting up your channel?{' '}
+              <Button variant="link" className="h-auto p-0 text-sm">
+                View Documentation
+              </Button>
+            </p>
+          </div>
         </div>
       </main>
-    </div>
+    </DashboardLayout>
   );
 }

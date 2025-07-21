@@ -1,13 +1,14 @@
 // lib/queries/channels.ts
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from '@/utils/supabase/server'
 import type { 
   Channel, 
   UserChannel, 
   UserChannelInsert, 
   UserChannelUpdate, 
   UserChannelWithChannel 
-} from "@/lib/types/channels";
+} from '@/lib/types/channels'
+import { channelLogger } from '@/lib/utils/loggers'
 
 /**
  * Fetches the channels a user is connected to, along with details
@@ -34,7 +35,7 @@ export async function getUserChannels(userId: string): Promise<UserChannelWithCh
 		.eq("user_id", userId);
 
 	if (error) {
-		console.error("Error fetching user channels:", error);
+		channelLogger.error("Error fetching user channels", "USER_CHANNELS_FETCH", { error }, userId);
 		throw error;
 	}
 
@@ -62,7 +63,7 @@ export async function getAllChannels(): Promise<Channel[]> {
 		.eq("is_active", true);
 
 	if (error) {
-		console.error("Error fetching all channels:", error);
+		channelLogger.error("Error fetching all channels", "ALL_CHANNELS_FETCH", { error });
 		throw error;
 	}
 
@@ -87,11 +88,34 @@ export async function getChannelConnectionStatus(
 
 	if (error && error.code !== "PGRST116") {
 		// PGRST116 means 'no rows found', which is a valid result here.
-		console.error("Error getting channel connection status:", error);
+		channelLogger.error("Error getting channel connection status", "CHANNEL_CONNECTION_STATUS", { error, channelId }, userId);
 		throw error;
 	}
 
 	return data;
+}
+
+/**
+ * Deletes a user channel connection.
+ */
+export async function deleteUserChannel(
+	userChannelId: string, 
+	userId: string
+): Promise<void> {
+	const supabase = await createClient();
+
+	const { error } = await supabase
+		.from("user_channels")
+		.delete()
+		.eq("id", userChannelId)
+		.eq("user_id", userId); // Ensure user can only delete their own channels
+
+	if (error) {
+		channelLogger.error("Error deleting user channel", "USER_CHANNEL_DELETE", { error, userChannelId }, userId);
+		throw error;
+	}
+
+	channelLogger.info("User channel deleted successfully", "USER_CHANNEL_DELETE", { userChannelId }, userId);
 }
 
 /**
@@ -107,7 +131,7 @@ export async function createUserChannel(userChannelData: UserChannelInsert): Pro
 		.single();
 
 	if (error) {
-		console.error("Error creating user channel:", error);
+		channelLogger.error("Error creating user channel", "USER_CHANNEL_CREATE", { error, userChannelData });
 		throw error;
 	}
 
@@ -131,7 +155,7 @@ export async function updateUserChannel(
 		.single();
 
 	if (error) {
-		console.error("Error updating user channel:", error);
+		channelLogger.error("Error updating user channel", "USER_CHANNEL_UPDATE", { error, userChannelId, updates });
 		throw error;
 	}
 

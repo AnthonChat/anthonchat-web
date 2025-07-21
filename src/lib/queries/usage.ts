@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import type { Database as PublicDatabase } from '@/utils/supabase/schemas/public'
 import { getUserSubscription } from './subscription'
 import type { UserTierAndUsageResult, UsageData, CurrentUsage } from '@/lib/types/usage'
+import { usageLogger } from '@/lib/utils/loggers'
 
 // Type aliases for better readability
 type UsageRecord = PublicDatabase["public"]["Tables"]["usage_records"]["Row"];
@@ -16,15 +17,33 @@ type UsageRecordUpdate = PublicDatabase["public"]["Tables"]["usage_records"]["Up
 export async function getUserTierAndUsage(userId: string): Promise<UserTierAndUsageResult | null> {
   const supabase = await createClient()
   
-  const { data, error } = await supabase
-    .rpc('get_user_tier_and_usage', { user_id: userId })
+  try {
+      const { data, error } = await supabase
+      .rpc('get_user_usage_and_limits', { user_id: userId })
+      
+    if (error) {
+      usageLogger.error('Error fetching user tier and usage', 'TIER_USAGE_FETCH', { error }, userId)
+      return null
+    }
     
-  if (error) {
-    console.error('Error fetching user tier and usage:', error)
+    // Fix: The RPC returns an array with one object, so we need to access the first element
+    const usageData = data?.[0]
+    
+    if (!usageData) {
+      return null
+    }
+    
+    return {
+      tokens_used: usageData.tokens_used,
+      requests_used: usageData.requests_used,
+      tokens_limit: usageData.tier_tokens_limit,
+      requests_limit: usageData.tier_requests_limit,
+      history_limit: usageData.tier_history_limit,
+    }
+  } catch (error) {
+    usageLogger.error('Error fetching user tier and usage', 'TIER_USAGE_FETCH', { error }, userId)
     return null
   }
-  
-  return data
 }
 
 /**
@@ -37,23 +56,30 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
   // Fetch subscription details and usage data in parallel for efficiency
   const [subscription, usageResponse] = await Promise.all([
     getUserSubscription(userId),
-    supabase.rpc('get_user_tier_and_usage', { user_id: userId }),
+    supabase.rpc('get_user_usage_and_limits', { user_id: userId }),
   ])
 
   // Destructure the response from the RPC call
   const { data: rpcData, error: rpcError } = usageResponse
 
   if (rpcError) {
-    console.error('Error calling get_user_tier_and_usage RPC:', rpcError.message)
+    usageLogger.error('Error calling get_user_usage_and_limits RPC', 'USER_USAGE_FETCH', { error: rpcError.message }, userId)
     // If the RPC fails, we still return a valid default object to prevent UI crashes.
   }
+
+  // Fix: The RPC returns an array with one object, so we need to access the first element
+  const usageData = rpcData?.[0]
 
   // We now use the nullish coalescing operator '??' to ensure that if the RPC
   // data or any nested property is null or undefined, we safely fall back to 0.
   // This completely prevents `undefined` from being passed to the component.
 
-  const tokensUsed = rpcData?.tokens_used ?? 0
-  const requestsUsed = 0 // Legacy field, not used in new schema
+  const tokensUsed = usageData?.tokens_used ?? 0
+  const requestsUsed = usageData?.requests_used ?? 0
+
+  // Use the actual tier limits from the RPC response, with fallbacks
+  const tokensLimit = usageData?.tier_tokens_limit ?? 10000  // Default to 10k tokens
+  const requestsLimit = usageData?.tier_requests_limit ?? 100  // Default to 100 requests
 
   // The period start/end comes from the subscription object, not the usage RPC
   const periodStart = subscription?.current_period_start
@@ -66,8 +92,8 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
   return {
     tokens_used: tokensUsed,
     requests_used: requestsUsed,
-    tokens_limit: rpcData?.tokens_limit ?? null,
-    requests_limit: rpcData?.tokens_limit ?? null, // Using tokens_limit for both for now
+    tokens_limit: tokensLimit,
+    requests_limit: requestsLimit,
     period_start: periodStart,
     period_end: periodEnd,
   }
@@ -83,7 +109,7 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage | nu
     .rpc('get_current_usage', { user_id: userId })
     
   if (error) {
-    console.error('Error fetching current usage:', error)
+    usageLogger.error('Error fetching current usage', 'CURRENT_USAGE_FETCH', { error }, userId)
     return null
   }
   
@@ -107,7 +133,7 @@ export async function getUserChannelUsage(
     .order('created_at', { ascending: false })
     
   if (error) {
-    console.error('Error fetching user channel usage:', error)
+    usageLogger.error('Error fetching user channel usage', 'CHANNEL_USAGE_FETCH', { error, channelId }, userId)
     return []
   }
   
@@ -129,7 +155,7 @@ export async function createUsageRecord(
     .single()
     
   if (error) {
-    console.error('Error creating usage record:', error)
+    usageLogger.error('Error creating usage record', 'USAGE_RECORD_CREATE', { error, usageData })
     return null
   }
   
@@ -153,7 +179,7 @@ export async function updateUsageRecord(
     .single()
     
   if (error) {
-    console.error('Error updating usage record:', error)
+    usageLogger.error('Error updating usage record', 'USAGE_RECORD_UPDATE', { error, id, updates })
     return null
   }
   

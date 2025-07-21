@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { apiLogger } from "@/lib/utils/loggers";
 
 export async function GET(
 	request: NextRequest,
@@ -30,17 +31,34 @@ export async function GET(
 		);
 	}
 
-	// 2️⃣ Find the verification request. This tells us the 'channel_id'.
+	// 2️⃣ Find the verification request. This tells us the 'channel_id' and expiration.
 	const { data: verification } = await supabase
 		.from("channel_verifications")
-		.select("channel_id")
+		.select("channel_id, expires_at")
 		.match({
 			nonce: nonce,
 			user_id: user.id,
 		})
 		.maybeSingle();
 
-	// If the nonce exists, `verification.channel_id` will be populated.
+	// Check if the verification has expired
+	if (verification && new Date(verification.expires_at) <= new Date()) {
+		// Clean up expired verification
+		await supabase
+			.from("channel_verifications")
+			.delete()
+			.match({
+				nonce: nonce,
+				user_id: user.id,
+			});
+
+		return NextResponse.json(
+			{ status: "expired", error: "Verification link has expired. Please try again." },
+			{ status: 410 }
+		);
+	}
+
+	// If the nonce exists and is not expired, `verification.channel_id` will be populated.
 	// If the nonce does NOT exist (because it was used), `verification` will be null.
 	// Both are valid scenarios we must handle.
 
@@ -58,7 +76,7 @@ export async function GET(
 		.maybeSingle(); // We assume they only verify one at a time.
 
 	if (channelError) {
-		console.error("Error fetching user channel status:", channelError);
+		apiLogger.error('USER_CHANNEL_STATUS_ERROR', 'API_LINK', { error: channelError, userId: user.id, nonce });
 		return NextResponse.json(
 			{ status: "error", error: "A database error occurred." },
 			{ status: 500 }

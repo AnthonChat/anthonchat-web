@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
 import type { UsageData } from "@/lib/types/usage";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { hookLogger } from "@/lib/utils/loggers";
 
 interface UseRealtimeUsageOptions {
 	userId: string;
@@ -16,6 +17,7 @@ interface UseRealtimeUsageReturn {
 	isConnected: boolean;
 	error: string | null;
 	reconnect: () => void;
+	isInitialLoading: boolean;
 }
 
 export function useRealtimeUsage({
@@ -26,34 +28,52 @@ export function useRealtimeUsage({
 	const [usage, setUsage] = useState<UsageData>(initialUsage);
 	const [isConnected, setIsConnected] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isInitialLoading, setIsInitialLoading] = useState(true);
 	const supabase = createClient();
 
 	const fetchLatestUsage = useCallback(async () => {
 		try {
-			const { data, error } = await supabase.rpc("get_user_tier_and_usage", {
+			// Add minimum loading time to prevent flashing
+			const startTime = Date.now();
+			const minLoadingTime = 800; // 800ms minimum loading time
+
+			const { data, error } = await supabase.rpc("get_user_usage_and_limits", {
 				user_id: userId,  // Changed from p_user_id to user_id
 			});
 
 			if (error) {
-				console.error("Error fetching usage:", error);
+				hookLogger.error('USAGE_FETCH_ERROR', 'REALTIME_USAGE', { error: error.message, userId });
 				setError("Failed to fetch latest usage data");
+				
+				// Ensure minimum loading time
+				const elapsed = Date.now() - startTime;
+				const remainingTime = Math.max(0, minLoadingTime - elapsed);
+				setTimeout(() => setIsInitialLoading(false), remainingTime);
 				return;
 			}
 
-			if (data && data.length > 0) {
-				const latestUsage = data[0];
+			if (data && data[0]) {
+				// Fix: The RPC returns an array with one object, so we need to access the first element
+				const usageData = data[0];
+				
 				setUsage((prev) => ({
 					...prev,
-					tokens_used: latestUsage.tokens_used,
-					requests_used: latestUsage.requests_used,
-					tokens_limit: latestUsage.tier_tokens_limit,
-					requests_limit: latestUsage.tier_requests_limit,
+					tokens_used: usageData.tokens_used,
+					requests_used: usageData.requests_used,
+					tokens_limit: usageData.tier_tokens_limit ?? 10000,  // Use tier_tokens_limit
+					requests_limit: usageData.tier_requests_limit ?? 100,  // Use tier_requests_limit
 				}));
 			}
 			setError(null);
+			
+			// Ensure minimum loading time
+			const elapsed = Date.now() - startTime;
+			const remainingTime = Math.max(0, minLoadingTime - elapsed);
+			setTimeout(() => setIsInitialLoading(false), remainingTime);
 		} catch (err) {
-			console.error("Error in fetchLatestUsage:", err);
+			hookLogger.error('FETCH_LATEST_USAGE_ERROR', 'REALTIME_USAGE', { error: err instanceof Error ? err.message : String(err), userId });
 			setError("Failed to fetch usage data");
+			setIsInitialLoading(false);
 		}
 	}, [userId, supabase]);
 
@@ -75,7 +95,7 @@ export function useRealtimeUsage({
 				.single();
 
 			if (channelError || !channelData) {
-				console.error("Error finding user channel for real-time:", channelError?.message);
+				hookLogger.error('USER_CHANNEL_REALTIME_ERROR', 'REALTIME_USAGE', { error: channelError?.message, userId });
 				setError("Could not set up real-time connection.");
 				return;
 			}
@@ -93,7 +113,7 @@ export function useRealtimeUsage({
 						filter: `user_channel_id=eq.${userChannelId}`,
 					},
 					(payload) => {
-						console.log("Realtime usage update:", payload);
+						hookLogger.info('REALTIME_USAGE_UPDATE', 'REALTIME_USAGE', { payload, userId });
 						if (payload.new && 'tokens_used' in payload.new) {
 							const newRecord = payload.new as UsageData;
 							setUsage((prev) => ({
@@ -132,6 +152,7 @@ export function useRealtimeUsage({
 		usage,
 		isConnected,
 		error,
-		reconnect: () => { console.log("Attempting to reconnect..."); fetchLatestUsage(); },
+		reconnect: () => { hookLogger.info('USAGE_RECONNECT_ATTEMPT', 'REALTIME_USAGE', { userId }); fetchLatestUsage(); },
+		isInitialLoading,
 	};
 }

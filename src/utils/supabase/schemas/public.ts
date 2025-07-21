@@ -343,15 +343,15 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
-      get_user_tier_and_usage: {
-        Args: { p_user_id: string }
+      get_user_usage_and_limits: {
+        Args: { user_id: string }
         Returns: {
           tokens_used: number
           requests_used: number
-          tier_tokens_limit: number
-          tier_requests_limit: number
-          tier_history_limit: number
-        }[]
+          tokens_limit: number
+          requests_limit: number
+          history_limit: number
+        }
       }
       get_user_total_usage: {
         Args: { input_user_id: string }

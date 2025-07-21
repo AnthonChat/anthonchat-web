@@ -1,209 +1,310 @@
-/**
- * Time-oriented formatting utilities for relative time displays
- */
+import { formatDistanceToNow, format, parseISO, isValid, differenceInDays } from 'date-fns'
+import { timeLogger } from '@/lib/utils/loggers'
 
-export interface TimeInfo {
-  value: number
-  unit: string
-  isPast: boolean
-  isExpired?: boolean
+/**
+ * Format a date string to a relative time (e.g., "2 hours ago")
+ * @param dateString - ISO date string
+ * @returns Formatted relative time string
+ */
+export function formatRelativeTime(dateString: string): string {
+  try {
+    const date = parseISO(dateString)
+    
+    if (!isValid(date)) {
+      return 'Invalid date'
+    }
+    
+    return formatDistanceToNow(date, { addSuffix: true })
+  } catch (error) {
+    timeLogger.error('Relative Time Format Error', 'RELATIVE_TIME_FORMAT_ERROR', { error, dateString })
+    return 'Invalid date'
+  }
 }
 
 /**
- * Format a date as relative time (e.g., "2 hours ago", "in 3 days")
+ * Format a date string to a human-readable format
+ * @param dateString - ISO date string
+ * @param formatString - Date format string (default: 'MMM d, yyyy')
+ * @returns Formatted date string
  */
-export function formatRelativeTime(dateString?: string | null): string {
-  if (!dateString) return 'Unknown'
-  
+export function formatDate(dateString: string, formatString: string = 'MMM d, yyyy'): string {
   try {
-    const date = new Date(dateString)
-    if (isNaN(date.getTime())) return 'Invalid time'
+    const date = parseISO(dateString)
     
+    if (!isValid(date)) {
+      return 'Invalid date'
+    }
+    
+    return format(date, formatString)
+  } catch (error) {
+    timeLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString, formatString })
+    return 'Invalid date'
+  }
+}
+
+/**
+ * Get trial time information
+ * @param trialEnd - Trial end date string
+ * @returns Object with trial status and remaining days
+ */
+export function getTrialTimeInfo(trialEnd: string | null): {
+  isTrialActive: boolean
+  daysRemaining: number
+  trialEndFormatted: string
+} {
+  try {
+    if (!trialEnd) {
+      return {
+        isTrialActive: false,
+        daysRemaining: 0,
+        trialEndFormatted: ''
+      }
+    }
+
+    const trialEndDate = parseISO(trialEnd)
+    
+    if (!isValid(trialEndDate)) {
+      return {
+        isTrialActive: false,
+        daysRemaining: 0,
+        trialEndFormatted: 'Invalid date'
+      }
+    }
+
     const now = new Date()
-    const diffMs = date.getTime() - now.getTime()
-    const isPast = diffMs < 0
-    const absDiffMs = Math.abs(diffMs)
-    
-    // Convert to different time units
-    const minutes = Math.floor(absDiffMs / (1000 * 60))
-    const hours = Math.floor(absDiffMs / (1000 * 60 * 60))
-    const days = Math.floor(absDiffMs / (1000 * 60 * 60 * 24))
-    const weeks = Math.floor(days / 7)
-    const months = Math.floor(days / 30)
-    
-    let timeStr = ''
-    
-    if (months > 0) {
-      timeStr = `${months} ${months === 1 ? 'month' : 'months'}`
-    } else if (weeks > 0) {
-      timeStr = `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`
-    } else if (days > 0) {
-      timeStr = `${days} ${days === 1 ? 'day' : 'days'}`
-    } else if (hours > 0) {
-      timeStr = `${hours} ${hours === 1 ? 'hour' : 'hours'}`
-    } else if (minutes > 0) {
-      timeStr = `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
-    } else {
-      return isPast ? 'just expired' : 'expires soon'
-    }
-    
-    return isPast ? `${timeStr} ago` : `in ${timeStr}`
-  } catch (error) {
-    console.error('Error formatting relative time:', error)
-    return 'Unknown time'
-  }
-}
+    const daysRemaining = Math.max(0, differenceInDays(trialEndDate, now))
+    const isTrialActive = daysRemaining > 0
 
-/**
- * Get detailed time information for trial periods
- */
-export function getTrialTimeInfo(startDate?: string | null, endDate?: string | null): TimeInfo | null {
-  if (!startDate || !endDate) return null
-  
-  try {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const now = new Date()
-    
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null
-    
-    const remainingMs = end.getTime() - now.getTime()
-    
-    const isExpired = remainingMs <= 0
-    const isPast = isExpired
-    
-    // Use remaining time if not expired, elapsed time if expired
-    const relevantMs = isExpired ? Math.abs(remainingMs) : remainingMs
-    
-    const hours = Math.floor(relevantMs / (1000 * 60 * 60))
-    const days = Math.floor(relevantMs / (1000 * 60 * 60 * 24))
-    
-    if (days > 0) {
-      return {
-        value: days,
-        unit: days === 1 ? 'day' : 'days',
-        isPast,
-        isExpired
-      }
-    } else if (hours > 0) {
-      return {
-        value: hours,
-        unit: hours === 1 ? 'hour' : 'hours',
-        isPast,
-        isExpired
-      }
-    } else {
-      const minutes = Math.floor(relevantMs / (1000 * 60))
-      return {
-        value: Math.max(1, minutes),
-        unit: minutes <= 1 ? 'minute' : 'minutes',
-        isPast,
-        isExpired
-      }
+    return {
+      isTrialActive,
+      daysRemaining,
+      trialEndFormatted: formatDate(trialEnd, 'MMM d, yyyy')
     }
   } catch (error) {
-    console.error('Error getting trial time info:', error)
-    return null
-  }
-}
-
-/**
- * Format trial time remaining with more precision
- */
-export function formatTrialTimeRemaining(startDate?: string | null, endDate?: string | null): string {
-  const timeInfo = getTrialTimeInfo(startDate, endDate)
-  
-  if (!timeInfo) return 'Unknown'
-  
-  if (timeInfo.isExpired) {
-    return `expired ${timeInfo.value} ${timeInfo.unit} ago`
-  }
-  
-  return `${timeInfo.value} ${timeInfo.unit} remaining`
-}
-
-/**
- * Format usage period as relative time range
- */
-export function formatUsagePeriod(startDate?: string | null, endDate?: string | null): string {
-  if (!startDate) return 'Current period'
-  
-  try {
-    const start = new Date(startDate)
-    const end = endDate ? new Date(endDate) : null
-    
-    if (isNaN(start.getTime())) return 'Current period'
-    
-    const startRelative = formatRelativeTime(startDate)
-    
-    if (end && !isNaN(end.getTime())) {
-      const endRelative = formatRelativeTime(endDate)
-      return `${startRelative} to ${endRelative}`
+    timeLogger.error('Trial Time Info Error', 'TRIAL_TIME_INFO_ERROR', { error, trialEnd })
+    return {
+      isTrialActive: false,
+      daysRemaining: 0,
+      trialEndFormatted: 'Error'
     }
-    
-    return `Started ${startRelative}`
-  } catch (error) {
-    console.error('Error formatting usage period:', error)
-    return 'Current period'
   }
 }
 
 /**
- * Get time until next billing cycle
+ * Format usage period for display
+ * @param periodStart - Period start date string
+ * @param periodEnd - Period end date string
+ * @returns Formatted period string
  */
-export function formatNextBilling(endDate?: string | null): string {
-  if (!endDate) return 'Unknown'
-  
-  const relative = formatRelativeTime(endDate)
-  return `Next billing ${relative}`
-}
-
-/**
- * Format billing period based on interval and count
- */
-export function formatBillingPeriod(interval?: string, intervalCount?: number): string {
-  if (!interval) return 'Unknown'
-  
-  const count = intervalCount || 1
-  
-  switch (interval) {
-    case 'day':
-      return count === 1 ? 'Daily' : `Every ${count} days`
-    case 'week':
-      return count === 1 ? 'Weekly' : `Every ${count} weeks`
-    case 'month':
-      return count === 1 ? 'Monthly' : `Every ${count} months`
-    case 'year':
-      return count === 1 ? 'Yearly' : `Every ${count} years`
-    default:
-      return `Every ${count} ${interval}${count > 1 ? 's' : ''}`
-  }
-}
-
-/**
- * Format current billing period dates
- */
-export function formatCurrentBillingPeriod(startDate?: number | null, endDate?: number | null): string {
-  if (!startDate || !endDate) return 'Period dates unavailable'
-  
+export function formatUsagePeriod(periodStart: string | null, periodEnd: string | null): string {
   try {
-    const start = new Date(startDate * 1000)
-    const end = new Date(endDate * 1000)
-    
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 'Invalid period dates'
-    
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    if (!periodStart || !periodEnd) {
+      return 'Current period'
     }
+
+    const startDate = parseISO(periodStart)
+    const endDate = parseISO(periodEnd)
     
-    const startFormatted = start.toLocaleDateString('en-US', formatOptions)
-    const endFormatted = end.toLocaleDateString('en-US', formatOptions)
+    if (!isValid(startDate) || !isValid(endDate)) {
+      return 'Invalid period'
+    }
+
+    const startFormatted = format(startDate, 'MMM d')
+    const endFormatted = format(endDate, 'MMM d, yyyy')
     
     return `${startFormatted} - ${endFormatted}`
   } catch (error) {
-    console.error('Error formatting billing period dates:', error)
-    return 'Period dates unavailable'
+    timeLogger.error('Usage Period Format Error', 'USAGE_PERIOD_FORMAT_ERROR', { error, periodStart, periodEnd })
+    return 'Error formatting period'
+  }
+}
+
+/**
+ * Format trial time remaining for display
+ * @param trialEnd - Trial end date string
+ * @returns Formatted trial time remaining string
+ */
+export function formatTrialTimeRemaining(trialEnd: string | null): string {
+  try {
+    if (!trialEnd) {
+      return 'No trial'
+    }
+
+    const trialEndDate = parseISO(trialEnd)
+    
+    if (!isValid(trialEndDate)) {
+      return 'Invalid trial date'
+    }
+
+    const now = new Date()
+    const daysRemaining = Math.max(0, differenceInDays(trialEndDate, now))
+    
+    if (daysRemaining === 0) {
+      return 'Trial expired'
+    } else if (daysRemaining === 1) {
+      return '1 day remaining'
+    } else {
+      return `${daysRemaining} days remaining`
+    }
+  } catch (error) {
+    timeLogger.error('Trial Time Remaining Format Error', 'TRIAL_TIME_REMAINING_FORMAT_ERROR', { error, trialEnd })
+    return 'Error'
+  }
+}
+
+/**
+ * Format next billing date for display
+ * @param nextBillingDate - Next billing date string
+ * @returns Formatted next billing date string
+ */
+export function formatNextBilling(nextBillingDate: string | null): string {
+  try {
+    if (!nextBillingDate) {
+      return 'N/A'
+    }
+
+    const billingDate = parseISO(nextBillingDate)
+    
+    if (!isValid(billingDate)) {
+      return 'Invalid date'
+    }
+
+    return format(billingDate, 'MMM d, yyyy')
+  } catch (error) {
+    timeLogger.error('Next Billing Format Error', 'NEXT_BILLING_FORMAT_ERROR', { error, nextBillingDate })
+    return 'Error'
+  }
+}
+
+/**
+ * Format billing interval for display (e.g., "monthly", "yearly")
+ * @param interval - Billing interval (month, year, etc.)
+ * @param intervalCount - Number of intervals
+ * @returns Formatted billing interval string
+ */
+export function formatBillingInterval(interval: string, intervalCount: number = 1): string {
+  try {
+    if (!interval) {
+      return 'Unknown'
+    }
+
+    const normalizedInterval = interval.toLowerCase()
+    
+    if (intervalCount === 1) {
+      switch (normalizedInterval) {
+        case 'month':
+          return 'Monthly'
+        case 'year':
+          return 'Yearly'
+        case 'week':
+          return 'Weekly'
+        case 'day':
+          return 'Daily'
+        default:
+          return `Every ${normalizedInterval}`
+      }
+    } else {
+      switch (normalizedInterval) {
+        case 'month':
+          return `Every ${intervalCount} months`
+        case 'year':
+          return `Every ${intervalCount} years`
+        case 'week':
+          return `Every ${intervalCount} weeks`
+        case 'day':
+          return `Every ${intervalCount} days`
+        default:
+          return `Every ${intervalCount} ${normalizedInterval}s`
+      }
+    }
+  } catch (error) {
+    timeLogger.error('Billing Interval Format Error', 'BILLING_INTERVAL_FORMAT_ERROR', { error, interval, intervalCount })
+    return 'Unknown'
+  }
+}
+
+/**
+ * Format current billing period for display
+ * @param periodStart - Period start timestamp (Unix timestamp)
+ * @param periodEnd - Period end timestamp (Unix timestamp)
+ * @returns Formatted period string
+ */
+export function formatCurrentBillingPeriod(periodStart: number | null, periodEnd: number | null): string {
+  try {
+    if (!periodStart || !periodEnd) {
+      return 'N/A'
+    }
+
+    const startDate = new Date(periodStart * 1000)
+    const endDate = new Date(periodEnd * 1000)
+    
+    if (!isValid(startDate) || !isValid(endDate)) {
+      return 'Invalid period'
+    }
+
+    const startFormatted = format(startDate, 'MMM d')
+    const endFormatted = format(endDate, 'MMM d, yyyy')
+    
+    return `${startFormatted} - ${endFormatted}`
+  } catch (error) {
+    timeLogger.error('Current Billing Period Format Error', 'CURRENT_BILLING_PERIOD_FORMAT_ERROR', { error, periodStart, periodEnd })
+    return 'Error formatting period'
+  }
+}
+
+/**
+ * Format billing period dates for subscription display
+ * @param currentPeriodStart - Current period start date
+ * @param currentPeriodEnd - Current period end date
+ * @returns Object with formatted dates and period info
+ */
+export function formatBillingPeriod(
+  currentPeriodStart: string | null,
+  currentPeriodEnd: string | null
+): {
+  periodStart: string
+  periodEnd: string
+  nextBillingDate: string
+  daysUntilRenewal: number
+} {
+  try {
+    if (!currentPeriodStart || !currentPeriodEnd) {
+      return {
+        periodStart: 'N/A',
+        periodEnd: 'N/A',
+        nextBillingDate: 'N/A',
+        daysUntilRenewal: 0
+      }
+    }
+
+    const startDate = parseISO(currentPeriodStart)
+    const endDate = parseISO(currentPeriodEnd)
+    
+    if (!isValid(startDate) || !isValid(endDate)) {
+      return {
+        periodStart: 'Invalid date',
+        periodEnd: 'Invalid date',
+        nextBillingDate: 'Invalid date',
+        daysUntilRenewal: 0
+      }
+    }
+
+    const now = new Date()
+    const daysUntilRenewal = Math.max(0, differenceInDays(endDate, now))
+
+    return {
+      periodStart: format(startDate, 'MMM d, yyyy'),
+      periodEnd: format(endDate, 'MMM d, yyyy'),
+      nextBillingDate: format(endDate, 'MMM d, yyyy'),
+      daysUntilRenewal
+    }
+  } catch (error) {
+    timeLogger.error('Billing Period Format Error', 'BILLING_PERIOD_FORMAT_ERROR', { error, currentPeriodStart, currentPeriodEnd })
+    return {
+      periodStart: 'Error',
+      periodEnd: 'Error',
+      nextBillingDate: 'Error',
+      daysUntilRenewal: 0
+    }
   }
 }

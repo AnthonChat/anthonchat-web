@@ -1,6 +1,7 @@
 "use client"
 import Script from "next/script";
 import React, { FC } from "react";
+import { uiLogger } from "@/lib/utils/loggers";
 
 declare global {
 	interface HTMLElementTagNameMap {
@@ -24,13 +25,14 @@ export const NextStripePricingTable: FC<{
 				strategy="lazyOnload"
 				src="https://js.stripe.com/v3/pricing-table.js"
 				onLoad={() => {
-					console.log("✅ [PricingTable Debug] Script loaded");
+					uiLogger.info("PRICING_TABLE_SCRIPT_LOADED", "PRICING", { pricingTableId, clientReferenceId });
 				}}
 				onError={(error) => {
-					console.error(
-						"❌ [PricingTable Debug] Script failed to load:",
-						error
-					);
+					uiLogger.error("PRICING_TABLE_SCRIPT_LOAD_ERROR", "PRICING", { 
+						error, 
+						pricingTableId, 
+						clientReferenceId 
+					});
 				}}
 			/>
 

@@ -1,8 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { middlewareLogger } from '@/lib/utils/loggers'
 
 export async function middleware(request: NextRequest) {
-  console.log('Middleware - Entry point reached for:', request.nextUrl.pathname)
+  middlewareLogger.info('Middleware entry', 'MIDDLEWARE_ENTRY', { pathname: request.nextUrl.pathname })
   
   let supabaseResponse = NextResponse.next({
     request,
@@ -39,15 +40,14 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  console.log('Middleware - Running for path:', pathname);
-  console.log('Middleware - User:', user ? user.id : 'No user');
+  middlewareLogger.info('Processing middleware request', 'MIDDLEWARE_PROCESSING', { pathname }, user?.id || undefined);
 
   // Paths that are always allowed (login, auth callbacks, static assets)
   const publicPaths = ['/login', '/auth', '/signup'];
 
   // If user is not authenticated and trying to access a protected path, redirect to login
   if (!user && !publicPaths.some(path => pathname.startsWith(path))) {
-    console.log('Middleware - No user, redirecting to login from:', pathname);
+    middlewareLogger.info('Redirecting unauthenticated user to login', 'MIDDLEWARE_REDIRECT_TO_LOGIN', { pathname });
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
@@ -61,11 +61,10 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    console.log('Middleware - User data:', userData);
-    console.log('Middleware - User error:', userError);
+    middlewareLogger.info('Fetched user data for onboarding check', 'MIDDLEWARE_USER_DATA_FETCH', { userData, userError }, user.id);
 
     if (userError || !userData) {
-      console.error("Error fetching user onboarding status:", userError);
+      middlewareLogger.error('Failed to fetch user onboarding status', 'USER_ONBOARDING_STATUS_FETCH_ERROR', { error: userError }, user.id);
       // Handle error, maybe redirect to an error page or logout
       const url = request.nextUrl.clone();
       url.pathname = '/login'; // Fallback to login on error
@@ -73,13 +72,13 @@ export async function middleware(request: NextRequest) {
     }
 
     const onboardingComplete = userData.onboarding_complete;
-    console.log('Middleware - Onboarding complete:', onboardingComplete);
+    middlewareLogger.info('Checked onboarding status', 'MIDDLEWARE_ONBOARDING_STATUS', { onboardingComplete }, user.id);
 
     // If onboarding is not complete
     if (!onboardingComplete) {
       // If trying to access any page other than signup/complete, redirect to signup/complete
       if (!pathname.startsWith('/signup/complete') && !pathname.startsWith('/auth/callback')) {
-        console.log('Middleware - Redirecting to signup/complete');
+        middlewareLogger.info('Redirecting to signup complete', 'MIDDLEWARE_REDIRECT_TO_SIGNUP_COMPLETE', { pathname }, user.id);
         const url = request.nextUrl.clone();
         url.pathname = '/signup/complete';
         return NextResponse.redirect(url);
@@ -87,7 +86,7 @@ export async function middleware(request: NextRequest) {
     } else {
       // If onboarding is complete and trying to access signup, redirect to dashboard
       if (pathname.startsWith('/signup')) {
-        console.log('Middleware - Redirecting to dashboard');
+        middlewareLogger.info('Redirecting to dashboard', 'MIDDLEWARE_REDIRECT_TO_DASHBOARD', { pathname }, user.id);
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);

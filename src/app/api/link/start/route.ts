@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { randomUUID } from "crypto";
+import { apiLogger } from "@/lib/utils/loggers";
 
 export async function POST(request: NextRequest) {
 	const supabase = await createClient();
@@ -44,10 +45,12 @@ export async function POST(request: NextRequest) {
 		});
 
 	if (verificationError) {
-		console.error(
-			"Failed to create channel verification:",
-			verificationError
-		);
+		apiLogger.error('CHANNEL_VERIFICATION_CREATE_ERROR', 'API_LINK', { 
+			error: verificationError, 
+			userId: user.id, 
+			channelId: channel_id, 
+			nonce 
+		});
 		return NextResponse.json(
 			{ error: "Failed to initiate link verification." },
 			{ status: 500 }

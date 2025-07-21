@@ -3,6 +3,8 @@
  * Prevents hydration mismatches by using consistent locale settings
  */
 
+import { dateLogger } from '@/lib/utils/loggers'
+
 /**
  * Format a date string consistently for display
  * Uses en-US locale to prevent server/client hydration mismatches
@@ -20,7 +22,7 @@ export function formatDate(dateString?: string | null): string {
       day: 'numeric'
     })
   } catch (error) {
-    console.error('Error formatting date:', error)
+    dateLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString })
     return 'Invalid Date'
   }
 }
@@ -45,7 +47,7 @@ export function formatDateTime(dateString?: string | null): string {
       hour12: true
     })
   } catch (error) {
-    console.error('Error formatting date time:', error)
+    dateLogger.error('Datetime Format Error', 'DATETIME_FORMAT_ERROR', { error, dateString })
     return 'Invalid Date'
   }
 }
@@ -79,7 +81,7 @@ export function formatMonthYear(dateString?: string | null): string {
       year: 'numeric'
     })
   } catch (error) {
-    console.error('Error formatting month/year:', error)
+    dateLogger.error('Month Year Format Error', 'MONTH_YEAR_FORMAT_ERROR', { error, dateString })
     return 'Invalid Date'
   }
 }

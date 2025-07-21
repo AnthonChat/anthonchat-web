@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { userLogger } from '@/lib/utils/loggers'
 import type { Database as PublicDatabase } from "@/utils/supabase/schemas/public";
 
 // Type aliases for better readability
@@ -19,7 +20,7 @@ export async function getUserData(userId: string): Promise<User> {
 		.single();
 		
 	if (error) {
-		console.error("Error fetching user data:", error);
+		userLogger.error("USER_DATA_FETCH", "USER_QUERIES", { error: error.message, userId });
 		throw error;
 	}
 	
@@ -40,7 +41,7 @@ export async function updateUserData(userId: string, updates: UserUpdate): Promi
 		.single();
 		
 	if (error) {
-		console.error("Error updating user data:", error);
+		userLogger.error("USER_DATA_UPDATE", "USER_QUERIES", { error: error.message, userId, updates });
 		throw error;
 	}
 	
@@ -60,7 +61,7 @@ export async function createUser(userData: UserInsert): Promise<User> {
 		.single();
 		
 	if (error) {
-		console.error("Error creating user:", error);
+		userLogger.error("USER_CREATE", "USER_QUERIES", { error: error.message, userData });
 		throw error;
 	}
 	

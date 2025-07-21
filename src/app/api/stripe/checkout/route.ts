@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { createCheckoutSession, createStripeCustomer, getStripeCustomerByEmail } from '@/lib/stripe'
 import { getTierByPriceId } from '@/lib/queries/tiers'
+import { apiLogger } from '@/lib/utils/loggers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (error) {
-    console.error('Stripe checkout error:', error)
+    apiLogger.error('STRIPE_CHECKOUT_ERROR', 'API_STRIPE', { error })
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

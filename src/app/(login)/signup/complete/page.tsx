@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import SignupCompleteForm from "@/components/signup/SignupCompleteForm";
+import { uiLogger } from "@/lib/utils/loggers";
 
 export default async function SignupCompletePage() {
 	const supabase = await createClient();
@@ -23,10 +24,10 @@ export default async function SignupCompletePage() {
 
 	// If the check fails, we can log it but we'll still show the form
 	if (rpcError) {
-		console.error(
-			"Error calling onboarding check function:",
-			rpcError.message
-		);
+		uiLogger.error("ONBOARDING_CHECK_FUNCTION_ERROR", "SIGNUP_COMPLETE", {
+			rpcError: rpcError.message,
+			userId: user.id
+		});
 	}
 
 	// 2. If the function returns `true`, redirect immediately
@@ -56,19 +57,19 @@ export default async function SignupCompletePage() {
 		.not("verified_at", "is", null); // Only select channels that are actually verified
 
 	if (userChannelsError) {
-		console.error(
-			"Error fetching verified channels:",
-			userChannelsError.message
-		);
+		uiLogger.error("VERIFIED_CHANNELS_FETCH_ERROR", "SIGNUP_COMPLETE", {
+			userChannelsError: userChannelsError.message,
+			userId: user.id
+		});
 	}
 
 	return (
 		<div className="max-w-2xl w-full space-y-8">
 			<div className="text-center">
-				<h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-					Complete Your Setup
+				<h2 className="mt-6 text-3xl font-extrabold text-foreground">
+					Complete Your Profile
 				</h2>
-				<p className="mt-2 text-sm text-gray-600">
+				<p className="mt-2 text-sm text-muted-foreground">
 					Just a few more details to get you started with AnthonChat
 				</p>
 			</div>

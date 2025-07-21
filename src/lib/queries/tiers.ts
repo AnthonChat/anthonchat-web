@@ -1,6 +1,7 @@
 // lib/queries/tiers.ts
 
 import { createClient } from '@/utils/supabase/server'
+import { tierLogger } from '@/lib/utils/loggers'
 import type { Database as PublicDatabase } from '@/utils/supabase/schemas/public'
 import type { Database as StripeDatabase } from '@/utils/supabase/schemas/stripe'
 
@@ -36,7 +37,7 @@ export async function getTierByPriceId(priceId: string): Promise<TierWithFeature
     .single()
     
   if (priceError) {
-    console.error('Error fetching price by ID:', priceError)
+    tierLogger.error('PRICE_FETCH_BY_ID', 'TIER_QUERIES', { error: priceError, priceId })
     return null
   }
   
@@ -54,7 +55,7 @@ export async function getTierByPriceId(priceId: string): Promise<TierWithFeature
     .single()
     
   if (productError) {
-    console.error('Error fetching product by price ID:', productError)
+    tierLogger.error('PRODUCT_FETCH_BY_PRICE_ID', 'TIER_QUERIES', { error: productError, productId: priceData.product, priceId })
     return null
   }
   
@@ -66,7 +67,7 @@ export async function getTierByPriceId(priceId: string): Promise<TierWithFeature
     .single()
     
   if (featuresError && featuresError.code !== 'PGRST116') {
-    console.error('Error fetching tier features:', featuresError)
+    tierLogger.error('TIER_FEATURES_FETCH', 'TIER_QUERIES', { error: featuresError, productId: productData.id })
   }
   
   // Get all prices for this product
@@ -78,7 +79,7 @@ export async function getTierByPriceId(priceId: string): Promise<TierWithFeature
     .eq('active', true)
     
   if (pricesError) {
-    console.error('Error fetching prices for product:', pricesError)
+    tierLogger.error('PRICES_FETCH_FOR_PRODUCT', 'TIER_QUERIES', { error: pricesError, productId: productData.id })
   }
   
   return {
@@ -106,7 +107,7 @@ export async function getTierBySlug(slug: string): Promise<TierWithFeatures | nu
     .eq('active', true)
     
   if (productError) {
-    console.error('Error fetching products:', productError)
+    tierLogger.error('PRODUCTS_FETCH_BY_SLUG', 'TIER_QUERIES', { error: productError, slug })
     return null
   }
   
@@ -128,7 +129,7 @@ export async function getTierBySlug(slug: string): Promise<TierWithFeatures | nu
     .single()
     
   if (featuresError && featuresError.code !== 'PGRST116') {
-    console.error('Error fetching tier features:', featuresError)
+    tierLogger.error('TIER_FEATURES_FETCH_BY_SLUG', 'TIER_QUERIES', { error: featuresError, productId: product.id, slug })
   }
   
   // Get all prices for this product
@@ -140,7 +141,7 @@ export async function getTierBySlug(slug: string): Promise<TierWithFeatures | nu
     .eq('active', true)
     
   if (pricesError) {
-    console.error('Error fetching prices for product:', pricesError)
+    tierLogger.error('PRICES_FETCH_FOR_PRODUCT_BY_SLUG', 'TIER_QUERIES', { error: pricesError, productId: product.id, slug })
   }
   
   return {
@@ -168,7 +169,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .eq('active', true)
     
   if (productsError) {
-    console.error('Error fetching active products:', productsError)
+    tierLogger.error('ACTIVE_PRODUCTS_FETCH', 'TIER_QUERIES', { error: productsError })
     return []
   }
   
@@ -182,7 +183,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .select('*')
     
   if (featuresError) {
-    console.error('Error fetching tier features:', featuresError)
+    tierLogger.error('ALL_TIER_FEATURES_FETCH', 'TIER_QUERIES', { error: featuresError })
   }
   
   // Get all prices
@@ -193,7 +194,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .eq('active', true)
     
   if (pricesError) {
-    console.error('Error fetching prices:', pricesError)
+    tierLogger.error('ALL_PRICES_FETCH', 'TIER_QUERIES', { error: pricesError })
   }
   
   // Combine data
@@ -236,7 +237,7 @@ export async function upsertTierFeatures(
     .single()
     
   if (error) {
-    console.error('Error upserting tier features:', error)
+    tierLogger.error('TIER_FEATURES_UPSERT', 'TIER_QUERIES', { error, productId, features })
     throw error
   }
   

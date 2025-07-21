@@ -9,6 +9,10 @@ import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
 import { ChannelsOverview } from "@/components/dashboard/ChannelsOverview";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { uiLogger } from "@/lib/utils/loggers";
 
 export default async function DashboardPage() {
 	const supabase = await createClient();
@@ -30,7 +34,10 @@ export default async function DashboardPage() {
 	);
 
 	if (rpcError) {
-		console.error("Dashboard onboarding check failed:", rpcError.message);
+		uiLogger.error("DASHBOARD_ONBOARDING_CHECK_FAILED", "DASHBOARD", { 
+			rpcError: rpcError.message, 
+			userId: user.id 
+		});
 		// It's safe to proceed, allowing the user to access the dashboard
 		// even if the check fails, preventing them from being locked out.
 	}
@@ -48,41 +55,28 @@ export default async function DashboardPage() {
 	]);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background">
-			{/* Enhanced Header */}
-			<header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border/50 shadow-sm">
-				<div className="container mx-auto px-6 py-4">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4 animate-fade-in">
-							<div>
-								<h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-									Dashboard
-								</h1>
-								<p className="text-sm text-muted-foreground font-medium">
-									Welcome back,{" "}
-									<span className="text-primary font-semibold">
-										{user.email}
-									</span>
-								</p>
-							</div>
-						</div>
-
-						<form
-							action="/auth/signout"
-							method="post"
-							className="animate-fade-in">
+		<DashboardLayout variant="enhanced">
+			<DashboardHeader
+				title="Dashboard"
+				description={`Welcome back, ${user.email}`}
+				variant="enhanced"
+				actions={
+					<div className="flex items-center gap-4">
+						<ThemeToggle />
+						<form action="/auth/signout" method="post">
 							<Button
 								type="submit"
 								variant="outline"
 								size="sm"
-								className="hover-lift group">
+								className="hover-lift group"
+							>
 								<LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
 								Sign Out
 							</Button>
 						</form>
 					</div>
-				</div>
-			</header>
+				}
+			/>
 
 			{/* Enhanced Main Content */}
 			<main className="container mx-auto px-6 py-8">
@@ -139,6 +133,6 @@ export default async function DashboardPage() {
 					</div>
 				</div>
 			</main>
-		</div>
+		</DashboardLayout>
 	);
 }

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   CreditCard, 
   Calendar, 
@@ -14,36 +14,58 @@ import {
   Zap,
   Shield
 } from "lucide-react"
-import { useRouter } from 'next/navigation'
-import { calculateTrialInfo } from "@/lib/utils/trial-calculations"
-import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod, formatBillingPeriod, formatCurrentBillingPeriod } from "@/lib/utils/time-formatting"
-import { loadStripe } from '@stripe/stripe-js'
-import { toast } from 'sonner'
-import { UserSubscription } from '@/lib/queries/subscription'
+import { useRouter } from "next/navigation";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { calculateTrialInfo } from "@/lib/utils/trial-calculations";
+import { formatTrialTimeRemaining, formatNextBilling, formatUsagePeriod, formatCurrentBillingPeriod, formatBillingInterval } from "@/lib/utils/time-formatting";
+import { cn } from "@/lib/utils";
+
+// Stripe imports
+import { loadStripe } from "@stripe/stripe-js";
+import { toast } from "sonner";
+import { UserSubscription } from "@/lib/queries/subscription";
+
+import { SubscriptionManagementSkeleton, LoadingWrapper } from "@/components/ui/loading";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface SubscriptionManagementProps {
   subscription: UserSubscription | null
   userId: string
+  isLoading?: boolean
 }
 
-export function SubscriptionManagement({ subscription }: SubscriptionManagementProps) {
-  const [isLoading, setIsLoading] = useState(false)
+export function SubscriptionManagement({ subscription, isLoading = false }: SubscriptionManagementProps) {
+  const [isActionLoading, setIsActionLoading] = useState(false)
   const router = useRouter()
 
-  const getStatusBadge = () => {
-    switch (subscription?.status) {
-      case 'trialing':
-        return <Badge variant="warning">Trial</Badge>
-      case 'active':
-        return <Badge variant="success">Active</Badge>
-      case 'past_due':
-        return <Badge variant="destructive">Past Due</Badge>
-      case 'canceled':
-        return <Badge variant="secondary">Canceled</Badge>
-      default:
-        return <Badge variant="outline">No Subscription</Badge>
-    }
-  }
+
+
+  return (
+    <LoadingWrapper
+      isLoading={isLoading}
+      skeleton={<SubscriptionManagementSkeleton />}
+    >
+      <SubscriptionManagementContent 
+        subscription={subscription} 
+        isActionLoading={isActionLoading}
+        setIsActionLoading={setIsActionLoading}
+        router={router}
+      />
+    </LoadingWrapper>
+  )
+}
+
+function SubscriptionManagementContent({ 
+  subscription, 
+  isActionLoading, 
+  setIsActionLoading, 
+  router 
+}: {
+  subscription: UserSubscription | null
+  isActionLoading: boolean
+  setIsActionLoading: (loading: boolean) => void
+  router: AppRouterInstance
+}) {
 
 
 
@@ -65,8 +87,8 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
   const activePlan = {
     name: subscription?.product?.name ?? 'No active plan',
     features: [
-      `Tokens: ${subscription?.features?.tokens_limit?.toLocaleString() ?? 'N/A'} per month`,
-      `Requests: ${subscription?.features?.requests_limit?.toLocaleString() ?? 'N/A'} per month`,
+      `Tokens: ${subscription?.features?.tokens_limit ? subscription.features.tokens_limit.toLocaleString() : 'N/A'} per month`,
+      `Requests: ${subscription?.features?.requests_limit ? subscription.features.requests_limit.toLocaleString() : 'N/A'} per month`,
       `History: ${subscription?.features?.history_limit ?? 'N/A'} days`,
     ],
   };
@@ -126,7 +148,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
       return
     }
 
-    setIsLoading(true)
+    setIsActionLoading(true)
 
     try {
       // Create Stripe checkout session
@@ -156,15 +178,15 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
         }
       }
     } catch (error) {
-      console.error('Checkout error:', error)
+      uiLogger.error('CHECKOUT_ERROR', 'SUBSCRIPTION_MANAGEMENT', { error, planSlug });
       toast.error('Failed to start checkout process')
     } finally {
-      setIsLoading(false)
-    }
+        setIsActionLoading(false)
+      }
   }
 
   const handleManageBilling = async () => {
-    setIsLoading(true)
+    setIsActionLoading(true)
 
     try {
       const response = await fetch('/api/stripe/billing-portal', {
@@ -188,10 +210,10 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
       const { url } = await response.json()
       window.location.href = url
     } catch (error) {
-      console.error('Billing portal error:', error)
+      uiLogger.error('BILLING_PORTAL_ERROR', 'SUBSCRIPTION_MANAGEMENT', { error });
       toast.error('Failed to open billing portal')
     } finally {
-      setIsLoading(false)
+      setIsActionLoading(false)
     }
   }
 
@@ -200,7 +222,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
       return
     }
 
-    setIsLoading(true)
+    setIsActionLoading(true)
 
     try {
       const response = await fetch('/api/stripe/subscription/cancel', {
@@ -217,15 +239,15 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
       toast.success('Subscription canceled successfully')
       router.refresh()
     } catch (error) {
-      console.error('Cancel subscription error:', error)
+      uiLogger.error('CANCEL_SUBSCRIPTION_ERROR', 'SUBSCRIPTION_MANAGEMENT', { error });
       toast.error('Failed to cancel subscription')
     } finally {
-      setIsLoading(false)
+      setIsActionLoading(false)
     }
   }
 
   const handleReactivateSubscription = async () => {
-    setIsLoading(true)
+    setIsActionLoading(true)
 
     try {
       const response = await fetch('/api/stripe/subscription/reactivate', {
@@ -242,10 +264,10 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
       toast.success('Subscription reactivated successfully')
       router.refresh()
     } catch (error) {
-      console.error('Reactivate subscription error:', error)
+      uiLogger.error('REACTIVATE_SUBSCRIPTION_ERROR', 'SUBSCRIPTION_MANAGEMENT', { error });
       toast.error('Failed to reactivate subscription')
     } finally {
-      setIsLoading(false)
+      setIsActionLoading(false)
     }
   }
 
@@ -284,19 +306,15 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                   ? (trialInfo?.isExpired 
                       ? 'Trial has expired' 
                       : formatTrialTimeRemaining(
-                          subscription.current_period_start 
-                            ? new Date(subscription.current_period_start * 1000).toISOString()
-                            : undefined,
-                          subscription.current_period_end
-                            ? new Date(subscription.current_period_end * 1000).toISOString()
-                            : undefined
+                          subscription.trial_end
+                            ? new Date((subscription.trial_end as number) * 1000).toISOString()
+                            : null
                         )
                     )
                   : subscription ? 'Subscription Plan' : 'No active subscription'
                 }
               </p>
             </div>
-            {getStatusBadge()}
           </div>
 
           {subscription && (
@@ -315,10 +333,10 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                       {formatUsagePeriod(
                         subscription.current_period_start 
                           ? new Date(subscription.current_period_start * 1000).toISOString()
-                          : undefined,
+                          : null,
                         subscription.current_period_end
                           ? new Date(subscription.current_period_end * 1000).toISOString()
-                          : undefined
+                          : null
                       )}
                     </div>
                     {trialInfo && (
@@ -343,7 +361,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                           Billing Cycle
                         </span>
                         <span className="text-sm font-medium">
-                          {formatBillingPeriod(subscription.billing_interval, subscription.billing_interval_count)}
+                          {formatBillingInterval(subscription.billing_interval || 'month', subscription.billing_interval_count || 1)}
                         </span>
                       </div>
                       
@@ -388,7 +406,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {activePlan.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -408,33 +426,33 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
         </CardHeader>
         <CardContent className="space-y-4">
           {subscription?.status === 'trialing' && (
-            <Button onClick={() => handleUpgrade()} disabled={isLoading} className="w-full">
+            <Button onClick={() => handleUpgrade()} disabled={isActionLoading} className="w-full">
               Upgrade to Paid Plan
             </Button>
           )}
 
           {subscription?.status === 'active' && !subscription.cancel_at_period_end && (
             <div className="space-y-2">
-              <Button variant="outline" onClick={() => handleUpgrade()} disabled={isLoading} className="w-full">
+              <Button variant="outline" onClick={() => handleUpgrade()} disabled={isActionLoading} className="w-full">
                 Change Plan
               </Button>
-              <Button variant="outline" onClick={handleManageBilling} disabled={isLoading} className="w-full">
+              <Button variant="outline" onClick={handleManageBilling} disabled={isActionLoading} className="w-full">
                 Manage Billing
               </Button>
-              <Button variant="destructive" onClick={handleCancelSubscription} disabled={isLoading} className="w-full">
+              <Button variant="destructive" onClick={handleCancelSubscription} disabled={isActionLoading} className="w-full">
                 Cancel Subscription
               </Button>
             </div>
           )}
 
           {subscription?.cancel_at_period_end && (
-            <Button onClick={handleReactivateSubscription} disabled={isLoading} className="w-full">
+            <Button onClick={handleReactivateSubscription} disabled={isActionLoading} className="w-full">
               Reactivate Subscription
             </Button>
           )}
 
           {!subscription && (
-            <Button onClick={handleStartFreeTrial} disabled={isLoading} className="w-full">
+            <Button onClick={handleStartFreeTrial} disabled={isActionLoading} className="w-full">
               Start Free Trial
             </Button>
           )}
@@ -459,7 +477,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                 const isCurrentPlan = productSlug === plan.slug
                 
                 return (
-                  <Card key={plan.slug} className={`relative ${isCurrentPlan ? 'ring-2 ring-info' : ''}`}>
+                  <Card key={plan.slug} className={cn("relative", isCurrentPlan && "ring-2 ring-info")}>
                     <CardHeader className="text-center">
                       <div className="mx-auto p-2 bg-info/10 rounded-lg w-fit">
                         <IconComponent className="h-6 w-6 text-info" />
@@ -476,7 +494,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                       <ul className="space-y-2">
                         {plan.features.map((feature, index) => (
                           <li key={index} className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-4 w-4 text-success" />
                             {feature}
                           </li>
                         ))}
@@ -484,7 +502,7 @@ export function SubscriptionManagement({ subscription }: SubscriptionManagementP
                       {!isCurrentPlan && (
                         <Button 
                           onClick={() => handleUpgrade(plan.slug)} 
-                          disabled={isLoading}
+                          disabled={isActionLoading}
                           className="w-full"
                         >
                           Select Plan

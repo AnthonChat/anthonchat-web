@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { createClient } from "@/utils/supabase/browser";
 import ChannelVerification from "./ChannelVerification";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface Channel {
 	id: string;
@@ -126,11 +127,11 @@ export default function SignupCompleteForm({
 				);
 
 				if (error) {
-					console.error("Failed to record channel:", error);
+					uiLogger.error("CHANNEL_RECORD_ERROR", "SIGNUP", { error, channelId, userId: user.id });
 					setError("Could not save channel connection. Try again?");
 				}
 			} catch (err) {
-				console.error("Channel verification error:", err);
+				uiLogger.error("CHANNEL_VERIFICATION_ERROR", "SIGNUP", { err, channelId, userId: user.id });
 				setError("Could not save channel connection. Try again?");
 			}
 		},
@@ -169,7 +170,7 @@ export default function SignupCompleteForm({
 			setProfileSaved(true);
 			setError(null);
 		} catch (err: unknown) {
-			console.error("Profile save error:", err);
+			uiLogger.error("PROFILE_SAVE_ERROR", "SIGNUP", { err, userId: user.id });
 
 			let errorMessage = "Failed to save profile";
 
@@ -249,7 +250,7 @@ export default function SignupCompleteForm({
 			);
 
 			if (checkError) {
-				console.error("Error checking onboarding status:", checkError);
+				uiLogger.error("ONBOARDING_STATUS_CHECK_ERROR", "SIGNUP", { checkError, userId: user.id });
 				throw new Error(
 					`Failed to verify onboarding status: ${checkError.message}`
 				);
@@ -289,10 +290,11 @@ export default function SignupCompleteForm({
 							});
 
 						if (subscriptionError) {
-							console.error(
-								"Failed to create trial subscription:",
-								subscriptionError
-							);
+							uiLogger.error("TRIAL_SUBSCRIPTION_CREATE_ERROR", "SIGNUP", { 
+								subscriptionError, 
+								userId: user.id, 
+								tierId: tier.id 
+							});
 							// Don't block the flow for subscription creation failure
 						}
 					}
@@ -305,7 +307,7 @@ export default function SignupCompleteForm({
 				);
 			}
 		} catch (err: unknown) {
-			console.error("Setup error:", err);
+			uiLogger.error("SETUP_ERROR", "SIGNUP", { err, userId: user.id });
 
 			let errorMessage = "An error occurred during setup";
 
@@ -400,8 +402,8 @@ export default function SignupCompleteForm({
 				</CardContent>
 				<CardFooter className="flex flex-col space-y-3">
 					{profileSaved && (
-						<div className="w-full p-3 bg-green-50 border border-green-200 rounded-md">
-							<p className="text-green-800 text-sm text-center">
+						<div className="w-full p-3 bg-success/5 border border-success/20 rounded-md">
+						<p className="text-success text-sm text-center">
 								✓ Profile saved successfully!
 							</p>
 						</div>

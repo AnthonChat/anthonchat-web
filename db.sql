@@ -335,63 +335,98 @@ $$;
 ALTER FUNCTION "public"."get_current_usage"("p_user_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_user_activity"("p_user_id" "uuid") RETURNS json
-    LANGUAGE "sql" SECURITY DEFINER
+CREATE OR REPLACE FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer DEFAULT NULL::integer) RETURNS json
+    LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
-SELECT
-  json_build_object(
-    'user_memories',
-    COALESCE(
-      (
-        SELECT
-          json_agg(
-            json_build_object(
-              'role',
-              um.role,
-              'content',
-              um.content,
-              'created_at',
-              um.created_at
+DECLARE
+    v_history_limit integer;
+BEGIN
+    -- Fix search_path for SECURITY DEFINER safety
+    PERFORM set_config('search_path', 'public, stripe, pg_temp', true);
+
+    -- Determine effective history limit
+    IF p_history_limit IS NOT NULL THEN
+        v_history_limit := p_history_limit;
+    ELSE
+        -- Fetch tier-derived history limit
+        SELECT tier_history_limit
+        INTO v_history_limit
+        FROM public.get_user_usage_and_limits(p_user_id)
+        LIMIT 1;
+    END IF;
+
+    -- Normalize: if NULL set to 0 (no items); negative => unlimited
+    IF v_history_limit IS NULL THEN
+        v_history_limit := 0;
+    END IF;
+
+    RETURN json_build_object(
+        'user_memories',
+        COALESCE((
+            WITH recent AS (
+                SELECT um.role, um.content, um.created_at
+                FROM public.user_memories um
+                WHERE um.user_id = p_user_id
+                ORDER BY um.created_at DESC
+                -- Apply limit only if not unlimited
+                LIMIT CASE WHEN v_history_limit < 0 THEN NULL ELSE v_history_limit END
             )
-            ORDER BY
-              um.created_at
-          )
-        FROM
-          public.user_memories um
-        WHERE
-          um.user_id = p_user_id
-      ),
-      '[]' :: json
-    ),
-    'user_messages',
-    COALESCE(
-      (
-        SELECT
-          json_agg(
-            json_build_object(
-              'message_id',
-              cm.id,
-              'channel_id',
-              uc.channel_id,
-              'created_at',
-              cm.created_at
+            SELECT json_agg(r ORDER BY r.created_at)
+            FROM recent r
+        ), '[]'::json),
+        'user_messages',
+        COALESCE((
+            WITH recent AS (
+                SELECT
+                    cm.id AS message_id,
+                    uc.channel_id,
+                    cm.created_at
+                FROM public.chat_messages cm
+                JOIN public.user_channels uc ON cm.user_channel = uc.id
+                WHERE uc.user_id = p_user_id
+                ORDER BY cm.created_at DESC
+                LIMIT CASE WHEN v_history_limit < 0 THEN NULL ELSE v_history_limit END
             )
-            ORDER BY
-              cm.created_at
-          )
-        FROM
-          public.chat_messages cm
-          JOIN public.user_channels uc ON cm.user_channel = uc.id
-        WHERE
-          uc.user_id = p_user_id
-      ),
-      '[]' :: json
-    )
-  );
+            SELECT json_agg(r ORDER BY r.created_at)
+            FROM recent r
+        ), '[]'::json)
+    );
+END;
 $$;
 
 
-ALTER FUNCTION "public"."get_user_activity"("p_user_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_link" "text") RETURNS json
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+DECLARE
+    user_result json;
+BEGIN
+    SELECT json_build_object(
+        'user_id', u.id,
+        'email', u.email,
+        'nickname', u.nickname,
+        'first_name', u.first_name,
+        'last_name', u.last_name,
+        'channel_id', uc.channel_id,
+        'channel_link', uc.link,
+        'verified_at', uc.verified_at,
+        'created_at', u.created_at
+    )
+    INTO user_result
+    FROM public.users u
+    JOIN public.user_channels uc ON u.id = uc.user_id
+    WHERE uc.channel_id = p_channel_id
+      AND uc.link = p_channel_link;
+
+    RETURN user_result;  -- will be NULL if no match
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_link" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") RETURNS "text"
@@ -428,7 +463,7 @@ $$;
 ALTER FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") RETURNS TABLE("tokens_used" integer, "requests_used" integer, "tier_tokens_limit" integer, "tier_requests_limit" integer, "tier_history_limit" integer)
+CREATE OR REPLACE FUNCTION "public"."get_user_usage_and_limits"("user_id" "uuid") RETURNS TABLE("tokens_used" integer, "requests_used" integer, "tier_tokens_limit" integer, "tier_requests_limit" integer, "tier_history_limit" integer)
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
     AS $$DECLARE
     v_usage RECORD;
@@ -436,8 +471,8 @@ CREATE OR REPLACE FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") 
     v_user_channel_id UUID;
 BEGIN
     SELECT id INTO v_user_channel_id
-    FROM public.user_channels
-    WHERE user_id = user_id
+    FROM public.user_channels uc
+    WHERE uc.user_id = get_user_usage_and_limits.user_id
     LIMIT 1;
 
     IF v_user_channel_id IS NOT NULL THEN
@@ -459,7 +494,7 @@ BEGIN
     JOIN stripe.subscription_items si ON s.id = si.subscription
     JOIN stripe.prices p ON si.price = p.id
     JOIN public.tiers_features tf ON p.product = tf.id
-    WHERE u.id = user_id
+    WHERE u.id = get_user_usage_and_limits.user_id
       AND s.status IN ('active', 'trialing')
     ORDER BY s.created DESC
     LIMIT 1;
@@ -474,45 +509,7 @@ BEGIN
 END;$$;
 
 
-ALTER FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-    RETURN (
-        WITH user_channel_usage AS (
-            SELECT 
-                uc.user_id,
-                COUNT(*) AS total_records,
-                SUM(ur.tokens_used) AS total_tokens_used,
-                SUM(ur.requests_used) AS total_requests_used,
-                MAX(ur.created_at) AS last_activity
-            FROM public.usage_records ur
-            JOIN public.user_channels uc ON ur.user_channel_id = uc.id
-            WHERE uc.user_id = input_user_id
-            GROUP BY uc.user_id
-        )
-        SELECT jsonb_build_object(
-            'user_id', input_user_id,
-            'total_records', COALESCE(total_records, 0),
-            'total_storage', COALESCE((
-                SELECT SUM(file_size)
-                FROM storage.objects 
-                WHERE owner = input_user_id
-            ), 0),
-            'total_tokens_used', COALESCE(total_tokens_used, 0),
-            'total_requests_used', COALESCE(total_requests_used, 0),
-            'last_activity', last_activity
-        )
-        FROM user_channel_usage
-    );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_user_usage_and_limits"("user_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
@@ -539,22 +536,6 @@ $$;
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
 
-
-CREATE OR REPLACE FUNCTION "public"."increment_usage"("p_tokens_increment" integer, "p_requests_increment" integer, "p_user_channel_id" "uuid") RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$BEGIN
-  UPDATE public.usage_records
-  SET
-    tokens_used = tokens_used + p_tokens_increment,
-    requests_used = requests_used + p_requests_increment,
-    updated_at = now()
-  WHERE
-    user_channel_id = p_user_channel_id;
-END;$$;
-
-
-ALTER FUNCTION "public"."increment_usage"("p_tokens_increment" integer, "p_requests_increment" integer, "p_user_channel_id" "uuid") OWNER TO "postgres";
-
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -576,62 +557,49 @@ CREATE OR REPLACE FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_chan
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-    v_user_channel_id uuid;
-    v_new_message public.chat_messages;
+    v_user_channel_id    uuid;
+    v_new_message        public.chat_messages;
+    v_tokens_increment   integer;
+    v_requests_increment integer;
 BEGIN
-    -- Find the user's channel ID
+    -- Find the user_channel id
     SELECT id
-    INTO v_user_channel_id
-    FROM public.user_channels
-    WHERE user_id = p_user_id AND channel_id = p_channel_id;
+      INTO v_user_channel_id
+      FROM public.user_channels
+     WHERE user_id = p_user_id
+       AND channel_id = p_channel_id;
 
-    -- If the user-channel link is found, insert the message
-    IF v_user_channel_id IS NOT NULL THEN
-        INSERT INTO public.chat_messages (user_channel, content, role)
-        VALUES (v_user_channel_id, p_content, p_role)
-        RETURNING * INTO v_new_message; -- Capture the newly inserted row
-        
-        RETURN v_new_message; -- Return the new row
-    ELSE
-        -- Raise an error if the user-channel link is not found
-        RAISE EXCEPTION 'User-channel link not found for user_id % and channel_id %', p_user_id, p_channel_id;
+    IF v_user_channel_id IS NULL THEN
+        RAISE EXCEPTION 'User-channel link not found for user_id % and channel_id %',
+            p_user_id, p_channel_id;
     END IF;
+
+    -- Insert the message
+    INSERT INTO public.chat_messages (user_channel, content, role)
+    VALUES (v_user_channel_id, p_content, p_role)
+    RETURNING * INTO v_new_message;
+
+    -- Count tokens (whitespace split via count_tokens)
+    SELECT count_tokens(COALESCE(p_content, '')) INTO v_tokens_increment;
+
+    -- Increment requests only for assistant messages
+    v_requests_increment := CASE WHEN p_role = 'assistant' THEN 1 ELSE 0 END;
+
+    -- Upsert usage record (single upsert; requests increment may be 0)
+    INSERT INTO public.usage_records (user_channel_id, tokens_used, requests_used, created_at, updated_at)
+    VALUES (v_user_channel_id, v_tokens_increment, v_requests_increment, now(), now())
+    ON CONFLICT (user_channel_id)
+    DO UPDATE SET
+        tokens_used   = usage_records.tokens_used + EXCLUDED.tokens_used,
+        requests_used = usage_records.requests_used + EXCLUDED.requests_used,
+        updated_at    = now();
+
+    RETURN v_new_message;
 END;
 $$;
 
 
 ALTER FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") RETURNS "public"."chat_messages"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-    v_user_channel_id uuid;
-    v_new_message public.chat_messages;
-BEGIN
-    -- Find the user's channel ID
-    SELECT id
-    INTO v_user_channel_id
-    FROM public.user_channels
-    WHERE user_id = p_user_id AND channel_id = p_channel_id;
-
-    -- If the user-channel link is found, insert the message
-    IF v_user_channel_id IS NOT NULL THEN
-        INSERT INTO public.chat_messages (user_channel_id, content, role)
-        VALUES (v_user_channel_id, p_content, p_role)
-        RETURNING * INTO v_new_message; -- Capture the newly inserted row
-        
-        RETURN v_new_message; -- Return the new row
-    ELSE
-        -- Raise an error if the user-channel link is not found
-        RAISE EXCEPTION 'User-channel link not found for user_id % and channel_id %', p_user_id, p_channel_id;
-    END IF;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."reset_daily_usage_records"() RETURNS "void"
@@ -1659,6 +1627,10 @@ CREATE INDEX "idx_channel_verifications_nonce" ON "public"."channel_verification
 
 
 
+CREATE INDEX "idx_user_channels_channel" ON "public"."user_channels" USING "btree" ("channel_id", "link");
+
+
+
 CREATE INDEX "stripe_credit_notes_customer_idx" ON "stripe"."credit_notes" USING "btree" ("customer");
 
 
@@ -1806,7 +1778,7 @@ ALTER TABLE ONLY "public"."channel_verifications"
 
 
 ALTER TABLE ONLY "public"."chat_messages"
-    ADD CONSTRAINT "chat_messages_user_channel_fkey" FOREIGN KEY ("user_channel") REFERENCES "public"."user_channels"("id");
+    ADD CONSTRAINT "chat_messages_user_channel_fkey" FOREIGN KEY ("user_channel") REFERENCES "public"."user_channels"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1816,7 +1788,7 @@ ALTER TABLE ONLY "public"."tiers_features"
 
 
 ALTER TABLE ONLY "public"."usage_records"
-    ADD CONSTRAINT "usage_records_user_channel_id_fkey" FOREIGN KEY ("user_channel_id") REFERENCES "public"."user_channels"("id");
+    ADD CONSTRAINT "usage_records_user_channel_id_fkey" FOREIGN KEY ("user_channel_id") REFERENCES "public"."user_channels"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -1897,6 +1869,10 @@ CREATE POLICY "Allow users to read their own usage records" ON "public"."usage_r
 
 
 CREATE POLICY "Allow users to read their own verifications" ON "public"."channel_verifications" FOR SELECT TO "authenticated" USING (("user_id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "Users can view their own profile" ON "public"."users" FOR SELECT USING (("auth"."uid"() = "id"));
 
 
 
@@ -2302,9 +2278,15 @@ GRANT ALL ON FUNCTION "public"."get_current_usage"("p_user_id" "uuid") TO "servi
 
 
 
-GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_link" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_link" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_link" "text") TO "service_role";
 
 
 
@@ -2314,27 +2296,15 @@ GRANT ALL ON FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") 
 
 
 
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_user_tier_and_usage"("user_id" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_user_total_usage"("input_user_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_user_usage_and_limits"("user_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_user_usage_and_limits"("user_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_user_usage_and_limits"("user_id" "uuid") TO "service_role";
 
 
 
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."increment_usage"("p_tokens_increment" integer, "p_requests_increment" integer, "p_user_channel_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."increment_usage"("p_tokens_increment" integer, "p_requests_increment" integer, "p_user_channel_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."increment_usage"("p_tokens_increment" integer, "p_requests_increment" integer, "p_user_channel_id" "uuid") TO "service_role";
 
 
 
@@ -2347,12 +2317,6 @@ GRANT ALL ON TABLE "public"."chat_messages" TO "service_role";
 GRANT ALL ON FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "anon";
 GRANT ALL ON FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."insert_message"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "anon";
-GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."insert_message_and_return"("p_user_id" "uuid", "p_channel_id" "text", "p_content" "text", "p_role" "public"."chat_role") TO "service_role";
 
 
 

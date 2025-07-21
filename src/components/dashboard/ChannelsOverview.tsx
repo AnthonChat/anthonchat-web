@@ -17,14 +17,13 @@ import {
 	AlertCircle,
 	Plus,
 	Link as LinkIcon,
-	RefreshCw,
-	Wifi,
-	WifiOff,
+	RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useChannels } from "@/hooks/useChannels";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { Skeleton } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingWrapper } from "@/components/ui/loading";
 import { UserChannelWithChannel } from "@/lib/types/channels";
 
 // The component props
@@ -37,12 +36,14 @@ const ChannelItem = React.memo(({
 	userChannel, 
 	index, 
 	getChannelIcon, 
-	formatChannelLink 
+	formatChannelLink,
+	onChannelClick
 }: {
 	userChannel: UserChannelWithChannel;
 	index: number;
 	getChannelIcon: (channelId: string) => React.ReactElement;
 	formatChannelLink: (channelId: string, link: string) => string;
+	onChannelClick: (userChannel: UserChannelWithChannel) => void;
 }) => {
 	const channelDetails = userChannel.channels;
 
@@ -51,16 +52,20 @@ const ChannelItem = React.memo(({
 		return null;
 	}
 
+	const isVerified = !!userChannel.verified_at;
+
 	return (
-		<div
+		<Button
 			key={userChannel.id}
-			className="group p-5 rounded-xl bg-card border-2 border-border hover:border-accent transition-all duration-300 hover:shadow-lg animate-fade-in hover-scale"
+			variant="outline"
+			className="w-full justify-start h-auto p-5 transition-all duration-300 group border-2 bg-card hover:bg-accent border-border hover:border-accent text-foreground"
+			onClick={() => onChannelClick(userChannel)}
 			style={{
 				animationDelay: `${index * 0.1}s`,
 			}}>
-			<div className="flex items-center justify-between">
+			<div className="flex items-center justify-between w-full">
 				<div className="flex items-center gap-4">
-					<div className="p-3 bg-accent group-hover:bg-accent/90 rounded-lg transition-all duration-300">
+					<div className="p-3 bg-accent group-hover:bg-accent rounded-lg transition-all duration-300">
 						{React.cloneElement(
 							getChannelIcon(channelDetails.id) as React.ReactElement<React.SVGProps<SVGSVGElement>>,
 							{
@@ -69,11 +74,9 @@ const ChannelItem = React.memo(({
 							}
 						)}
 					</div>
-					<div>
-						<div className="font-bold text-lg capitalize flex items-center gap-3">
-							<span className="text-foreground group-hover:text-accent transition-colors">
-								{channelDetails.id}
-							</span>
+					<div className="flex-1 text-left">
+						<div className="font-bold text-lg capitalize transition-all duration-300 text-foreground group-hover:text-accent-foreground">
+							{channelDetails.id}
 						</div>
 						<div className="text-sm font-medium text-muted-foreground mt-1">
 							{formatChannelLink(
@@ -84,16 +87,16 @@ const ChannelItem = React.memo(({
 					</div>
 				</div>
 				<div className="flex items-center gap-3">
-					{userChannel.verified_at ? (
+					{isVerified ? (
 						<>
-							<CheckCircle className="h-5 w-5 text-green-500" />
+							<CheckCircle className="h-5 w-5 text-success" />
 							<Badge variant="success">
 								Verified
 							</Badge>
 						</>
 					) : (
 						<>
-							<AlertCircle className="h-5 w-5 text-yellow-500" />
+							<AlertCircle className="h-5 w-5 text-warning" />
 							<Badge variant="warning">
 								Unverified
 							</Badge>
@@ -101,37 +104,13 @@ const ChannelItem = React.memo(({
 					)}
 				</div>
 			</div>
-		</div>
+		</Button>
 	);
 });
 
 ChannelItem.displayName = "ChannelItem";
 
 // Loading skeleton for channels
-const ChannelsLoadingSkeleton = React.memo(() => (
-	<div className="space-y-4">
-		{[...Array(3)].map((_, i) => (
-			<div key={i} className="p-5 rounded-xl bg-card border-2 border-border">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<Skeleton className="w-12 h-12 rounded-lg" />
-						<div className="space-y-2">
-							<Skeleton className="w-24 h-5" />
-							<Skeleton className="w-32 h-4" />
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<Skeleton className="w-5 h-5 rounded-full" />
-						<Skeleton className="w-16 h-6 rounded-full" />
-					</div>
-				</div>
-			</div>
-		))}
-	</div>
-));
-
-ChannelsLoadingSkeleton.displayName = "ChannelsLoadingSkeleton";
-
 // Main component content
 function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 	const router = useRouter();
@@ -141,7 +120,6 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 		channels,
 		isLoading,
 		error,
-		isConnected,
 		refetch,
 	} = useChannels({
 		userId,
@@ -176,6 +154,11 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 		router.push("/dashboard/channels");
 	}, [router]);
 
+	const handleChannelClick = React.useCallback((userChannel: UserChannelWithChannel) => {
+		// Navigate to channel management page with specific channel
+		router.push(`/dashboard/channels/${userChannel.id}`);
+	}, [router]);
+
 	// Show error state if there's an error and no cached data
 	if (error && !channels.length) {
 		return (
@@ -206,52 +189,49 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 
 	return (
 		<Card className="hover-lift overflow-hidden relative border-2">
-			<div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-accent/10 pointer-events-none" />
+			<div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10 pointer-events-none" />
 
 			<CardHeader className="relative">
 				<div className="flex items-center justify-between">
 					<CardTitle className="flex items-center gap-3">
-						<div className="p-3 bg-secondary rounded-lg shadow-lg">
-							<MessageCircle className="h-6 w-6 text-secondary-foreground" />
+						<div className="p-3 bg-muted rounded-lg shadow-lg">
+							<MessageCircle className="h-6 w-6 text-muted-foreground" />
 						</div>
 						<span className="text-xl font-bold text-foreground">
 							Connected Channels
 						</span>
 					</CardTitle>
-					<div className="flex items-center gap-2">
-						{isConnected ? (
-							<div className="flex items-center gap-1 text-green-600">
-								<Wifi className="h-4 w-4" />
-								<span className="text-xs font-medium">Live</span>
-							</div>
-						) : (
-							<div className="flex items-center gap-1 text-gray-500">
-								<WifiOff className="h-4 w-4" />
-								<span className="text-xs font-medium">Offline</span>
-								{error && (
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={refetch}
-										className="h-6 w-6 p-0 ml-1"
-										title="Reconnect">
-										<RefreshCw className="h-3 w-3" />
-									</Button>
-								)}
-							</div>
-						)}
-					</div>
+					{/* Realtime status indicators <rem></rem>oved */}
 				</div>
-				<CardDescription className="text-base font-semibold text-muted-foreground">
+				<CardDescription className="text-base font-semibold text-muted-foreground mt-2">
 					Manage your communication channels
 				</CardDescription>
 			</CardHeader>
 			
 			<CardContent className="relative">
-				{isLoading && !channels.length ? (
-					<ChannelsLoadingSkeleton />
-				) : (
-					<div className="space-y-4">
+				<LoadingWrapper
+					isLoading={isLoading && !channels.length}
+					skeleton={<div className="space-y-4">
+						{[...Array(2)].map((_, i) => (
+							<div key={i} className="p-5 rounded-xl bg-card border-2 border-border">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-4">
+										<Skeleton className="w-12 h-12 rounded-lg" />
+										<div className="space-y-2">
+											<Skeleton className="w-24 h-5" />
+											<Skeleton className="w-32 h-4" />
+										</div>
+									</div>
+									<div className="flex items-center gap-3">
+										<Skeleton className="w-5 h-5 rounded-full" />
+										<Skeleton className="w-16 h-6 rounded-full" />
+									</div>
+								</div>
+							</div>
+						))}
+					</div>}
+				>
+					<div className="grid grid-cols-1 gap-3">
 						{channels && channels.length > 0 ? (
 							channels.map((userChannel, index) => (
 								<ChannelItem
@@ -260,6 +240,7 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 									index={index}
 									getChannelIcon={getChannelIcon}
 									formatChannelLink={formatChannelLink}
+									onChannelClick={handleChannelClick}
 								/>
 							))
 						) : (
@@ -277,13 +258,13 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 							</div>
 						)}
 					</div>
-				)}
+				</LoadingWrapper>
 
-				<div className="mt-8 pt-6 border-t border-gradient-to-r from-transparent via-border to-transparent">
+				<div className="mt-8 pt-6 border-t border-border/50">
 					<div className="flex gap-4 w-full">
 						<Button
 							variant="outline"
-							className="flex-1 bg-card border-2 border-secondary hover:bg-secondary/10 text-foreground font-semibold transition-all duration-300 hover:shadow-lg py-3 rounded-xl"
+							className="flex-1 bg-card hover:bg-accent border-2 border-border hover:border-accent text-foreground font-semibold transition-all duration-300 hover:shadow-lg py-3 rounded-xl"
 							onClick={handleAddChannel}
 							disabled={isLoading}
 						>
@@ -292,7 +273,8 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
 						</Button>
 						{channels.length > 0 && (
 							<Button
-								className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold transition-all duration-300 hover:shadow-lg py-3 rounded-xl"
+								variant="default"
+								className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground border-primary font-semibold transition-all duration-300 hover:shadow-lg py-3 rounded-xl"
 								onClick={handleManageChannels}
 								disabled={isLoading}
 							>

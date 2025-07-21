@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { subscriptionLogger } from '@/lib/utils/loggers'
 import type { Database as PublicDatabase } from '@/utils/supabase/schemas/public'
 import type { Database as StripeDatabase } from '@/utils/supabase/schemas/stripe'
 
@@ -38,6 +39,7 @@ export type UserSubscription = {
   current_period_start: number;
   current_period_end: number;
   cancel_at_period_end: boolean;
+  trial_end?: number | null; // Unix timestamp for trial end date
   items: StripeSubscriptionItem[];
   product: StripeProduct | null;
   features: TierFeatures | null;
@@ -58,7 +60,7 @@ export async function getUserStripeCustomerId(userId: string): Promise<string | 
     .single()
     
   if (error) {
-    console.error('Error fetching user Stripe customer ID:', error)
+    subscriptionLogger.error('Stripe Customer Id Fetch', 'STRIPE_CUSTOMER_ID_FETCH', { error, userId })
     return null
   }
   
@@ -75,7 +77,7 @@ export async function getActiveSubscription(userId: string): Promise<StripeSubsc
   const customerId = await getUserStripeCustomerId(userId)
   
   if (!customerId) {
-    console.error('User does not have a Stripe customer ID')
+    subscriptionLogger.error('Stripe Customer Id Missing', 'STRIPE_CUSTOMER_ID_MISSING', { userId })
     return null
   }
 
@@ -89,7 +91,7 @@ export async function getActiveSubscription(userId: string): Promise<StripeSubsc
    .limit(1)
 
   if (error) {
-    console.error('Error fetching active subscription:', error)
+    subscriptionLogger.error('Active Subscription Fetch', 'ACTIVE_SUBSCRIPTION_FETCH', { error, customerId, userId })
     return null
   }
   
@@ -112,7 +114,7 @@ export async function getProductDetails(productId: string): Promise<StripeProduc
     .single()
     
   if (error) {
-    console.error('Error fetching product details:', error)
+    subscriptionLogger.error('Product Details Fetch', 'PRODUCT_DETAILS_FETCH', { error, productId })
     return null
   }
   
@@ -132,7 +134,7 @@ export async function getTierFeatures(productId: string): Promise<TierFeatures |
     .single()
     
   if (error && error.code !== 'PGRST116') {
-    console.error('Error fetching tier features:', error)
+    subscriptionLogger.error('Tier Features Fetch', 'TIER_FEATURES_FETCH', { error, productId })
     return null
   }
   
@@ -185,7 +187,7 @@ function extractSubscriptionItemDetails(subscription: StripeSubscription): Strip
     
     return []
   } catch (error) {
-    console.error('Error parsing subscription items:', error)
+    subscriptionLogger.error('Subscription Items Parse', 'SUBSCRIPTION_ITEMS_PARSE', { error, subscriptionId: subscription.id })
     return []
   }
 }
@@ -258,12 +260,12 @@ async function buildSubscriptionResult(subscription: StripeSubscription): Promis
         }
       }
     } catch (error) {
-      console.error('Error extracting period dates from items:', error)
+      subscriptionLogger.error('Period Dates Extract', 'PERIOD_DATES_EXTRACT', { error, subscriptionId: subscription.id })
     }
   }
   
   if (!primaryProductId) {
-    console.error('No primary product ID found')
+    subscriptionLogger.error('Primary Product Id Missing', 'PRIMARY_PRODUCT_ID_MISSING', { subscriptionId: subscription.id, items })
     return null
   }
   
@@ -279,6 +281,7 @@ async function buildSubscriptionResult(subscription: StripeSubscription): Promis
     current_period_start: currentPeriodStart || 0,
     current_period_end: currentPeriodEnd || 0,
     cancel_at_period_end: subscription.cancel_at_period_end || false,
+    trial_end: subscription.trial_end as number | null || null,
     items,
     product,
     features,

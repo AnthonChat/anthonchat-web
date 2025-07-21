@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { hookLogger } from "@/lib/utils/loggers";
 
 type SetValue<T> = T | ((val: T) => T);
 
@@ -33,7 +34,7 @@ export function useLocalStorage<T>(
       }
       return JSON.parse(item);
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+      hookLogger.warn('LOCALSTORAGE_READ_ERROR', 'LOCAL_STORAGE', { key, error });
       return typeof initialValue === "function" 
         ? (initialValue as () => T)() 
         : initialValue;
@@ -54,7 +55,7 @@ export function useLocalStorage<T>(
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
+      hookLogger.warn('LOCALSTORAGE_SET_ERROR', 'LOCAL_STORAGE', { key, error });
     }
   }, [key, storedValue]);
 
@@ -69,7 +70,7 @@ export function useLocalStorage<T>(
         : initialValue;
       setStoredValue(resetValue);
     } catch (error) {
-      console.warn(`Error removing localStorage key "${key}":`, error);
+      hookLogger.warn('LOCALSTORAGE_REMOVE_ERROR', 'LOCAL_STORAGE', { key, error });
     }
   }, [key, initialValue]);
 
@@ -82,7 +83,7 @@ export function useLocalStorage<T>(
         try {
           setStoredValue(JSON.parse(e.newValue));
         } catch (error) {
-          console.warn(`Error parsing localStorage value for key "${key}":`, error);
+          hookLogger.warn('LOCALSTORAGE_PARSE_ERROR', 'LOCAL_STORAGE', { key, error });
         }
       }
     };

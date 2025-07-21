@@ -8,5 +8,6 @@ export {
   useLocalStorageString, 
   useLocalStorageNumber 
 } from "./useLocalStorage";
+export { useLogger } from "./useLogger";
 export { useRealtimeUsage } from "./useRealtimeUsage";
 export { useUserSubscription } from "./useUserSubscription";

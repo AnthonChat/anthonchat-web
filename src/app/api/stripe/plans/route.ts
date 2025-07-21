@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { apiLogger } from '@/lib/utils/loggers'
 
 export async function GET() {
   try {
@@ -13,7 +14,7 @@ export async function GET() {
       .order('price_monthly')
     
     if (error) {
-      console.error('Error fetching tiers:', error)
+      apiLogger.error('TIERS_FETCH', 'API_STRIPE', { error })
       return NextResponse.json(
         { error: 'Failed to fetch plans' },
         { status: 500 }
@@ -22,7 +23,7 @@ export async function GET() {
     
     return NextResponse.json({ plans: tiers || [] })
   } catch (error) {
-    console.error('Plans API error:', error)
+    apiLogger.error('PLANS_API_ERROR', 'API_STRIPE', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   Settings, 
   CreditCard, 
@@ -12,7 +12,10 @@ import {
   Bell,
   Users
 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface QuickActionsProps {
   onAction?: (action: string) => void
@@ -20,6 +23,8 @@ interface QuickActionsProps {
 
 export function QuickActions({ onAction }: QuickActionsProps) {
   const router = useRouter()
+  const [prefetchedRoutes, setPrefetchedRoutes] = useState<Set<string>>(new Set())
+  const [hoveredAction, setHoveredAction] = useState<string | null>(null)
   
   const actions = [
     {
@@ -27,44 +32,73 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       title: 'Manage Subscription',
       description: 'Update billing and plan',
       icon: CreditCard,
-      variant: 'default' as const
+      variant: 'default' as const,
+      route: '/dashboard/subscription'
     },
     {
       id: 'add-channels',
       title: 'Add Channels',
       description: 'Connect new platforms',
       icon: MessageSquare,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      route: '/dashboard/channels'
     },
     {
       id: 'view-analytics',
       title: 'View Analytics',
       description: 'Detailed usage reports',
       icon: BarChart3,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      route: '/dashboard/analytics'
     },
     {
       id: 'account-settings',
       title: 'Account Settings',
       description: 'Profile and preferences',
       icon: Settings,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      route: '/dashboard/settings'
     },
     {
       id: 'notifications',
       title: 'Notifications',
       description: 'Manage alerts',
       icon: Bell,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      route: '/dashboard/notifications'
     },
     {
       id: 'export-data',
       title: 'Export Data',
       description: 'Download your data',
       icon: Download,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      route: null // No route for export data
     }
   ]
+  
+  // Hover-triggered prefetching function with debugging
+  const handleHover = useCallback((route: string | null, actionId: string) => {
+    setHoveredAction(actionId)
+    
+    if (route && !prefetchedRoutes.has(route)) {
+      uiLogger.info("ROUTE_PREFETCH_START", "QUICK_ACTIONS", { route, actionId });
+      try {
+        // Use router.prefetch without additional options for Next.js 15
+        router.prefetch(route)
+        setPrefetchedRoutes(prev => new Set([...prev, route]))
+        uiLogger.info("ROUTE_PREFETCH_SUCCESS", "QUICK_ACTIONS", { route });
+      } catch (error) {
+        uiLogger.error("ROUTE_PREFETCH_ERROR", "QUICK_ACTIONS", { error, route });
+      }
+    } else if (route && prefetchedRoutes.has(route)) {
+      uiLogger.info("ROUTE_ALREADY_PREFETCHED", "QUICK_ACTIONS", { route });
+    }
+  }, [router, prefetchedRoutes])
+  
+  const handleMouseLeave = useCallback(() => {
+    setHoveredAction(null)
+  }, [])
   
   const handleAction = (actionId: string) => {
     if (onAction) {
@@ -72,23 +106,16 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       return
     }
     
-    // Default behavior with proper routing
+    // Find the action and use its route for navigation
+    const action = actions.find(a => a.id === actionId)
+    
+    if (action?.route) {
+      router.push(action.route)
+      return
+    }
+    
+    // Handle special cases without routes
     switch (actionId) {
-      case 'manage-subscription':
-        router.push('/dashboard/subscription')
-        break
-      case 'add-channels':
-        router.push('/dashboard/channels')
-        break
-      case 'view-analytics':
-        router.push('/dashboard/analytics')
-        break
-      case 'account-settings':
-        router.push('/dashboard/settings')
-        break
-      case 'notifications':
-        router.push('/dashboard/notifications')
-        break
       case 'export-data':
         // Implement data export functionality
         alert('Data export functionality will be implemented soon')
@@ -98,19 +125,30 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         window.open('https://docs.anthonchat.com', '_blank')
         break
       default:
-        console.log(`Action triggered: ${actionId}`)
+        uiLogger.info("ACTION_TRIGGERED", "QUICK_ACTIONS", { actionId });
     }
   }
   
   return (
     <Card className="hover-lift overflow-hidden relative border-2">
+      {/* Hidden prefetch links for reliable prefetching */}
+      <div className="hidden">
+        {actions.map((action) => 
+          action.route ? (
+            <Link key={`prefetch-${action.id}`} href={action.route} prefetch={true}>
+              <span></span>
+            </Link>
+          ) : null
+        )}
+      </div>
+      
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10 pointer-events-none" />
       
       <CardHeader className="relative">
         <CardTitle className="flex items-center gap-3">
-          <div className="p-3 bg-accent rounded-lg shadow-lg">
-            <Users className="h-6 w-6 text-accent-foreground" />
+          <div className="p-3 bg-muted rounded-lg shadow-lg">
+            <Users className="h-6 w-6 text-muted-foreground" />
           </div>
           <span className="text-xl font-bold text-foreground">Quick Actions</span>
         </CardTitle>
@@ -132,8 +170,11 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                     ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
                     : 'bg-card hover:bg-accent border-border hover:border-accent text-foreground'
                   }
+                  ${hoveredAction === action.id ? 'ring-2 ring-primary/20' : ''}
                 `}
                 onClick={() => handleAction(action.id)}
+                onMouseEnter={() => handleHover(action.route, action.id)}
+                onMouseLeave={handleMouseLeave}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex items-center gap-4 w-full">

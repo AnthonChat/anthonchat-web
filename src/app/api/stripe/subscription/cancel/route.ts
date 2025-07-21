@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { cancelSubscription } from '@/lib/stripe'
+import { apiLogger } from '@/lib/utils/loggers'
+import type { User } from '@supabase/supabase-js'
 
 export async function POST() {
+  let user: User | null = null
+  
   try {
     const supabase = await createClient()
     
     // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+    user = authUser
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -39,7 +44,7 @@ export async function POST() {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Cancel subscription error:', error)
+    apiLogger.error('Cancel Subscription Error', 'CANCEL_SUBSCRIPTION_ERROR', { error, userId: user?.id })
     return NextResponse.json(
       { error: 'Failed to cancel subscription' },
       { status: 500 }

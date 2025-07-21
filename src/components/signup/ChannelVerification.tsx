@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Clock, AlertCircle, ExternalLink, Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface Channel {
   id: string;
@@ -100,7 +101,7 @@ export default function ChannelVerification({
     updateChannelState(channel.id, { status: 'pending', error: undefined });
 
     try {
-      console.log('Starting verification for:', channel.name);
+      uiLogger.info("CHANNEL_VERIFICATION_START", "CHANNEL_VERIFICATION", { channelName: channel.name, channelId: channel.id });
       
       const response = await fetch('/api/link/start', {
         method: 'POST',
@@ -112,9 +113,9 @@ export default function ChannelVerification({
         }),
       });
 
-      console.log('API response status:', response.status);
+      uiLogger.info("VERIFICATION_API_RESPONSE", "CHANNEL_VERIFICATION", { status: response.status, channelId: channel.id });
       const data = await response.json();
-      console.log('API response data:', data);
+      uiLogger.info("VERIFICATION_API_DATA", "CHANNEL_VERIFICATION", { data, channelId: channel.id });
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to start verification');
@@ -126,17 +127,18 @@ export default function ChannelVerification({
         command: data.command,
       });
 
-      console.log('Updated channel state with:', {
+      uiLogger.info("CHANNEL_STATE_UPDATED", "CHANNEL_VERIFICATION", {
+        channelId: channel.id,
         nonce: data.nonce,
-        deepLink: data.deepLink,
-        command: data.command,
+        hasDeepLink: !!data.deepLink,
+        hasCommand: !!data.command,
       });
 
       // Start polling for verification status
       startPolling(channel.id, data.nonce);
 
     } catch (error) {
-      console.error('Verification start error:', error);
+      uiLogger.error("VERIFICATION_START_ERROR", "CHANNEL_VERIFICATION", { error, channelId: channel.id, channelName: channel.name });
       updateChannelState(channel.id, {
         status: 'error',
         error: error instanceof Error ? error.message : 'Failed to start verification'
@@ -174,7 +176,7 @@ export default function ChannelVerification({
         }
         // If status is still 'pending', continue polling
       } catch (error) {
-        console.error('Polling error:', error);
+        uiLogger.error("VERIFICATION_POLLING_ERROR", "CHANNEL_VERIFICATION", { error, channelId, nonce });
         clearInterval(interval);
         setPollingIntervals(prev => {
           const newIntervals = { ...prev };
@@ -196,7 +198,7 @@ export default function ChannelVerification({
       await navigator.clipboard.writeText(text);
       toast.success('Copied to clipboard!');
     } catch (error) {
-      console.error('Failed to copy:', error);
+      uiLogger.error("CLIPBOARD_COPY_ERROR", "CHANNEL_VERIFICATION", { error, textLength: text.length });
       toast.error('Failed to copy to clipboard');
     }
   };
@@ -226,21 +228,21 @@ export default function ChannelVerification({
 
   const getStatusIcon = (status: ChannelVerificationState['status']) => {
     switch (status) {
-      case 'done':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'pending':
-        return <Clock className="h-5 w-5 text-yellow-500 animate-spin" />;
-      case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-400" />;
-    }
+		case 'done':
+			return <CheckCircle className="h-5 w-5 text-success" />;
+		case 'pending':
+			return <Clock className="h-5 w-5 text-warning animate-spin" />;
+		case 'error':
+			return <AlertCircle className="h-5 w-5 text-destructive" />;
+		default:
+			return <Clock className="h-5 w-5 text-muted-foreground" />;
+	}
   };
 
   const getStatusBadge = (status: ChannelVerificationState['status']) => {
     switch (status) {
       case 'done':
-        return <Badge variant="default" className="bg-green-500">Verified</Badge>;
+      return <Badge variant="success">Verified</Badge>;
       case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
       case 'error':

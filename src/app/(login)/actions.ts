@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { apiLogger } from "@/lib/utils/loggers";
 
 export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
@@ -34,7 +35,7 @@ export async function signUp(formData: FormData) {
   });
 
   if (authError) {
-    console.error("Auth signup error:", authError);
+    apiLogger.error("AUTH_SIGNUP_ERROR", "AUTH", { authError, email });
     return redirect(`/signup?message=${authError.message}`);
   }
 

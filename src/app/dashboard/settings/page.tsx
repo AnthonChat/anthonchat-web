@@ -2,8 +2,9 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, User, Bell, Shield, Palette } from 'lucide-react'
-import Link from 'next/link'
+import { User, Bell, Shield, Palette } from 'lucide-react'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -17,28 +18,13 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Account Settings
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Manage your account preferences and settings
-              </p>
-            </div>
-            <Link href="/dashboard">
-              <Button variant="ghost">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <DashboardLayout>
+      <DashboardHeader
+        title="Account Settings"
+        description="Manage your account preferences and settings"
+        backHref="/dashboard"
+        icon={<User className="h-5 w-5" />}
+      />
       
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
@@ -129,6 +115,6 @@ export default async function SettingsPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </DashboardLayout>
   );
 }
