@@ -516,20 +516,24 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-  INSERT INTO public.users (id, email, nickname, first_name, last_name, onboarding_complete)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'nickname', split_part(NEW.email, '@', 1)),
-    COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
-    false
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
-    updated_at = now();
-  
-  RETURN NEW;
+    -- Insert a new record into public.users if it doesn't already exist
+    INSERT INTO public.users (
+        id, 
+        email, 
+        nickname, 
+        first_name, 
+        last_name
+    )
+    VALUES (
+        NEW.id, 
+        NEW.email, 
+        COALESCE(NEW.raw_user_meta_data->>'nickname', ''), 
+        COALESCE(NEW.raw_user_meta_data->>'first_name', ''), 
+        COALESCE(NEW.raw_user_meta_data->>'last_name', '')
+    )
+    ON CONFLICT (id) DO NOTHING;
+    
+    RETURN NEW;
 END;
 $$;
 
@@ -1926,6 +1930,10 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
+
+
+
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."channel_verifications";
 
 
 
