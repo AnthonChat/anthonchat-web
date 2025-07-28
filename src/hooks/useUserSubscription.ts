@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
-import { getUserSubscription, UserSubscription } from "@/lib/queries/subscription";
+import { UserSubscription } from "@/lib/queries/subscription";
 import type { User } from "@supabase/supabase-js";
 
 interface UseUserSubscriptionOptions {
@@ -31,6 +31,7 @@ export function useUserSubscription(
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const supabase = createClient();
 
@@ -85,10 +86,14 @@ export function useUserSubscription(
     };
   }, [supabase, providedUserId]);
 
-  const fetchSubscription = useCallback(async () => {
+  const refetch = useCallback(async () => {
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
+
+  useEffect(() => {
     const currentUserId = providedUserId || user?.id;
     
-    if (!currentUserId) {
+    if (!autoRefetch || !currentUserId) {
       setIsLoading(false);
       return;
     }
@@ -96,28 +101,32 @@ export function useUserSubscription(
     setIsLoading(true);
     setError(null);
 
-    try {
-      const sub = await getUserSubscription(currentUserId);
-      setSubscription(sub);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to fetch subscription");
-      setError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, providedUserId]);
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/user/subscription');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch subscription: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        setSubscription(data.subscription);
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error("Failed to fetch subscription");
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (autoRefetch) {
-      fetchSubscription();
-    }
-  }, [autoRefetch, fetchSubscription]);
+    fetchData();
+  }, [autoRefetch, providedUserId, user?.id, refreshTrigger]);
 
   return {
     subscription,
     isLoading,
     error,
-    refetch: fetchSubscription,
+    refetch,
     clearError,
   };
 }

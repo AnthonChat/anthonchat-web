@@ -516,19 +516,13 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-    -- Insert a new record into public.users if it doesn't already exist
-    INSERT INTO public.users (
-        id, 
-        email, 
-        nickname, 
-        first_name, 
-        last_name
-    )
+    -- Insert a new record into public.users when a new user is created in auth.users
+    INSERT INTO public.users (id, email, nickname, first_name, last_name)
     VALUES (
         NEW.id, 
         NEW.email, 
-        COALESCE(NEW.raw_user_meta_data->>'nickname', ''), 
-        COALESCE(NEW.raw_user_meta_data->>'first_name', ''), 
+        COALESCE(NEW.raw_user_meta_data->>'nickname', NEW.email), 
+        COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
         COALESCE(NEW.raw_user_meta_data->>'last_name', '')
     )
     ON CONFLICT (id) DO NOTHING;
@@ -666,6 +660,33 @@ $$;
 
 
 ALTER FUNCTION "public"."set_updated_at"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."sync_stripe_customer_to_user"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    AS $$
+BEGIN
+    -- Aggiorna public.users solo se:
+    -- 1. Il customer ha un email
+    -- 2. Il customer non è eliminato  
+    -- 3. L'utente non ha già un stripe_customer_id
+    IF NEW.email IS NOT NULL AND (NEW.deleted = false OR NEW.deleted IS NULL) THEN
+        UPDATE public.users 
+        SET stripe_customer_id = NEW.id,
+            updated_at = NOW()
+        WHERE email = NEW.email 
+          AND (stripe_customer_id IS NULL OR stripe_customer_id = '');
+        
+        -- Log per debug (opzionale)
+        RAISE NOTICE 'Trigger: Synced customer % to user with email %', NEW.id, NEW.email;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."sync_stripe_customer_to_user"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "stripe"."get_migration_mode"() RETURNS "text"
@@ -1771,6 +1792,10 @@ CREATE OR REPLACE TRIGGER "handle_updated_at" BEFORE UPDATE ON "stripe"."subscri
 
 
 
+CREATE OR REPLACE TRIGGER "trigger_sync_stripe_customer_to_user" AFTER INSERT OR UPDATE ON "stripe"."customers" FOR EACH ROW EXECUTE FUNCTION "public"."sync_stripe_customer_to_user"();
+
+
+
 ALTER TABLE ONLY "public"."channel_verifications"
     ADD CONSTRAINT "channel_verifications_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "public"."channels"("id") ON DELETE CASCADE;
 
@@ -1924,6 +1949,20 @@ CREATE POLICY "users_update_own" ON "public"."users" FOR UPDATE TO "authenticate
 
 
 
+CREATE POLICY "Allow public read access to prices" ON "stripe"."prices" FOR SELECT USING (true);
+
+
+
+CREATE POLICY "Allow public read access to products" ON "stripe"."products" FOR SELECT USING (true);
+
+
+
+ALTER TABLE "stripe"."prices" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "stripe"."products" ENABLE ROW LEVEL SECURITY;
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
@@ -1953,6 +1992,7 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 GRANT ALL ON SCHEMA "stripe" TO "service_role";
 GRANT USAGE ON SCHEMA "stripe" TO "authenticated";
+GRANT USAGE ON SCHEMA "stripe" TO "anon";
 
 
 
@@ -2340,6 +2380,12 @@ GRANT ALL ON FUNCTION "public"."set_updated_at"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."sync_stripe_customer_to_user"() TO "anon";
+GRANT ALL ON FUNCTION "public"."sync_stripe_customer_to_user"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."sync_stripe_customer_to_user"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "stripe"."get_migration_mode"() TO "authenticated";
 
 
@@ -2427,94 +2473,134 @@ GRANT ALL ON TABLE "public"."users" TO "service_role";
 
 
 GRANT ALL ON TABLE "stripe"."charges" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."charges" TO "anon";
+GRANT SELECT ON TABLE "stripe"."charges" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."coupons" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."coupons" TO "anon";
+GRANT SELECT ON TABLE "stripe"."coupons" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."credit_notes" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."credit_notes" TO "anon";
+GRANT SELECT ON TABLE "stripe"."credit_notes" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."customers" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."customers" TO "anon";
+GRANT SELECT ON TABLE "stripe"."customers" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."disputes" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."disputes" TO "anon";
+GRANT SELECT ON TABLE "stripe"."disputes" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."early_fraud_warnings" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."early_fraud_warnings" TO "anon";
+GRANT SELECT ON TABLE "stripe"."early_fraud_warnings" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."events" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."events" TO "anon";
+GRANT SELECT ON TABLE "stripe"."events" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."invoices" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."invoices" TO "anon";
+GRANT SELECT ON TABLE "stripe"."invoices" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."migrations" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."migrations" TO "anon";
+GRANT SELECT ON TABLE "stripe"."migrations" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."payment_intents" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."payment_intents" TO "anon";
+GRANT SELECT ON TABLE "stripe"."payment_intents" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."payment_methods" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."payment_methods" TO "anon";
+GRANT SELECT ON TABLE "stripe"."payment_methods" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."payouts" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."payouts" TO "anon";
+GRANT SELECT ON TABLE "stripe"."payouts" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."plans" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."plans" TO "anon";
+GRANT SELECT ON TABLE "stripe"."plans" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."prices" TO "service_role";
 GRANT SELECT ON TABLE "stripe"."prices" TO "authenticated";
+GRANT SELECT ON TABLE "stripe"."prices" TO "anon";
 
 
 
 GRANT ALL ON TABLE "stripe"."products" TO "service_role";
 GRANT SELECT ON TABLE "stripe"."products" TO "authenticated";
+GRANT SELECT ON TABLE "stripe"."products" TO "anon";
 
 
 
 GRANT ALL ON TABLE "stripe"."refunds" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."refunds" TO "anon";
+GRANT SELECT ON TABLE "stripe"."refunds" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."reviews" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."reviews" TO "anon";
+GRANT SELECT ON TABLE "stripe"."reviews" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."setup_intents" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."setup_intents" TO "anon";
+GRANT SELECT ON TABLE "stripe"."setup_intents" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."subscription_items" TO "service_role";
 GRANT SELECT ON TABLE "stripe"."subscription_items" TO "authenticated";
+GRANT SELECT ON TABLE "stripe"."subscription_items" TO "anon";
 
 
 
 GRANT ALL ON TABLE "stripe"."subscription_schedules" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."subscription_schedules" TO "anon";
+GRANT SELECT ON TABLE "stripe"."subscription_schedules" TO "authenticated";
 
 
 
 GRANT ALL ON TABLE "stripe"."subscriptions" TO "service_role";
 GRANT SELECT ON TABLE "stripe"."subscriptions" TO "authenticated";
+GRANT SELECT ON TABLE "stripe"."subscriptions" TO "anon";
 
 
 
 GRANT ALL ON TABLE "stripe"."tax_ids" TO "service_role";
+GRANT SELECT ON TABLE "stripe"."tax_ids" TO "anon";
+GRANT SELECT ON TABLE "stripe"."tax_ids" TO "authenticated";
 
 
 

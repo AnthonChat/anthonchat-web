@@ -1,8 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { getUserSubscription } from '@/lib/queries/subscription'
-import { SubscriptionManagement } from '@/components/dashboard/SubscriptionManagement'
-import { StripeSuccessHandler } from '@/components/dashboard/StripeSuccessHandler'
+import { SubscriptionPageClient } from '@/components/dashboard/SubscriptionPageClient'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { CreditCard } from 'lucide-react'
@@ -17,9 +15,6 @@ export default async function SubscriptionPage() {
   if (!user) {
     return redirect("/login");
   }
-
-  // Fetch subscription data
-  const subscription = await getUserSubscription(user.id)
 
   return (
     <DashboardLayout variant="enhanced">
@@ -47,12 +42,9 @@ export default async function SubscriptionPage() {
           </div>
         </div>
 
-        {/* Stripe Success/Error Handler */}
-        <StripeSuccessHandler />
-        
-        {/* Subscription Management Component */}
+        {/* Client-side subscription management with real-time updates */}
         <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
-          <SubscriptionManagement subscription={subscription} userId={user.id} />
+          <SubscriptionPageClient userId={user.id} />
         </div>
       </main>
     </DashboardLayout>

@@ -361,6 +361,7 @@ function SubscriptionCardContent({
 
 	const isTrialing = subscription?.status === "trialing";
 	const isActive = subscription?.status === "active";
+	const hasActiveSubscription = isTrialing || isActive;
 
 	// --- Step 3: Handle numeric timestamps ---
 	const trialTimeDisplay = React.useMemo(() => {
@@ -462,72 +463,74 @@ function SubscriptionCardContent({
 					</div>
 				)}
 
-				{isInitialLoading ? (
-					<div className="space-y-4">
-						{/* Tokens Usage Skeleton */}
-						<Card className="cursor-pointer hover:border-primary transition-colors">
-							<CardHeader className="flex flex-row items-center justify-between pb-2">
-								<CardTitle className="text-sm font-medium flex items-center gap-2">
-									<div className="h-4 w-4 bg-muted animate-pulse rounded" />
-									<div className="h-4 w-20 bg-muted animate-pulse rounded" />
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="h-8 w-16 bg-muted animate-pulse rounded mb-1" />
-								<div className="h-3 w-12 bg-muted animate-pulse rounded mb-4" />
-								<div className="relative mt-4">
-									<div className="h-3 bg-border rounded-full overflow-hidden">
-										<div className="h-3 w-1/3 bg-muted animate-pulse rounded-full" />
+				{hasActiveSubscription && (
+					isInitialLoading ? (
+						<div className="space-y-4">
+							{/* Tokens Usage Skeleton */}
+							<Card className="cursor-pointer hover:border-primary transition-colors">
+								<CardHeader className="flex flex-row items-center justify-between pb-2">
+									<CardTitle className="text-sm font-medium flex items-center gap-2">
+										<div className="h-4 w-4 bg-muted animate-pulse rounded" />
+										<div className="h-4 w-20 bg-muted animate-pulse rounded" />
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="h-8 w-16 bg-muted animate-pulse rounded mb-1" />
+									<div className="h-3 w-12 bg-muted animate-pulse rounded mb-4" />
+									<div className="relative mt-4">
+										<div className="h-3 bg-border rounded-full overflow-hidden">
+											<div className="h-3 w-1/3 bg-muted animate-pulse rounded-full" />
+										</div>
+										<div className="flex justify-between items-center mt-2">
+											<div className="h-3 w-12 bg-muted animate-pulse rounded" />
+										</div>
 									</div>
-									<div className="flex justify-between items-center mt-2">
-										<div className="h-3 w-12 bg-muted animate-pulse rounded" />
-									</div>
-								</div>
-							</CardContent>
-						</Card>
+								</CardContent>
+							</Card>
 
-						{/* Requests Usage Skeleton */}
-						<Card className="cursor-pointer hover:border-primary transition-colors">
-							<CardHeader className="flex flex-row items-center justify-between pb-2">
-								<CardTitle className="text-sm font-medium flex items-center gap-2">
-									<div className="h-4 w-4 bg-muted animate-pulse rounded" />
-									<div className="h-4 w-24 bg-muted animate-pulse rounded" />
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="h-8 w-12 bg-muted animate-pulse rounded mb-1" />
-								<div className="h-3 w-16 bg-muted animate-pulse rounded mb-4" />
-								<div className="relative mt-4">
-									<div className="h-3 bg-border rounded-full overflow-hidden">
-										<div className="h-3 w-1/4 bg-muted animate-pulse rounded-full" />
+							{/* Requests Usage Skeleton */}
+							<Card className="cursor-pointer hover:border-primary transition-colors">
+								<CardHeader className="flex flex-row items-center justify-between pb-2">
+									<CardTitle className="text-sm font-medium flex items-center gap-2">
+										<div className="h-4 w-4 bg-muted animate-pulse rounded" />
+										<div className="h-4 w-24 bg-muted animate-pulse rounded" />
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="h-8 w-12 bg-muted animate-pulse rounded mb-1" />
+									<div className="h-3 w-16 bg-muted animate-pulse rounded mb-4" />
+									<div className="relative mt-4">
+										<div className="h-3 bg-border rounded-full overflow-hidden">
+											<div className="h-3 w-1/4 bg-muted animate-pulse rounded-full" />
+										</div>
+										<div className="flex justify-between items-center mt-2">
+											<div className="h-3 w-12 bg-muted animate-pulse rounded" />
+										</div>
 									</div>
-									<div className="flex justify-between items-center mt-2">
-										<div className="h-3 w-12 bg-muted animate-pulse rounded" />
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					</div>
-				) : (
-					<>
-						<UsageDisplay
-							title="Tokens Used"
-							icon={Zap}
-							used={realtimeUsage.tokens_used ?? 0}
-							limit={realtimeUsage.tokens_limit ?? 10000}
-							percent={tokensUsagePercent}
-							getProgressColor={getProgressColor}
-						/>
+								</CardContent>
+							</Card>
+						</div>
+					) : (
+						<>
+							<UsageDisplay
+								title="Tokens Used"
+								icon={Zap}
+								used={realtimeUsage.tokens_used ?? 0}
+								limit={realtimeUsage.tokens_limit ?? 10000}
+								percent={tokensUsagePercent}
+								getProgressColor={getProgressColor}
+							/>
 
-						<UsageDisplay
-							title="Requests Used"
-							icon={Activity}
-							used={realtimeUsage.requests_used ?? 0}
-							limit={realtimeUsage.requests_limit ?? 100}
-							percent={requestsUsagePercent}
-							getProgressColor={getProgressColor}
-						/>
-					</>
+							<UsageDisplay
+								title="Requests Used"
+								icon={Activity}
+								used={realtimeUsage.requests_used ?? 0}
+								limit={realtimeUsage.requests_limit ?? 100}
+								percent={requestsUsagePercent}
+								getProgressColor={getProgressColor}
+							/>
+						</>
+					)
 				)}
 
 				{(isTrialing || !subscription) && (

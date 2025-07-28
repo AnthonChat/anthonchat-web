@@ -6,7 +6,6 @@ import {
   Settings, 
   CreditCard, 
   MessageSquare, 
-  BarChart3, 
   HelpCircle, 
   Download,
   Bell,
@@ -33,7 +32,8 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       description: 'Update billing and plan',
       icon: CreditCard,
       variant: 'default' as const,
-      route: '/dashboard/subscription'
+      route: '/dashboard/subscription',
+      comingSoon: false
     },
     {
       id: 'add-channels',
@@ -41,39 +41,35 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       description: 'Connect new platforms',
       icon: MessageSquare,
       variant: 'outline' as const,
-      route: '/dashboard/channels'
-    },
-    {
-      id: 'view-analytics',
-      title: 'View Analytics',
-      description: 'Detailed usage reports',
-      icon: BarChart3,
-      variant: 'outline' as const,
-      route: '/dashboard/analytics'
+      route: '/dashboard/channels',
+      comingSoon: false
     },
     {
       id: 'account-settings',
       title: 'Account Settings',
-      description: 'Profile and preferences',
+      description: 'Coming Soon',
       icon: Settings,
       variant: 'outline' as const,
-      route: '/dashboard/settings'
+      route: null, // Remove route to prevent prefetching
+      comingSoon: true
     },
     {
       id: 'notifications',
       title: 'Notifications',
-      description: 'Manage alerts',
+      description: 'Coming Soon',
       icon: Bell,
       variant: 'outline' as const,
-      route: '/dashboard/notifications'
+      route: null, // Remove route to prevent prefetching
+      comingSoon: true
     },
     {
       id: 'export-data',
       title: 'Export Data',
-      description: 'Download your data',
+      description: 'Coming Soon',
       icon: Download,
       variant: 'outline' as const,
-      route: null // No route for export data
+      route: null,
+      comingSoon: true
     }
   ]
   
@@ -106,8 +102,14 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       return
     }
     
-    // Find the action and use its route for navigation
+    // Find the action and check if it's coming soon
     const action = actions.find(a => a.id === actionId)
+    
+    if (action?.comingSoon) {
+      // Show coming soon message for disabled actions
+      alert('This feature is coming soon!')
+      return
+    }
     
     if (action?.route) {
       router.push(action.route)
@@ -117,12 +119,12 @@ export function QuickActions({ onAction }: QuickActionsProps) {
     // Handle special cases without routes
     switch (actionId) {
       case 'export-data':
-        // Implement data export functionality
+        // This is now handled by coming soon check above
         alert('Data export functionality will be implemented soon')
         break
       case 'help':
-        // Open help documentation or support
-        window.open('https://docs.anthonchat.com', '_blank')
+        // Open email client to contact support
+        window.open('mailto:anthon.chat@gmail.com', '_blank')
         break
       default:
         uiLogger.info("ACTION_TRIGGERED", "QUICK_ACTIONS", { actionId });
@@ -160,20 +162,24 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         <div className="grid grid-cols-1 gap-3">
           {actions.map((action, index) => {
             const IconComponent = action.icon
+            const isComingSoon = action.comingSoon
             return (
               <Button
                 key={action.id}
                 variant={action.id === 'manage-subscription' ? 'default' : 'outline'}
+                disabled={isComingSoon}
                 className={`
                   w-full justify-start h-auto p-5 transition-all duration-300 group border-2
                   ${action.id === 'manage-subscription' 
                     ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                    : 'bg-card hover:bg-accent border-border hover:border-accent text-foreground'
+                    : isComingSoon
+                      ? 'bg-muted/50 border-muted text-muted-foreground cursor-not-allowed opacity-60'
+                      : 'bg-card hover:bg-accent border-border hover:border-accent text-foreground'
                   }
-                  ${hoveredAction === action.id ? 'ring-2 ring-primary/20' : ''}
+                  ${hoveredAction === action.id && !isComingSoon ? 'ring-2 ring-primary/20' : ''}
                 `}
                 onClick={() => handleAction(action.id)}
-                onMouseEnter={() => handleHover(action.route, action.id)}
+                onMouseEnter={() => !isComingSoon && handleHover(action.route, action.id)}
                 onMouseLeave={handleMouseLeave}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -182,32 +188,45 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                     p-3 rounded-lg transition-all duration-300
                     ${action.id === 'manage-subscription'
                       ? 'bg-primary-foreground/20'
-                      : 'bg-accent group-hover:bg-accent'
+                      : isComingSoon
+                        ? 'bg-muted'
+                        : 'bg-accent group-hover:bg-accent'
                     }
                   `}>
                     <IconComponent className={`
                       h-6 w-6 transition-all duration-300
                       ${action.id === 'manage-subscription'
                         ? 'text-primary-foreground'
-                        : 'text-accent-foreground group-hover:scale-110'
+                        : isComingSoon
+                          ? 'text-muted-foreground'
+                          : 'text-accent-foreground group-hover:scale-110'
                       }
                     `} />
                   </div>
                   <div className="flex-1 text-left">
                     <div className={`
-                      font-bold text-lg transition-all duration-300
+                      font-bold text-lg transition-all duration-300 flex items-center gap-2
                       ${action.id === 'manage-subscription'
                         ? 'text-primary-foreground'
-                        : 'text-foreground group-hover:text-accent-foreground'
+                        : isComingSoon
+                          ? 'text-muted-foreground'
+                          : 'text-foreground group-hover:text-accent-foreground'
                       }
                     `}>
                       {action.title}
+                      {isComingSoon && (
+                        <span className="text-xs bg-muted px-2 py-1 rounded-full font-medium">
+                          Coming Soon
+                        </span>
+                      )}
                     </div>
                     <div className={`
                       text-sm font-medium transition-all duration-300
                       ${action.id === 'manage-subscription'
                         ? 'text-primary-foreground/90'
-                        : 'text-muted-foreground'
+                        : isComingSoon
+                          ? 'text-muted-foreground/70'
+                          : 'text-muted-foreground'
                       }
                     `}>
                       {action.description}

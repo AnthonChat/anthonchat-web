@@ -156,86 +156,23 @@ export const debugCheckCustomerExists = async (customerId: string) => {
   }
 }
 
-/**
- * Manual recovery function to link customers that were created but not linked during signup
- * This can be called from a script or admin interface to fix orphaned customers
- * @param userId - The user ID to link the customer to
- * @param email - The email to search for in Stripe customers
- * @returns Promise<{ success: boolean, customerId?: string, error?: string }>
- */
-export const manualLinkCustomerByUserId = async (userId: string, email?: string): Promise<{ success: boolean, customerId?: string, error?: string }> => {
-  try {
-    // First check if user already has a customer ID
-    const { getUserData } = await import('@/lib/queries/user')
-    const userData = await getUserData(userId)
-    
-    if (userData?.stripe_customer_id) {
-      return { 
-        success: true, 
-        customerId: userData.stripe_customer_id,
-        error: 'User already has a linked customer'
-      }
-    }
-    
-    const userEmail = email || userData?.email
-    if (!userEmail) {
-      return { success: false, error: 'No email provided and user email not found' }
-    }
-    
-    // Try to find customer by email and link it
-    const customerId = await findAndLinkCustomerByEmail(userId, userEmail)
-    
-    if (customerId) {
-      return { success: true, customerId }
-    } else {
-      return { success: false, error: 'No matching customer found in Stripe or linking failed' }
-    }
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }
-  }
-}
-
-/**
- * Finds and links a Stripe customer by email to a user
- * @param userId - The user ID to link the customer to  
- * @param email - The email to search for in Stripe customers
- * @returns Promise<string | null> - The customer ID if found and linked, null otherwise
- */
-export const findAndLinkCustomerByEmail = async (userId: string, email: string): Promise<string | null> => {
-  try {
-    const customer = await getStripeCustomerByEmail(email)
-    
-    if (!customer) {
-      return null
-    }
-    
-    const linked = await linkCustomerToUser(userId, customer.id)
-    return linked ? customer.id : null
-  } catch (error) {
-    console.error('Failed to find and link customer by email:', error)
-    return null
-  }
-}
-
 export const createCheckoutSession = async ({
   customerId,
   priceId,
   successUrl,
   cancelUrl,
   userId,
+  trialPeriodDays,
 }: {
   customerId: string
   priceId: string
   successUrl: string
   cancelUrl: string
   userId: string
+  trialPeriodDays?: number
 }) => {
-  return await stripe.checkout.sessions.create({
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
-    payment_method_types: ['card'],
     line_items: [
       {
         price: priceId,
@@ -253,7 +190,17 @@ export const createCheckoutSession = async ({
         userId,
       },
     },
-  })
+  }
+
+  // For free trials, we don't require payment method collection upfront
+  if (trialPeriodDays && trialPeriodDays > 0) {
+    sessionConfig.payment_method_collection = 'if_required'
+    sessionConfig.subscription_data!.trial_period_days = trialPeriodDays
+  } else {
+    sessionConfig.payment_method_types = ['card']
+  }
+
+  return await stripe.checkout.sessions.create(sessionConfig)
 }
 
 export const createBillingPortalSession = async ({
@@ -266,17 +213,5 @@ export const createBillingPortalSession = async ({
   return await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
-  })
-}
-
-export const cancelSubscription = async (subscriptionId: string) => {
-  return await stripe.subscriptions.update(subscriptionId, {
-    cancel_at_period_end: true,
-  })
-}
-
-export const reactivateSubscription = async (subscriptionId: string) => {
-  return await stripe.subscriptions.update(subscriptionId, {
-    cancel_at_period_end: false,
   })
 }
