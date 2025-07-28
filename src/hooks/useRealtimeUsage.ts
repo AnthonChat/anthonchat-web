@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
-import { UsageData } from "@/lib/queries/usage";
+import type { UsageData } from "@/lib/types/usage";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { hookLogger } from "@/lib/utils/loggers";
 
 interface UseRealtimeUsageOptions {
 	userId: string;
@@ -15,6 +17,7 @@ interface UseRealtimeUsageReturn {
 	isConnected: boolean;
 	error: string | null;
 	reconnect: () => void;
+	isInitialLoading: boolean;
 }
 
 export function useRealtimeUsage({
@@ -25,157 +28,131 @@ export function useRealtimeUsage({
 	const [usage, setUsage] = useState<UsageData>(initialUsage);
 	const [isConnected, setIsConnected] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [reconnectAttempts, setReconnectAttempts] = useState(0);
-
-	const MAX_RECONNECT_ATTEMPTS = 5;
-
+	const [isInitialLoading, setIsInitialLoading] = useState(true);
 	const supabase = createClient();
 
 	const fetchLatestUsage = useCallback(async () => {
 		try {
-			const { data, error } = await supabase.rpc("get_current_usage", {
-				user_id_param: userId,
+			// Add minimum loading time to prevent flashing
+			const startTime = Date.now();
+			const minLoadingTime = 800; // 800ms minimum loading time
+
+			const { data, error } = await supabase.rpc("get_user_usage_and_limits", {
+				user_id: userId,  // Changed from p_user_id to user_id
 			});
 
 			if (error) {
-				console.error("Error fetching usage:", error);
+				hookLogger.error('USAGE_FETCH_ERROR', 'REALTIME_USAGE', { error: error.message, userId });
 				setError("Failed to fetch latest usage data");
+				
+				// Ensure minimum loading time
+				const elapsed = Date.now() - startTime;
+				const remainingTime = Math.max(0, minLoadingTime - elapsed);
+				setTimeout(() => setIsInitialLoading(false), remainingTime);
 				return;
 			}
 
-			if (data && data.length > 0) {
-				const latestUsage = data[0];
+			if (data && data[0]) {
+				// Fix: The RPC returns an array with one object, so we need to access the first element
+				const usageData = data[0];
+				
 				setUsage((prev) => ({
 					...prev,
-					tokens_used: latestUsage.tokens_used,
-					requests_used: latestUsage.requests_used,
-					period_start: latestUsage.period_start,
-					period_end: latestUsage.period_end,
+					tokens_used: usageData.tokens_used,
+					requests_used: usageData.requests_used,
+					tokens_limit: usageData.tier_tokens_limit ?? 10000,  // Use tier_tokens_limit
+					requests_limit: usageData.tier_requests_limit ?? 100,  // Use tier_requests_limit
 				}));
 			}
-
 			setError(null);
+			
+			// Ensure minimum loading time
+			const elapsed = Date.now() - startTime;
+			const remainingTime = Math.max(0, minLoadingTime - elapsed);
+			setTimeout(() => setIsInitialLoading(false), remainingTime);
 		} catch (err) {
-			console.error("Error in fetchLatestUsage:", err);
+			hookLogger.error('FETCH_LATEST_USAGE_ERROR', 'REALTIME_USAGE', { error: err instanceof Error ? err.message : String(err), userId });
 			setError("Failed to fetch usage data");
+			setIsInitialLoading(false);
 		}
 	}, [userId, supabase]);
-
-	const setupRealtimeSubscription = useCallback(() => {
-		if (!enabled || !userId) {
-			return;
-		}
-
-		const newChannel = supabase
-			.channel(`usage_updates_${userId}`)
-			.on(
-				"postgres_changes",
-				{
-					event: "*",
-					schema: "public",
-					table: "usage_records",
-					filter: `user_id=eq.${userId}`,
-				},
-				(payload: {
-					eventType: string;
-					new: Record<string, unknown>;
-					old: Record<string, unknown>;
-				}) => {
-					if (
-						payload.eventType === "UPDATE" ||
-						payload.eventType === "INSERT"
-					) {
-						const newRecord = payload.new as Record<
-							string,
-							unknown
-						>;
-
-						// Update usage data with the new values
-						setUsage((prev) => ({
-							...prev,
-							tokens_used:
-								(newRecord.tokens_used as number) ||
-								prev.tokens_used,
-							requests_used:
-								(newRecord.requests_used as number) ||
-								prev.requests_used,
-							period_start:
-								(newRecord.period_start as string) ||
-								prev.period_start,
-							period_end:
-								(newRecord.period_end as string) ||
-								prev.period_end,
-						}));
-					}
-				}
-			)
-			.subscribe((status) => {
-				if (status === "SUBSCRIBED") {
-					setIsConnected(true);
-					setError(null);
-					setReconnectAttempts(0);
-				} else if (status === "CHANNEL_ERROR") {
-					setIsConnected(false);
-					setError("Connection error");
-
-					// Attempt to reconnect with exponential backoff
-					if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-						setTimeout(() => {
-							setReconnectAttempts((prev) => prev + 1);
-							setupRealtimeSubscription();
-						});
-					} else {
-						setError("Max reconnection attempts reached");
-					}
-				} else if (status === "CLOSED") {
-					setIsConnected(false);
-				}
-			});
-
-		// Return the channel for cleanup
-		return newChannel;
-	}, [enabled, userId, supabase, reconnectAttempts]);
-
-	const reconnect = useCallback(() => {
-		setReconnectAttempts(0);
-		setError(null);
-		setupRealtimeSubscription();
-	}, [setupRealtimeSubscription]);
 
 	useEffect(() => {
 		if (!enabled || !userId) {
 			return;
 		}
 
-		// Fetch initial data
-		fetchLatestUsage();
+		fetchLatestUsage(); // Fetch initial data
 
-		// Setup realtime subscription and get the channel for cleanup
-		const currentChannel = setupRealtimeSubscription();
+		let channel: RealtimeChannel;
 
-		// Cleanup function
+		const setupSubscription = async () => {
+			const { data: channelData, error: channelError } = await supabase
+				.from("user_channels")
+				.select("id")
+				.eq("user_id", userId)
+				.limit(1)
+				.single();
+
+			if (channelError || !channelData) {
+				hookLogger.error('USER_CHANNEL_REALTIME_ERROR', 'REALTIME_USAGE', { error: channelError?.message, userId });
+				setError("Could not set up real-time connection.");
+				return;
+			}
+
+			const userChannelId = channelData.id;
+
+			channel = supabase
+				.channel(`usage_records_for_${userChannelId}`)
+				.on(
+					"postgres_changes",
+					{
+						event: "*",
+						schema: "public",
+						table: "usage_records",
+						filter: `user_channel_id=eq.${userChannelId}`,
+					},
+					(payload) => {
+						hookLogger.info('REALTIME_USAGE_UPDATE', 'REALTIME_USAGE', { payload, userId });
+						if (payload.new && 'tokens_used' in payload.new) {
+							const newRecord = payload.new as UsageData;
+							setUsage((prev) => ({
+								...prev,
+								tokens_used: newRecord.tokens_used,
+								requests_used: newRecord.requests_used,
+							}));
+						}
+					}
+				)
+				.subscribe((status) => {
+					if (status === "SUBSCRIBED") {
+						setIsConnected(true);
+						setError(null);
+					} else {
+						setIsConnected(false);
+					}
+				});
+		};
+
+		setupSubscription();
+
 		return () => {
-			if (currentChannel) {
-				supabase.removeChannel(currentChannel);
+			if (channel) {
+				supabase.removeChannel(channel);
 			}
 		};
-	}, [
-		enabled,
-		userId,
-		fetchLatestUsage,
-		setupRealtimeSubscription,
-		supabase,
-	]);
+	}, [enabled, userId, supabase, fetchLatestUsage]);
 
-	// Update usage when initialUsage changes
 	useEffect(() => {
 		setUsage(initialUsage);
 	}, [initialUsage]);
 
+	// No reconnect function needed, Supabase handles it.
 	return {
 		usage,
 		isConnected,
 		error,
-		reconnect,
+		reconnect: () => { hookLogger.info('USAGE_RECONNECT_ATTEMPT', 'REALTIME_USAGE', { userId }); fetchLatestUsage(); },
+		isInitialLoading,
 	};
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { createCheckoutSession, createStripeCustomer, getStripeCustomerByEmail } from '@/lib/stripe'
+import { createCheckoutSession, getStripeCustomerByEmail } from '@/lib/stripe'
 import { getTierByPriceId } from '@/lib/queries/tiers'
+import { apiLogger } from '@/lib/utils/loggers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,10 +15,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { priceId, tierSlug } = await request.json()
+    const { priceId, trial_period_days } = await request.json()
 
-    if (!priceId || !tierSlug) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!priceId) {
+      return NextResponse.json(
+        { error: 'Price ID is required' },
+        { status: 400 }
+      )
     }
 
     // Validate the price ID exists in our tiers
@@ -51,19 +55,8 @@ export async function POST(request: NextRequest) {
       if (existingCustomer) {
         customerId = existingCustomer.id
       } else {
-        // Create new customer
-        const customer = await createStripeCustomer(
-          email,
-          user.user_metadata?.name || user.user_metadata?.full_name
-        )
-        customerId = customer.id
+        return NextResponse.json({ error: 'Customer does not exist' }, { status: 400 })
       }
-
-      // Update user profile with customer ID
-      await supabase
-        .from('users')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', user.id)
     }
 
     // Create checkout session
@@ -73,11 +66,12 @@ export async function POST(request: NextRequest) {
       successUrl: `${request.nextUrl.origin}/dashboard/subscription?success=true`,
       cancelUrl: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
       userId: user.id,
+      trialPeriodDays: trial_period_days,
     })
 
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (error) {
-    console.error('Stripe checkout error:', error)
+    apiLogger.error('STRIPE_CHECKOUT_ERROR', 'API_STRIPE', { error })
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

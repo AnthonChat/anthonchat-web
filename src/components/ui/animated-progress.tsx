@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect } from "react"
-import { motion, useSpring } from "motion/react"
+import { motion, useSpring } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 interface AnimatedProgressProps {
   value: number
@@ -28,7 +29,7 @@ export function AnimatedProgress({
 
   return (
     <motion.div
-      className={`h-full rounded-full relative ${className}`}
+      className={cn("h-full rounded-full relative", className)}
       style={{
         width: progress.get() === 0 ? "0%" : `${progress.get()}%`,
       }}

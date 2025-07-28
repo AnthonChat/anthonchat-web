@@ -1,72 +1,163 @@
-import { createClient } from "@/utils/supabase/server"
+// lib/queries/channels.ts
 
-export async function getUserChannels(userId: string) {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('user_channels')
-    .select(`
-      *,
-      channels (
-        id,
-        name,
-        icon_url,
-        mandatory
-      )
-    `)
-    .eq('user_id', userId)
-    
-  if (error) {
-    throw error
-  }
-  
-  return data || []
+import { createClient } from '@/utils/supabase/server'
+import type { 
+  Channel, 
+  UserChannel, 
+  UserChannelInsert, 
+  UserChannelUpdate, 
+  UserChannelWithChannel 
+} from '@/lib/types/channels'
+import { channelLogger } from '@/lib/utils/loggers'
+
+/**
+ * Fetches the channels a user is connected to, along with details
+ * about the channel from the 'channels' table.
+ */
+export async function getUserChannels(userId: string): Promise<UserChannelWithChannel[]> {
+	const supabase = await createClient();
+
+	// Use a manual join to get the correct data structure
+	const { data, error } = await supabase
+		.from("user_channels")
+		.select(`
+			id,
+			link,
+			verified_at,
+			channel_id,
+			channels!user_channels_channel_id_fkey (
+				id,
+				link_method,
+				is_active,
+				created_at
+			)
+		`)
+		.eq("user_id", userId);
+
+	if (error) {
+		channelLogger.error("Error fetching user channels", "USER_CHANNELS_FETCH", { error }, userId);
+		throw error;
+	}
+
+	// Transform the data to match the expected structure
+	const transformedData = data?.map(item => ({
+		id: item.id,
+		link: item.link,
+		verified_at: item.verified_at,
+		channel_id: item.channel_id,
+		channels: Array.isArray(item.channels) ? item.channels[0] : item.channels
+	})) || [];
+
+	return transformedData;
 }
 
-export async function getMandatoryChannels() {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('channels')
-    .select('*')
-    .eq('is_active', true)
-    .eq('mandatory', true)
-    
-  if (error) {
-    throw error
-  }
-  
-  return data || []
+/**
+ * Fetches all currently active channels.
+ */
+export async function getAllChannels(): Promise<Channel[]> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from("channels")
+		.select("*")
+		.eq("is_active", true);
+
+	if (error) {
+		channelLogger.error("Error fetching all channels", "ALL_CHANNELS_FETCH", { error });
+		throw error;
+	}
+
+	return data || [];
 }
 
-export async function getAllChannels() {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('channels')
-    .select('*')
-    .eq('is_active', true)
-    
-  if (error) {
-    throw error
-  }
-  
-  return data || []
+/**
+ * Checks if a specific user is connected to a specific channel.
+ */
+export async function getChannelConnectionStatus(
+	userId: string,
+	channelId: string
+): Promise<Pick<UserChannel, "id" | "verified_at"> | null> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from("user_channels")
+		.select("id, verified_at") // Selecting specific columns is better than '*'
+		.eq("user_id", userId)
+		.eq("channel_id", channelId)
+		.single();
+
+	if (error && error.code !== "PGRST116") {
+		// PGRST116 means 'no rows found', which is a valid result here.
+		channelLogger.error("Error getting channel connection status", "CHANNEL_CONNECTION_STATUS", { error, channelId }, userId);
+		throw error;
+	}
+
+	return data;
 }
 
-export async function getChannelConnectionStatus(userId: string, channelId: string) {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('user_channels')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('channel_id', channelId)
-    .single()
-    
-  if (error && error.code !== 'PGRST116') {
-    throw error
-  }
-  
-  return data
+/**
+ * Deletes a user channel connection.
+ */
+export async function deleteUserChannel(
+	userChannelId: string, 
+	userId: string
+): Promise<void> {
+	const supabase = await createClient();
+
+	const { error } = await supabase
+		.from("user_channels")
+		.delete()
+		.eq("id", userChannelId)
+		.eq("user_id", userId); // Ensure user can only delete their own channels
+
+	if (error) {
+		channelLogger.error("Error deleting user channel", "USER_CHANNEL_DELETE", { error, userChannelId }, userId);
+		throw error;
+	}
+
+	channelLogger.info("User channel deleted successfully", "USER_CHANNEL_DELETE", { userChannelId }, userId);
+}
+
+/**
+ * Creates a new user channel connection.
+ */
+export async function createUserChannel(userChannelData: UserChannelInsert): Promise<UserChannel> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from("user_channels")
+		.insert(userChannelData)
+		.select("*")
+		.single();
+
+	if (error) {
+		channelLogger.error("Error creating user channel", "USER_CHANNEL_CREATE", { error, userChannelData });
+		throw error;
+	}
+
+	return data;
+}
+
+/**
+ * Updates a user channel connection.
+ */
+export async function updateUserChannel(
+	userChannelId: string, 
+	updates: UserChannelUpdate
+): Promise<UserChannel> {
+	const supabase = await createClient();
+
+	const { data, error } = await supabase
+		.from("user_channels")
+		.update(updates)
+		.eq("id", userChannelId)
+		.select("*")
+		.single();
+
+	if (error) {
+		channelLogger.error("Error updating user channel", "USER_CHANNEL_UPDATE", { error, userChannelId, updates });
+		throw error;
+	}
+
+	return data;
 }
