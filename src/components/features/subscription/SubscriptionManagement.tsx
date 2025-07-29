@@ -26,11 +26,10 @@ import { cn } from "@/lib/utils";
 // Stripe imports
 import { loadStripe } from "@stripe/stripe-js";
 import { toast } from "sonner";
-import { UserSubscription } from "@/lib/queries/subscription";
-import { getAvailablePlans, SubscriptionPlan } from '@/lib/queries/plans';
+import { UserSubscription, SubscriptionPlan } from "@/lib/queries"; // Remove getAvailablePlans import
 
 import { SubscriptionManagementSkeleton, LoadingWrapper } from "@/components/ui/loading";
-import { uiLogger } from "@/lib/utils/loggers";
+import { uiLogger } from "@/lib/logging/loggers";
 
 interface SubscriptionManagementProps {
   subscription: UserSubscription | null
@@ -48,10 +47,14 @@ export function SubscriptionManagement({ subscription, isLoading = false, onRefr
     async function fetchPlans() {
       setPlansLoading(true)
       try {
-        const plans = await getAvailablePlans()
+        const response = await fetch('/api/plans')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch plans: ${response.status} ${response.statusText}`)
+        }
+        const plans = await response.json()
         setAvailablePlans(plans)
       } catch (error) {
-        uiLogger.error('Failed to fetch plans', 'SUBSCRIPTION_MANAGEMENT', { error });
+        uiLogger.error('Failed to fetch plans', new Error('SUBSCRIPTION_MANAGEMENT'), { error });
         toast.error('Could not load subscription plans.')
       } finally {
         setPlansLoading(false)
@@ -189,7 +192,7 @@ function SubscriptionManagementContent({
         }
       }
     } catch (error) {
-      uiLogger.error('CHECKOUT_ERROR', 'SUBSCRIPTION_MANAGEMENT', { error, planSlug });
+      uiLogger.error('CHECKOUT_ERROR', new Error('SUBSCRIPTION_MANAGEMENT'), { error, planSlug });
       toast.error('Failed to start checkout process')
     } finally {
         setIsActionLoading(false)

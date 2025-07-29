@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { deleteUserChannel } from '@/lib/queries/channels'
-import { apiLogger } from '@/lib/utils/loggers'
+import { deleteUserChannel } from '@/lib/queries'
+import { apiLogger } from '@/lib/logging/loggers'
 
 export async function DELETE(
   request: NextRequest,
@@ -70,7 +70,7 @@ export async function DELETE(
     )
 
   } catch (error) {
-    apiLogger.error("Error deleting channel", "CHANNEL_DELETE_API", { 
+    apiLogger.error("Error deleting channel", new Error("CHANNEL_DELETE_API"), { 
       error,
       channelId: (await params).channelId 
     }, userId || undefined)

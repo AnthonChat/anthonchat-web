@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createServiceRoleClient } from '@/utils/supabase/server'
+import { stripeLogger } from '@/lib/logging/loggers'
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set')
@@ -40,7 +41,7 @@ export const waitForCustomerSync = async (
   const supabase = createServiceRoleClient() // Use service role for stripe schema access
   const startTime = Date.now()
   
-  console.log(`[STRIPE_CUSTOMER_SYNC] Starting sync wait for customer: ${customerId}`)
+  stripeLogger.debug(`Starting sync wait for customer: ${customerId}`)
   
   while (Date.now() - startTime < maxWaitMs) {
     try {
@@ -53,22 +54,22 @@ export const waitForCustomerSync = async (
         .maybeSingle()
       
       if (error) {
-        console.log(`[STRIPE_CUSTOMER_SYNC] Query error: ${error.message}`)
+        stripeLogger.warn(`Query error: ${error.message}`)
       } else if (data) {
-        console.log(`[STRIPE_CUSTOMER_SYNC] Customer found: ${customerId}`)
+        stripeLogger.debug(`Customer found: ${customerId}`)
         return true
       } else {
-        console.log(`[STRIPE_CUSTOMER_SYNC] Customer not found yet: ${customerId}`)
+        stripeLogger.debug(`Customer not found yet: ${customerId}`)
       }
     } catch (err) {
-      console.error(`[STRIPE_CUSTOMER_SYNC] Unexpected error:`, err)
+      stripeLogger.error(`Unexpected error`, err instanceof Error ? err : new Error(String(err)))
     }
     
     // Wait before checking again
     await new Promise(resolve => setTimeout(resolve, intervalMs))
   }
   
-  console.log(`[STRIPE_CUSTOMER_SYNC] Timeout reached for customer: ${customerId}`)
+  stripeLogger.warn(`Timeout reached for customer: ${customerId}`)
   return false
 }
   
@@ -94,26 +95,26 @@ export const linkCustomerToUser = async (userId: string, customerId: string): Pr
       .maybeSingle()
     
     if (error) {
-      console.error(`[LINK_CUSTOMER] Database error: ${error.message}`)
+      stripeLogger.error(`Database error`, new Error(error.message))
       return false
     }
     
     if (!customer) {
-      console.error(`[LINK_CUSTOMER] Customer ${customerId} not found in local database`)
+      stripeLogger.error(`Customer not found in local database`, new Error(`Customer ${customerId} not found`))
       return false
     }
     
-    console.log(`[LINK_CUSTOMER] Found customer in database: ${customerId} (${customer.email})`)
+    stripeLogger.debug(`Found customer in database: ${customerId} (${customer.email})`)
     
     // Update the user record
     await updateUserData(userId, {
       stripe_customer_id: customerId
     })
     
-    console.log(`[LINK_CUSTOMER] Successfully linked customer ${customerId} to user ${userId}`)
+    stripeLogger.debug(`Successfully linked customer ${customerId} to user ${userId}`)
     return true
   } catch (error) {
-    console.error('[LINK_CUSTOMER] Failed to link customer to user:', error)
+    stripeLogger.error('Failed to link customer to user', error instanceof Error ? error : new Error(String(error)))
     return false
   }
 }
@@ -134,24 +135,24 @@ export const debugCheckCustomerExists = async (customerId: string) => {
       .maybeSingle()
     
     if (error) {
-      console.error(`[DEBUG_CUSTOMER] Database error: ${error.message}`)
+      stripeLogger.error(`Database error`, new Error(error.message))
       return null
     }
     
-    console.log(`[DEBUG_CUSTOMER] Customer ${customerId}:`, data ? 'FOUND' : 'NOT FOUND')
+    stripeLogger.debug(`Customer ${customerId}: ${data ? 'FOUND' : 'NOT FOUND'}`)
     if (data) {
-      console.log(`[DEBUG_CUSTOMER] Customer details:`, {
+      stripeLogger.debug(`Customer details: ${JSON.stringify({
         id: data.id,
         email: data.email,
         deleted: data.deleted,
         created: data.created,
         updated_at: data.updated_at
-      })
+      })}`)
     }
     
     return data
   } catch (error) {
-    console.error('[DEBUG_CUSTOMER] Unexpected error:', error)
+    stripeLogger.error('Unexpected error', error instanceof Error ? error : new Error(String(error)))
     return null
   }
 }

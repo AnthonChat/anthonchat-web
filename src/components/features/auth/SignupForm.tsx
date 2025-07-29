@@ -16,6 +16,7 @@ import {
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/browser";
+import { authLogger } from "@/lib/logging/loggers";
 
 interface SignupFormProps {
   message?: string | null;
@@ -89,7 +90,7 @@ export default function SignupForm({ message }: SignupFormProps) {
       }, 1000);
 
     } catch (error) {
-      console.error('Signup error:', error);
+      authLogger.error('Signup error', error instanceof Error ? error : new Error(String(error)));
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       setIsLoading(false);
     }

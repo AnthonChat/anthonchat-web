@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { createBillingPortalSession } from '@/lib/stripe'
-import { apiLogger } from '@/lib/utils/loggers'
+import { apiLogger } from '@/lib/logging/loggers'
 
 export async function POST(request: NextRequest) {
   let userId: string | null = null
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    apiLogger.error('Billing Portal Error', 'BILLING_PORTAL_ERROR', { error, userId })
+    apiLogger.error('Billing Portal Error', new Error('BILLING_PORTAL_ERROR'), { error, userId })
     
     // Check if it's a configuration error
     if (error instanceof Error && error.message.includes('No configuration provided')) {

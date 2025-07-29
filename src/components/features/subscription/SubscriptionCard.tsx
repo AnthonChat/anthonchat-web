@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 
 // --- Step 1: Import the new data types and utility functions ---
-import { UserSubscription } from "@/lib/queries/subscription";
-import type { UsageData } from "@/lib/types/usage";
-import { useRealtimeUsage } from "@/hooks/useRealtimeUsage";
+import { UserSubscription } from "@/lib/queries";
+import type { UsageData } from "@/lib/types/usage.types";
+import { useRealtimeUsage } from "@/hooks/use-realtime-usage";
 import { formatTrialTimeRemaining } from "@/lib/utils/time-formatting";
 import { cn } from "@/lib/utils";
 import {

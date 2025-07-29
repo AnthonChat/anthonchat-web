@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { middlewareLogger } from '@/lib/utils/loggers'
+import { middlewareLogger } from '@/lib/logging/loggers'
 
 export async function middleware(request: NextRequest) {
   middlewareLogger.info('Middleware entry', 'MIDDLEWARE_ENTRY', { pathname: request.nextUrl.pathname })
@@ -65,7 +65,7 @@ export async function middleware(request: NextRequest) {
     middlewareLogger.info('Fetched user data for onboarding check', 'MIDDLEWARE_USER_DATA_FETCH', { userData, userError }, userId);
 
     if (userError || !userData) {
-      middlewareLogger.error('Failed to fetch user onboarding status', 'USER_ONBOARDING_STATUS_FETCH_ERROR', { error: userError }, userId);
+      middlewareLogger.error('Failed to fetch user onboarding status', new Error('USER_ONBOARDING_STATUS_FETCH_ERROR'), { error: userError }, userId);
       // Handle error, maybe redirect to an error page or logout
       const url = request.nextUrl.clone();
       url.pathname = '/login'; // Fallback to login on error

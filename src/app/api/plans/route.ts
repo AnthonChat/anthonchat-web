@@ -1,7 +1,8 @@
-import { createClient } from '@/utils/supabase/browser';
-import { tierLogger } from '@/lib/logging/loggers';
+import { NextResponse } from 'next/server'
+import { createClient } from '@/utils/supabase/server'
+import { apiLogger } from '@/lib/logging/loggers'
 
-export interface Product {
+interface Product {
   id: string;
   active: boolean;
   name: string | null;
@@ -9,7 +10,7 @@ export interface Product {
   metadata: Record<string, string> | null;
 }
 
-export interface Price {
+interface Price {
   id: string;
   product_id: string;
   active: boolean;
@@ -24,25 +25,23 @@ export interface Price {
   metadata: Record<string, string> | null;
 }
 
-export type SubscriptionPlan = Product & {
+type SubscriptionPlan = Product & {
   prices: Price[];
 };
 
-
-
-export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
-  const supabase = createClient();
+async function getAvailablePlansServer(): Promise<SubscriptionPlan[]> {
+  const supabase = await createClient();
 
   // 1. Fetch all active, recurring prices
   const { data: prices, error: pricesError } = await supabase
-  .schema('stripe')
+    .schema('stripe')
     .from('prices')
     .select('*')
     .eq('active', true)
     .eq('type', 'recurring');
 
   if (pricesError) {
-    tierLogger.error('Error fetching prices', pricesError);
+    apiLogger.error('PRICES_FETCH_ERROR', new Error('API_PLANS'), { error: pricesError });
     return [];
   }
 
@@ -59,7 +58,7 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
 
   // 3. Fetch all active products associated with those prices
   const { data: products, error: productsError } = await supabase
-  .schema('stripe')
+    .schema('stripe')
     .from('products')
     .select('*')
     .in('id', productIds as string[])
@@ -67,7 +66,7 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
     .order('metadata->>order', { ascending: true });
 
   if (productsError) {
-    tierLogger.error('Error fetching products', productsError);
+    apiLogger.error('PRODUCTS_FETCH_ERROR', new Error('API_PLANS'), { error: productsError });
     return [];
   }
 
@@ -85,4 +84,17 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
   });
 
   return plans;
+}
+
+export async function GET() {
+  try {
+    const plans = await getAvailablePlansServer()
+    return NextResponse.json(plans)
+  } catch (error) {
+    apiLogger.error('PLANS_API_ERROR', new Error('API_PLANS'), { error })
+    return NextResponse.json(
+      { error: 'Failed to fetch plans' },
+      { status: 500 }
+    )
+  }
 }

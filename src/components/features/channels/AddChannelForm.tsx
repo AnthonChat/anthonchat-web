@@ -17,7 +17,7 @@ import {
   RotateCcw
 } from "lucide-react"
 import { useRouter } from "next/navigation";
-import { uiLogger } from "@/lib/utils/loggers";
+import { uiLogger } from "@/lib/logging/loggers";
 import { cn } from "@/lib/utils";
 import type { Channel, UserChannelWithChannel } from "@/lib/types/channels";
 
@@ -43,7 +43,7 @@ const saveVerificationStates = (states: Record<string, ChannelVerificationState>
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(states))
   } catch (error) {
-    uiLogger.error("STORAGE_SAVE_ERROR", "ADD_CHANNEL_FORM", { error })
+    uiLogger.error("STORAGE_SAVE_ERROR", error instanceof Error ? error : new Error(String(error)))
   }
 }
 
@@ -77,7 +77,7 @@ const loadVerificationStates = (): Record<string, ChannelVerificationState> => {
       return cleanStates
     }
   } catch (error) {
-    uiLogger.error("STORAGE_LOAD_ERROR", "ADD_CHANNEL_FORM", { error })
+    uiLogger.error("STORAGE_LOAD_ERROR", error instanceof Error ? error : new Error(String(error)))
   }
   return {}
 }
@@ -91,7 +91,7 @@ const clearVerificationState = (channelId: string) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(states))
     }
   } catch (error) {
-    uiLogger.error("STORAGE_CLEAR_ERROR", "ADD_CHANNEL_FORM", { error })
+    uiLogger.error("STORAGE_CLEAR_ERROR", error instanceof Error ? error : new Error(String(error)))
   }
 }
 
@@ -242,7 +242,7 @@ export function AddChannelForm({ availableChannels, existingChannels }: AddChann
           throw new Error(data.error || 'Verification failed')
         }
       } catch (error) {
-        uiLogger.error("POLLING_ERROR", "ADD_CHANNEL_FORM", { error, channelId, nonce })
+        uiLogger.error("POLLING_ERROR", error instanceof Error ? error : new Error(String(error)))
         updateChannelState(channelId, {
           status: 'error',
           error: error instanceof Error ? error.message : 'Verification failed'
@@ -349,7 +349,7 @@ export function AddChannelForm({ availableChannels, existingChannels }: AddChann
       startPolling(channel.id, data.nonce)
 
     } catch (error) {
-      uiLogger.error("CHANNEL_VERIFICATION_ERROR", "ADD_CHANNEL_FORM", { error, channelId: channel.id })
+      uiLogger.error("CHANNEL_VERIFICATION_ERROR", error instanceof Error ? error : new Error(String(error)))
       updateChannelState(channel.id, {
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error occurred'

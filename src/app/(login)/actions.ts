@@ -2,9 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { apiLogger } from "@/lib/utils/loggers";
+import { apiLogger } from "@/lib/logging/loggers";
 import { createStripeCustomer, waitForCustomerSync, linkCustomerToUser, debugCheckCustomerExists } from "@/lib/stripe";
-import { updateUserData } from "@/lib/queries/user";
+import { updateUserData } from "@/lib/queries";
 
 export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
@@ -37,7 +37,7 @@ export async function signUp(formData: FormData) {
   });
 
   if (authError) {
-    apiLogger.error("AUTH_SIGNUP_ERROR", "AUTH", { authError, email });
+    apiLogger.error("AUTH_SIGNUP_ERROR", new Error("AUTH"), { authError, email });
     return redirect(`/signup?message=${authError.message}`);
   }
 
@@ -90,7 +90,7 @@ export async function signUp(formData: FormData) {
             customerId: stripeCustomer.id 
           });
         } else {
-          apiLogger.error("Failed to link existing customer", "STRIPE_CUSTOMER_FALLBACK_FAILED", { 
+          apiLogger.error("Failed to link existing customer", new Error("STRIPE_CUSTOMER_FALLBACK_FAILED"), { 
             userId: user.id, 
             customerId: stripeCustomer.id 
           });
@@ -106,7 +106,7 @@ export async function signUp(formData: FormData) {
     }
   } catch (error) {
     // Log the error but don't block the signup process
-    apiLogger.error("Failed to create Stripe customer", "STRIPE_CUSTOMER_CREATE_ERROR", { 
+    apiLogger.error("Failed to create Stripe customer", new Error("STRIPE_CUSTOMER_CREATE_ERROR"), { 
       error: error instanceof Error ? error.message : 'Unknown error',
       userId: user.id,
       email 

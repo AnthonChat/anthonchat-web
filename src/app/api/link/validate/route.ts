@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { apiLogger } from "@/lib/utils/loggers";
+import { apiLogger } from "@/lib/logging/loggers";
 
 export async function POST(request: NextRequest) {
 	// ❗️ SECURITY: Protect this endpoint, as it is called by your bot, not a browser user.
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
 	// 3️⃣ Handle errors from the remote procedure call itself
 	if (rpcError) {
-		apiLogger.error('FINALIZE_CHANNEL_LINK_RPC_ERROR', 'API_LINK', { error: rpcError, nonce, link });
+		apiLogger.error('FINALIZE_CHANNEL_LINK_RPC_ERROR', new Error('API_LINK'), { error: rpcError, nonce, link });
 		return NextResponse.json(
 			{ error: "Server error during verification." },
 			{ status: 500 }

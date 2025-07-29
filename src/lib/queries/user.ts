@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { userLogger } from '@/lib/utils/loggers'
+import { userLogger } from '@/lib/logging/loggers'
 import type { Database as PublicDatabase } from "@/utils/supabase/schemas/public";
 
 // Type aliases for better readability

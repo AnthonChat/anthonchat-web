@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
-import type { UsageData } from "@/lib/types/usage";
+import type { UsageData } from "@/lib/types/usage.types";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { hookLogger } from "@/lib/utils/loggers";
+import { hookLogger } from "@/lib/logging/loggers";
 
 interface UseRealtimeUsageOptions {
 	userId: string;

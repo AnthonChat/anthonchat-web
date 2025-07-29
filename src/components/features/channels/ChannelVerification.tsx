@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Clock, AlertCircle, ExternalLink, Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { uiLogger } from "@/lib/utils/loggers";
+import { uiLogger } from "@/lib/logging/loggers";
 
 interface Channel {
   id: string;

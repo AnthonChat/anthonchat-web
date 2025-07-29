@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { apiLogger } from "@/lib/utils/loggers";
+import { apiLogger } from "@/lib/logging/loggers";
 
 export async function GET(
 	request: NextRequest,
@@ -78,7 +78,7 @@ export async function GET(
 		.maybeSingle(); // We assume they only verify one at a time.
 
 	if (channelError) {
-		apiLogger.error('USER_CHANNEL_STATUS_ERROR', 'API_LINK', { error: channelError, userId: userId, nonce });
+		apiLogger.error('USER_CHANNEL_STATUS_ERROR', new Error('API_LINK'), { error: channelError, userId: userId, nonce });
 		return NextResponse.json(
 			{ status: "error", error: "A database error occurred." },
 			{ status: 500 }

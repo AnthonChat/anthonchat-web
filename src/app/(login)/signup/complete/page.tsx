@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import SignupCompleteForm from "@/components/signup/SignupCompleteForm";
-import { uiLogger } from "@/lib/utils/loggers";
+import SignupCompleteForm from "@/components/features/auth/SignupCompleteForm";
+import { uiLogger } from "@/lib/logging/loggers";
 
 export default async function SignupCompletePage() {
 	const supabase = await createClient();
@@ -26,10 +26,7 @@ export default async function SignupCompletePage() {
 
 	// If the check fails, we can log it but we'll still show the form
 	if (rpcError) {
-		uiLogger.error("ONBOARDING_CHECK_FUNCTION_ERROR", "SIGNUP_COMPLETE", {
-			rpcError: rpcError.message,
-			userId: userId
-		});
+		uiLogger.error("ONBOARDING_CHECK_FUNCTION_ERROR", new Error(rpcError.message));
 	}
 
 	// 2. If the function returns `true`, redirect immediately
@@ -59,10 +56,7 @@ export default async function SignupCompletePage() {
 		.not("verified_at", "is", null); // Only select channels that are actually verified
 
 	if (userChannelsError) {
-		uiLogger.error("VERIFIED_CHANNELS_FETCH_ERROR", "SIGNUP_COMPLETE", {
-			userChannelsError: userChannelsError.message,
-			userId: userId
-		});
+		uiLogger.error("VERIFIED_CHANNELS_FETCH_ERROR", new Error(userChannelsError.message));
 	}
 
 	return (
