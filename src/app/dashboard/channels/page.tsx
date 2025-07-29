@@ -10,16 +10,16 @@ export default async function ChannelsPage() {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!claims) {
     return redirect("/login");
   }
 
   // Fetch channels and subscription data
   const [channels] = await Promise.all([
-    getUserChannels(user.id),
+    getUserChannels(claims.claims.sub),
   ])
 
   return (

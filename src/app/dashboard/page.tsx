@@ -18,25 +18,28 @@ export default async function DashboardPage() {
 	const supabase = await createClient();
 
 	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+		data: claims,
+	} = await supabase.auth.getClaims();
 
-	if (!user) {
+	if (!claims) {
 		return redirect("/login");
 	}
+
+	const userId = claims.claims.sub;
+	const userEmail = claims.claims.email;
 
 	// This RPC call remains unchanged and is a robust way to enforce profile completion.
 	const { data: isOnboarded, error: rpcError } = await supabase.rpc(
 		"check_onboarding_complete",
 		{
-			user_id_param: user.id,
+			user_id_param: userId,
 		}
 	);
 
 	if (rpcError) {
 		uiLogger.error("DASHBOARD_ONBOARDING_CHECK_FAILED", "DASHBOARD", { 
 			rpcError: rpcError.message, 
-			userId: user.id 
+			userId: userId 
 		});
 		// It's safe to proceed, allowing the user to access the dashboard
 		// even if the check fails, preventing them from being locked out.
@@ -50,15 +53,15 @@ export default async function DashboardPage() {
 	// This is efficient and leverages our refactored query functions.
 	// The `subscription` and `usage` objects now have a new, more detailed structure.
 	const [subscription, usage] = await Promise.all([
-		getUserSubscription(user.id),
-		getUserUsage(user.id),
+		getUserSubscription(userId),
+		getUserUsage(userId),
 	]);
 
 	return (
 		<DashboardLayout variant="enhanced">
 			<DashboardHeader
 				title="Dashboard"
-				description={`Welcome back, ${user.email}`}
+				description={`Welcome back, ${userEmail}`}
 				variant="enhanced"
 				actions={
 					<div className="flex items-center gap-4">
@@ -111,7 +114,7 @@ export default async function DashboardPage() {
 							<SubscriptionCard
 								subscription={subscription}
 								usage={usage}
-								userId={user.id}
+								userId={userId}
 							/>
 						</div>
 
@@ -119,7 +122,7 @@ export default async function DashboardPage() {
 						<div
 							className="animate-fade-in"
 							style={{ animationDelay: "0.2s" }}>
-							<ChannelsOverview userId={user.id} />
+							<ChannelsOverview userId={userId} />
 						</div>
 					</div>
 

@@ -9,10 +9,10 @@ export default async function SubscriptionPage() {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!claims) {
     return redirect("/login");
   }
 
@@ -44,7 +44,7 @@ export default async function SubscriptionPage() {
 
         {/* Client-side subscription management with real-time updates */}
         <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
-          <SubscriptionPageClient userId={user.id} />
+          <SubscriptionPageClient userId={claims.claims.sub} />
         </div>
       </main>
     </DashboardLayout>

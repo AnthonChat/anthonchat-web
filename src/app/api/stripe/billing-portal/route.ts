@@ -2,19 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { createBillingPortalSession } from '@/lib/stripe'
 import { apiLogger } from '@/lib/utils/loggers'
-import type { User } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
-  let user: User | null = null
+  let userId: string | null = null
   
   try {
     const supabase = await createClient()
     
-    // Get authenticated user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-    user = authUser
+    // Get authenticated user claims
+    const { data: claims, error: authError } = await supabase.auth.getClaims()
+    userId = claims?.claims.sub || null
     
-    if (authError || !user) {
+    if (authError || !claims) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -22,7 +21,7 @@ export async function POST(request: NextRequest) {
     const { data: userProfile } = await supabase
       .from('users')
       .select('stripe_customer_id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (!userProfile?.stripe_customer_id) {
@@ -40,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    apiLogger.error('Billing Portal Error', 'BILLING_PORTAL_ERROR', { error, userId: user?.id })
+    apiLogger.error('Billing Portal Error', 'BILLING_PORTAL_ERROR', { error, userId })
     
     // Check if it's a configuration error
     if (error instanceof Error && error.message.includes('No configuration provided')) {

@@ -50,12 +50,14 @@ export function useUserSubscription(
     
     const getUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: claims, error } = await supabase.auth.getClaims();
         if (mounted) {
           if (error) {
             setError(error);
+          } else if (claims) {
+            setUser({ id: claims.claims.sub } as User);
           } else {
-            setUser(user);
+            setUser(null);
           }
         }
       } catch (err) {

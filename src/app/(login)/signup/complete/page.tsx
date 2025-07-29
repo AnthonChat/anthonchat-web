@@ -7,18 +7,20 @@ export default async function SignupCompletePage() {
 	const supabase = await createClient();
 
 	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+		data: claims,
+	} = await supabase.auth.getClaims();
 
-	if (!user) {
+	if (!claims) {
 		redirect("/login");
 	}
+
+	const userId = claims.claims.sub;
 
 	// 1. Check if user is already onboarded using the function
 	const { data: isOnboarded, error: rpcError } = await supabase.rpc(
 		"check_onboarding_complete",
 		{
-			user_id_param: user.id,
+			user_id_param: userId,
 		}
 	);
 
@@ -26,7 +28,7 @@ export default async function SignupCompletePage() {
 	if (rpcError) {
 		uiLogger.error("ONBOARDING_CHECK_FUNCTION_ERROR", "SIGNUP_COMPLETE", {
 			rpcError: rpcError.message,
-			userId: user.id
+			userId: userId
 		});
 	}
 
@@ -40,7 +42,7 @@ export default async function SignupCompletePage() {
 	const { data: userProfile } = await supabase
 		.from("users")
 		.select("nickname, first_name, last_name")
-		.eq("id", user.id)
+		.eq("id", userId)
 		.single();
 
 	// Fetch all active channels from database
@@ -53,13 +55,13 @@ export default async function SignupCompletePage() {
 	const { data: userChannels, error: userChannelsError } = await supabase
 		.from("user_channels")
 		.select("channel_id, link") // Just get what you need
-		.eq("user_id", user.id)
+		.eq("user_id", userId)
 		.not("verified_at", "is", null); // Only select channels that are actually verified
 
 	if (userChannelsError) {
 		uiLogger.error("VERIFIED_CHANNELS_FETCH_ERROR", "SIGNUP_COMPLETE", {
 			userChannelsError: userChannelsError.message,
-			userId: user.id
+			userId: userId
 		});
 	}
 
@@ -75,7 +77,7 @@ export default async function SignupCompletePage() {
 			</div>
 
 			<SignupCompleteForm
-				user={user}
+				user={{ id: userId }}
 				userProfile={userProfile}
 				channels={(channels || []).map((channel) => ({
 					id: channel.id,
