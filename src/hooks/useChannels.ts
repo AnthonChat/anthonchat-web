@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { UserChannelWithChannel } from "@/lib/types/channels.types";
-import { hookLogger } from "@/lib/logging/loggers";
+import { UserChannelWithChannel } from "@/lib/types/channels";
+import { hookLogger } from "@/lib/utils/loggers";
 
 interface UseChannelsOptions {
   userId?: string;

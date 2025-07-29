@@ -3,15 +3,16 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { LogOut, User } from "lucide-react";
-import { getUserTierAndUsage, getUserSubscription } from "@/lib/queries";
-import { SubscriptionCard } from "@/components/features/subscription/SubscriptionCard";
-import { ChannelsOverview } from "@/components/features/channels/ChannelsOverview";
-import { QuickActions } from "@/components/features/dashboard/QuickActions";
+import { getUserSubscription } from "@/lib/queries/subscription";
+import { getUserUsage } from "@/lib/queries/usage";
+import { SubscriptionCard } from "@/components/dashboard/SubscriptionCard";
+import { ChannelsOverview } from "@/components/dashboard/ChannelsOverview";
+import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/layouts/ThemeToggle";
-import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
-import { DashboardLayout } from "@/components/shared/layouts/DashboardLayout";
-import { uiLogger } from "@/lib/logging/loggers";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { uiLogger } from "@/lib/utils/loggers";
 
 export default async function DashboardPage() {
 	const supabase = await createClient();
@@ -36,7 +37,10 @@ export default async function DashboardPage() {
 	);
 
 	if (rpcError) {
-		uiLogger.error("DASHBOARD_ONBOARDING_CHECK_FAILED", new Error(rpcError.message));
+		uiLogger.error("DASHBOARD_ONBOARDING_CHECK_FAILED", "DASHBOARD", { 
+			rpcError: rpcError.message, 
+			userId: userId 
+		});
 		// It's safe to proceed, allowing the user to access the dashboard
 		// even if the check fails, preventing them from being locked out.
 	}
@@ -48,23 +52,10 @@ export default async function DashboardPage() {
 	// --- Step 4: Fetch all necessary data in parallel ---
 	// This is efficient and leverages our refactored query functions.
 	// The `subscription` and `usage` objects now have a new, more detailed structure.
-	const [subscription, tierAndUsage] = await Promise.all([
+	const [subscription, usage] = await Promise.all([
 		getUserSubscription(userId),
-		getUserTierAndUsage(userId),
+		getUserUsage(userId),
 	]);
-
-	// Convert UserTierAndUsageResult to UsageData for compatibility
-	const usage = tierAndUsage ? {
-		tokens_used: tierAndUsage.tokens_used,
-		requests_used: tierAndUsage.requests_used,
-		tokens_limit: tierAndUsage.tokens_limit || 0,
-		requests_limit: tierAndUsage.requests_limit || 0,
-	} : {
-		tokens_used: 0,
-		requests_used: 0,
-		tokens_limit: 0,
-		requests_limit: 0,
-	};
 
 	return (
 		<DashboardLayout variant="enhanced">

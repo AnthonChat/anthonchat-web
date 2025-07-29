@@ -1,4 +1,4 @@
-import { dateLogger } from '@/lib/logging/loggers'
+import { dateLogger } from '@/lib/utils/loggers'
 
 /**
  * Format a date string consistently for display
@@ -17,7 +17,7 @@ export function formatDate(dateString?: string | null): string {
       day: 'numeric'
     })
   } catch (error) {
-    dateLogger.error('Date Format Error', new Error('DATE_FORMAT_ERROR'), { error, dateString })
+    dateLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString })
     return 'Invalid Date'
   }
 }

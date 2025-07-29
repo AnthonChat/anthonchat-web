@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from "@/utils/supabase/server";
-import { apiLogger } from "@/lib/logging/loggers";
+import { apiLogger } from "@/lib/utils/loggers";
 import { createStripeCustomer, waitForCustomerSync, linkCustomerToUser, debugCheckCustomerExists } from "@/lib/stripe";
-import { updateUserData } from "@/lib/queries";
+import { updateUserData } from "@/lib/queries/user";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError) {
-      apiLogger.error("AUTH_SIGNUP_ERROR", new Error("AUTH"), { authError, email });
+      apiLogger.error("AUTH_SIGNUP_ERROR", "AUTH", { authError, email });
       return NextResponse.json(
         { error: authError.message },
         { status: 400 }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
               customerId: stripeCustomer.id 
             });
           } else {
-            apiLogger.error("Failed to link existing customer", new Error("STRIPE_CUSTOMER_FALLBACK_FAILED"), { 
+            apiLogger.error("Failed to link existing customer", "STRIPE_CUSTOMER_FALLBACK_FAILED", { 
               userId: user.id, 
               customerId: stripeCustomer.id 
             });
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       // Log the error but don't block the signup process
-      apiLogger.error("Failed to create Stripe customer", new Error("STRIPE_CUSTOMER_CREATE_ERROR"), { 
+      apiLogger.error("Failed to create Stripe customer", "STRIPE_CUSTOMER_CREATE_ERROR", { 
         error: error instanceof Error ? error.message : 'Unknown error',
         userId: user.id,
         email 
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    apiLogger.error("Signup API error", new Error("SIGNUP_API_ERROR"), { 
+    apiLogger.error("Signup API error", "SIGNUP_API_ERROR", { 
       error: error instanceof Error ? error.message : 'Unknown error'
     });
     

@@ -3,8 +3,8 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { useUserSubscription } from '@/hooks/use-user-subscription'
-import { SubscriptionManagement } from '@/components/features/subscription/SubscriptionManagement'
+import { useUserSubscription } from '@/hooks/useUserSubscription'
+import { SubscriptionManagement } from '@/components/dashboard/SubscriptionManagement'
 
 interface SubscriptionPageClientProps {
   userId: string

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/browser";
-import { UserSubscription } from "@/lib/queries";
+import { UserSubscription } from "@/lib/queries/subscription";
 import type { User } from "@supabase/supabase-js";
 
 interface UseUserSubscriptionOptions {

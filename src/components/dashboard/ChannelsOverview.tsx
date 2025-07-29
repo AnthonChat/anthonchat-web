@@ -20,11 +20,11 @@ import {
 	RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useChannels } from "@/hooks/use-channels";
+import { useChannels } from "@/hooks/useChannels";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingWrapper } from "@/components/ui/loading";
-import { UserChannelWithChannel } from "@/lib/types/channels.types";
+import { UserChannelWithChannel } from "@/lib/types/channels";
 
 // The component props
 interface ChannelsOverviewProps {

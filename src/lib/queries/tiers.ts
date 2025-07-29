@@ -1,7 +1,7 @@
 // lib/queries/tiers.ts
 
 import { createClient } from '@/utils/supabase/server'
-import { tierLogger } from '@/lib/logging/loggers'
+import { tierLogger } from '@/lib/utils/loggers'
 import type { Database as PublicDatabase } from '@/utils/supabase/schemas/public'
 import type { Database as StripeDatabase } from '@/utils/supabase/schemas/stripe'
 

@@ -1,5 +1,5 @@
 import { format, parseISO, isValid, differenceInDays } from 'date-fns'
-import { timeLogger } from '@/lib/logging/loggers'
+import { timeLogger } from '@/lib/utils/loggers'
 
 /**
  * Format a date string to a human-readable format
@@ -17,7 +17,7 @@ export function formatDate(dateString: string, formatString: string = 'MMM d, yy
     
     return format(date, formatString)
   } catch (error) {
-    timeLogger.error('Date Format Error', new Error('DATE_FORMAT_ERROR'), { error, dateString, formatString })
+    timeLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString, formatString })
     return 'Invalid date'
   }
 } 
@@ -46,7 +46,7 @@ export function formatUsagePeriod(periodStart: string | null, periodEnd: string 
     
     return `${startFormatted} - ${endFormatted}`
   } catch (error) {
-    timeLogger.error('Usage Period Format Error', new Error('USAGE_PERIOD_FORMAT_ERROR'), { error, periodStart, periodEnd })
+    timeLogger.error('Usage Period Format Error', 'USAGE_PERIOD_FORMAT_ERROR', { error, periodStart, periodEnd })
     return 'Error formatting period'
   }
 }
@@ -79,7 +79,7 @@ export function formatTrialTimeRemaining(trialEnd: string | null): string {
       return `${daysRemaining} days remaining`
     }
   } catch (error) {
-    timeLogger.error('Trial Time Remaining Format Error', new Error('TRIAL_TIME_REMAINING_FORMAT_ERROR'), { error, trialEnd })
+    timeLogger.error('Trial Time Remaining Format Error', 'TRIAL_TIME_REMAINING_FORMAT_ERROR', { error, trialEnd })
     return 'Error'
   }
 }
@@ -103,7 +103,7 @@ export function formatNextBilling(nextBillingDate: string | null): string {
 
     return format(billingDate, 'MMM d, yyyy')
   } catch (error) {
-    timeLogger.error('Next Billing Format Error', new Error('NEXT_BILLING_FORMAT_ERROR'), { error, nextBillingDate })
+    timeLogger.error('Next Billing Format Error', 'NEXT_BILLING_FORMAT_ERROR', { error, nextBillingDate })
     return 'Error'
   }
 }
@@ -150,7 +150,7 @@ export function formatBillingInterval(interval: string, intervalCount: number = 
       }
     }
   } catch (error) {
-    timeLogger.error('Billing Interval Format Error', new Error('BILLING_INTERVAL_FORMAT_ERROR'), { error, interval, intervalCount })
+    timeLogger.error('Billing Interval Format Error', 'BILLING_INTERVAL_FORMAT_ERROR', { error, interval, intervalCount })
     return 'Unknown'
   }
 }
@@ -179,7 +179,7 @@ export function formatCurrentBillingPeriod(periodStart: number | null, periodEnd
     
     return `${startFormatted} - ${endFormatted}`
   } catch (error) {
-    timeLogger.error('Current Billing Period Format Error', new Error('CURRENT_BILLING_PERIOD_FORMAT_ERROR'), { error, periodStart, periodEnd })
+    timeLogger.error('Current Billing Period Format Error', 'CURRENT_BILLING_PERIOD_FORMAT_ERROR', { error, periodStart, periodEnd })
     return 'Error formatting period'
   }
 }

@@ -14,7 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { uiLogger } from "@/lib/logging/loggers";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface QuickActionsProps {
   onAction?: (action: string) => void
@@ -85,7 +85,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         setPrefetchedRoutes(prev => new Set([...prev, route]))
         uiLogger.info("ROUTE_PREFETCH_SUCCESS", "QUICK_ACTIONS", { route });
       } catch (error) {
-        uiLogger.error("ROUTE_PREFETCH_ERROR", error instanceof Error ? error : new Error(String(error)));
+        uiLogger.error("ROUTE_PREFETCH_ERROR", "QUICK_ACTIONS", { error, route });
       }
     } else if (route && prefetchedRoutes.has(route)) {
       uiLogger.info("ROUTE_ALREADY_PREFETCHED", "QUICK_ACTIONS", { route });

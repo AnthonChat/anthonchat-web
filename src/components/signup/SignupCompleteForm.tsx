@@ -14,8 +14,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { createClient } from "@/utils/supabase/browser";
-import ChannelVerification from "@/components/features/channels/ChannelVerification";
-import { uiLogger } from "@/lib/logging/loggers";
+import ChannelVerification from "./ChannelVerification";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface Channel {
 	id: string;
@@ -127,11 +127,11 @@ export default function SignupCompleteForm({
 				);
 
 				if (error) {
-					uiLogger.error("CHANNEL_RECORD_ERROR", error);
+					uiLogger.error("CHANNEL_RECORD_ERROR", "SIGNUP", { error, channelId, userId: user.id });
 					setError("Could not save channel connection. Try again?");
 				}
 			} catch (err) {
-				uiLogger.error("CHANNEL_VERIFICATION_ERROR", err instanceof Error ? err : new Error(String(err)));
+				uiLogger.error("CHANNEL_VERIFICATION_ERROR", "SIGNUP", { err, channelId, userId: user.id });
 				setError("Could not save channel connection. Try again?");
 			}
 		},
@@ -170,7 +170,7 @@ export default function SignupCompleteForm({
 			setProfileSaved(true);
 			setError(null);
 		} catch (err: unknown) {
-			uiLogger.error("PROFILE_SAVE_ERROR", err instanceof Error ? err : new Error(String(err)));
+			uiLogger.error("PROFILE_SAVE_ERROR", "SIGNUP", { err, userId: user.id });
 
 			let errorMessage = "Failed to save profile";
 
@@ -250,7 +250,7 @@ export default function SignupCompleteForm({
 			);
 
 			if (checkError) {
-				uiLogger.error("ONBOARDING_STATUS_CHECK_ERROR", checkError);
+				uiLogger.error("ONBOARDING_STATUS_CHECK_ERROR", "SIGNUP", { checkError, userId: user.id });
 				throw new Error(
 					`Failed to verify onboarding status: ${checkError.message}`
 				);
@@ -290,7 +290,11 @@ export default function SignupCompleteForm({
 							});
 
 						if (subscriptionError) {
-							uiLogger.error("TRIAL_SUBSCRIPTION_CREATE_ERROR", subscriptionError);
+							uiLogger.error("TRIAL_SUBSCRIPTION_CREATE_ERROR", "SIGNUP", { 
+								subscriptionError, 
+								userId: user.id, 
+								tierId: tier.id 
+							});
 							// Don't block the flow for subscription creation failure
 						}
 					}
@@ -303,7 +307,7 @@ export default function SignupCompleteForm({
 				);
 			}
 		} catch (err: unknown) {
-			uiLogger.error("SETUP_ERROR", err instanceof Error ? err : new Error(String(err)));
+			uiLogger.error("SETUP_ERROR", "SIGNUP", { err, userId: user.id });
 
 			let errorMessage = "An error occurred during setup";
 

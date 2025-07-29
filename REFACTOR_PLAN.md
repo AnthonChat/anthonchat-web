@@ -42,7 +42,8 @@ src/components/
 │   ├── forms/
 │   ├── layouts/
 │   └── data-display/
-└── ui/               # Base UI components (shadcn + custom primitive ui)
+├── ui/               # Base UI components (keep existing)
+└── providers/        # Context providers
 ```
 
 #### **Standardize File Naming Conventions**

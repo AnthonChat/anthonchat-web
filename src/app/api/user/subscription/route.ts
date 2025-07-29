@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { getUserSubscription } from '@/lib/queries'
-import { apiLogger } from '@/lib/logging/loggers'
+import { getUserSubscription } from '@/lib/queries/subscription'
 
 export async function GET() {
   try {
@@ -19,7 +18,7 @@ export async function GET() {
     
     return NextResponse.json({ subscription })
   } catch (error) {
-    apiLogger.error('Error fetching user subscription', error instanceof Error ? error : new Error(String(error)))
+    console.error('Error fetching user subscription:', error)
     return NextResponse.json(
       { error: 'Failed to fetch subscription' },
       { status: 500 }

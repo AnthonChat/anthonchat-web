@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { SubscriptionPageClient } from '@/components/features/subscription/SubscriptionPageClient'
-import { DashboardHeader } from '@/components/features/dashboard/DashboardHeader'
-import { DashboardLayout } from '@/components/shared/layouts/DashboardLayout'
+import { SubscriptionPageClient } from '@/components/dashboard/SubscriptionPageClient'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 import { CreditCard } from 'lucide-react'
 
 export default async function SubscriptionPage() {

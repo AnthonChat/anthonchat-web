@@ -7,8 +7,8 @@ import type {
   UserChannelInsert, 
   UserChannelUpdate, 
   UserChannelWithChannel 
-} from '@/lib/types/channels.types'
-import { channelLogger } from '@/lib/logging/loggers'
+} from '@/lib/types/channels'
+import { channelLogger } from '@/lib/utils/loggers'
 
 /**
  * Fetches the channels a user is connected to, along with details
@@ -35,7 +35,7 @@ export async function getUserChannels(userId: string): Promise<UserChannelWithCh
 		.eq("user_id", userId);
 
 	if (error) {
-		channelLogger.error("Error fetching user channels", new Error("USER_CHANNELS_FETCH"), { error }, userId);
+		channelLogger.error("Error fetching user channels", "USER_CHANNELS_FETCH", { error }, userId);
 		throw error;
 	}
 
@@ -63,7 +63,7 @@ export async function getAllChannels(): Promise<Channel[]> {
 		.eq("is_active", true);
 
 	if (error) {
-		channelLogger.error("Error fetching all channels", new Error("ALL_CHANNELS_FETCH"), { error });
+		channelLogger.error("Error fetching all channels", "ALL_CHANNELS_FETCH", { error });
 		throw error;
 	}
 
@@ -88,7 +88,7 @@ export async function getChannelConnectionStatus(
 
 	if (error && error.code !== "PGRST116") {
 		// PGRST116 means 'no rows found', which is a valid result here.
-		channelLogger.error("Error getting channel connection status", new Error("CHANNEL_CONNECTION_STATUS"), { error, channelId }, userId);
+		channelLogger.error("Error getting channel connection status", "CHANNEL_CONNECTION_STATUS", { error, channelId }, userId);
 		throw error;
 	}
 
@@ -111,7 +111,7 @@ export async function deleteUserChannel(
 		.eq("user_id", userId); // Ensure user can only delete their own channels
 
 	if (error) {
-		channelLogger.error("Error deleting user channel", new Error("USER_CHANNEL_DELETE"), { error, userChannelId }, userId);
+		channelLogger.error("Error deleting user channel", "USER_CHANNEL_DELETE", { error, userChannelId }, userId);
 		throw error;
 	}
 
@@ -131,7 +131,7 @@ export async function createUserChannel(userChannelData: UserChannelInsert): Pro
 		.single();
 
 	if (error) {
-		channelLogger.error("Error creating user channel", new Error("USER_CHANNEL_CREATE"), { error, userChannelData });
+		channelLogger.error("Error creating user channel", "USER_CHANNEL_CREATE", { error, userChannelData });
 		throw error;
 	}
 
@@ -155,7 +155,7 @@ export async function updateUserChannel(
 		.single();
 
 	if (error) {
-		channelLogger.error("Error updating user channel", new Error("USER_CHANNEL_UPDATE"), { error, userChannelId, updates });
+		channelLogger.error("Error updating user channel", "USER_CHANNEL_UPDATE", { error, userChannelId, updates });
 		throw error;
 	}
 

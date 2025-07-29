@@ -20,7 +20,7 @@ import {
 	Link as LinkIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { uiLogger } from "@/lib/logging/loggers";
+import { uiLogger } from "@/lib/utils/loggers";
 
 interface Channel {
 	id: string;
@@ -102,7 +102,11 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
 			// Refresh the page to show updated channel list
 			router.refresh();
 		} catch (error) {
-			uiLogger.error("CHANNEL_DELETE_ERROR", error instanceof Error ? error : new Error(String(error)));
+			uiLogger.error("CHANNEL_DELETE_ERROR", "CHANNEL_MANAGEMENT", {
+				error,
+				channelId,
+				channelName,
+			});
 			alert(
 				`Failed to delete channel: ${
 					error instanceof Error ? error.message : "Unknown error"
@@ -122,7 +126,10 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
 			});
 			alert("Channel testing functionality will be implemented soon");
 		} catch (error) {
-			uiLogger.error("CHANNEL_TEST_ERROR", error instanceof Error ? error : new Error(String(error)));
+			uiLogger.error("CHANNEL_TEST_ERROR", "CHANNEL_MANAGEMENT", {
+				error,
+				channelId,
+			});
 		} finally {
 			setIsLoading(false);
 		}

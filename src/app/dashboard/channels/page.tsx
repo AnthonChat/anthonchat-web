@@ -1,10 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { getUserChannels } from '@/lib/queries'
-import { ChannelManagement } from '@/components/features/channels/ChannelManagement'
+import { getUserChannels } from '@/lib/queries/channels'
+import { ChannelManagement } from '@/components/dashboard/ChannelManagement'
 import { MessageSquare } from 'lucide-react'
-import { DashboardHeader } from '@/components/features/dashboard/DashboardHeader'
-import { DashboardLayout } from '@/components/shared/layouts/DashboardLayout'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
 
 export default async function ChannelsPage() {
   const supabase = await createClient();

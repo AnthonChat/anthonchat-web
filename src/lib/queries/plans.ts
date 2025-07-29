@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/browser';
-import { tierLogger } from '@/lib/logging/loggers';
 
 export interface Product {
   id: string;
@@ -42,7 +41,7 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
     .eq('type', 'recurring');
 
   if (pricesError) {
-    tierLogger.error('Error fetching prices', pricesError);
+    console.error('Error fetching prices:', JSON.stringify(pricesError, null, 2));
     return [];
   }
 
@@ -67,7 +66,7 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
     .order('metadata->>order', { ascending: true });
 
   if (productsError) {
-    tierLogger.error('Error fetching products', productsError);
+    console.error('Error fetching products:', JSON.stringify(productsError, null, 2));
     return [];
   }
 

@@ -3,15 +3,15 @@ import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { createServiceRoleClient } from '@/utils/supabase/server'
 import Stripe from 'stripe'
-import { getTierByPriceId } from '@/lib/queries'
-import { apiLogger } from '@/lib/logging/loggers'
+import { getTierByPriceId } from '@/lib/queries/tiers'
+import { apiLogger } from '@/lib/utils/loggers'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
-    const headersList = await headers()  // Keep the 'await' here for Next.js 15
+    const headersList = await headers()
     const signature = headersList.get('stripe-signature')!
 
     let event: Stripe.Event
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err) {
-      apiLogger.error('WEBHOOK_SIGNATURE_VERIFICATION_FAILED', new Error('API_STRIPE_WEBHOOKS'), { error: err })
+      apiLogger.error('WEBHOOK_SIGNATURE_VERIFICATION_FAILED', 'API_STRIPE_WEBHOOKS', { error: err })
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    apiLogger.error('WEBHOOK_HANDLER_ERROR', new Error('API_STRIPE_WEBHOOKS'), { error })
+    apiLogger.error('WEBHOOK_HANDLER_ERROR', 'API_STRIPE_WEBHOOKS', { error })
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
@@ -104,21 +104,21 @@ async function handleSubscriptionChange(
   try {
     const userId = subscription.metadata.userId
     if (!userId) {
-      apiLogger.error('SUBSCRIPTION_MISSING_USER_ID', new Error('API_STRIPE_WEBHOOKS'), { subscriptionId: subscription.id })
+      apiLogger.error('SUBSCRIPTION_MISSING_USER_ID', 'API_STRIPE_WEBHOOKS', { subscriptionId: subscription.id })
       return
     }
 
     // Get the price ID from the subscription
     const priceId = subscription.items.data[0]?.price.id
     if (!priceId) {
-      apiLogger.error('SUBSCRIPTION_MISSING_PRICE_ID', new Error('API_STRIPE_WEBHOOKS'), { subscriptionId: subscription.id })
+      apiLogger.error('SUBSCRIPTION_MISSING_PRICE_ID', 'API_STRIPE_WEBHOOKS', { subscriptionId: subscription.id })
       return
     }
 
     // Find the tier based on the price ID
     const tier = await getTierByPriceId(priceId)
     if (!tier) {
-      apiLogger.error('TIER_NOT_FOUND_FOR_PRICE_ID', new Error('API_STRIPE_WEBHOOKS'), { priceId, subscriptionId: subscription.id })
+      apiLogger.error('TIER_NOT_FOUND_FOR_PRICE_ID', 'API_STRIPE_WEBHOOKS', { priceId, subscriptionId: subscription.id })
       return
     }
 
@@ -161,10 +161,10 @@ async function handleSubscriptionChange(
       })
 
     if (error) {
-      apiLogger.error('SUBSCRIPTION_UPSERT_ERROR', new Error('API_STRIPE_WEBHOOKS'), { error, subscriptionId: subscription.id, userId })
+      apiLogger.error('SUBSCRIPTION_UPSERT_ERROR', 'API_STRIPE_WEBHOOKS', { error, subscriptionId: subscription.id, userId })
     }
   } catch (err) {
-    apiLogger.error('HANDLE_SUBSCRIPTION_CHANGE_ERROR', new Error('API_STRIPE_WEBHOOKS'), { error: err, subscriptionId: subscription.id })
+    apiLogger.error('HANDLE_SUBSCRIPTION_CHANGE_ERROR', 'API_STRIPE_WEBHOOKS', { error: err, subscriptionId: subscription.id })
   }
 }
 
@@ -179,9 +179,9 @@ async function handleSubscriptionDeleted(
       .eq('stripe_subscription_id', subscription.id)
 
     if (error) {
-      apiLogger.error('SUBSCRIPTION_DELETE_UPDATE_ERROR', new Error('API_STRIPE_WEBHOOKS'), { error, subscriptionId: subscription.id })
+      apiLogger.error('SUBSCRIPTION_DELETE_UPDATE_ERROR', 'API_STRIPE_WEBHOOKS', { error, subscriptionId: subscription.id })
     }
   } catch (err) {
-    apiLogger.error('HANDLE_SUBSCRIPTION_DELETED_ERROR', new Error('API_STRIPE_WEBHOOKS'), { error: err, subscriptionId: subscription.id })
+    apiLogger.error('HANDLE_SUBSCRIPTION_DELETED_ERROR', 'API_STRIPE_WEBHOOKS', { error: err, subscriptionId: subscription.id })
   }
 }
