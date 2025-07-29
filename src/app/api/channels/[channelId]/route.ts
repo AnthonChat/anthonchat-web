@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { deleteUserChannel } from '@/lib/queries/channels'
 import { apiLogger } from '@/lib/utils/loggers'
-import type { User } from '@supabase/supabase-js'
 
 export async function DELETE(
   request: NextRequest,

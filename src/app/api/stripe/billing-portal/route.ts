@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { createBillingPortalSession } from '@/lib/stripe'
 import { apiLogger } from '@/lib/utils/loggers'
-import type { User } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   let userId: string | null = null

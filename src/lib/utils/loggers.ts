@@ -1,5 +1,5 @@
 // Temporary specialized loggers - will be rebuilt during refactor
-import { createLogger, LogLevel } from './logger';
+import { createLogger } from './logger';
 
 // Specialized loggers for different application contexts
 export const authLogger = createLogger('AUTH');
