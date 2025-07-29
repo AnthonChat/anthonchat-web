@@ -20,16 +20,18 @@ export async function GET(
 
 	// 1️⃣ Authenticate the user making the request
 	const {
-		data: { user },
+		data: claims,
 		error: authError,
-	} = await supabase.auth.getUser();
+	} = await supabase.auth.getClaims();
 
-	if (authError || !user) {
+	if (authError || !claims) {
 		return NextResponse.json(
 			{ error: "Not authenticated" },
 			{ status: 401 }
 		);
 	}
+
+	const userId = claims.claims.sub;
 
 	// 2️⃣ Find the verification request. This tells us the 'channel_id' and expiration.
 	const { data: verification } = await supabase
@@ -37,7 +39,7 @@ export async function GET(
 		.select("channel_id, expires_at")
 		.match({
 			nonce: nonce,
-			user_id: user.id,
+			user_id: userId,
 		})
 		.maybeSingle();
 
@@ -49,7 +51,7 @@ export async function GET(
 			.delete()
 			.match({
 				nonce: nonce,
-				user_id: user.id,
+				user_id: userId,
 			});
 
 		return NextResponse.json(
@@ -70,13 +72,13 @@ export async function GET(
 	const { data: userChannel, error: channelError } = await supabase
 		.from("user_channels")
 		.select("link, verified_at, channel_id")
-		.match({ user_id: user.id }) // Find channels for this user
+		.match({ user_id: userId }) // Find channels for this user
 		.not("verified_at", "is", null) // That have been verified
 		.gte("verified_at", fiveMinutesAgo) // In the last 5 minutes
 		.maybeSingle(); // We assume they only verify one at a time.
 
 	if (channelError) {
-		apiLogger.error('USER_CHANNEL_STATUS_ERROR', 'API_LINK', { error: channelError, userId: user.id, nonce });
+		apiLogger.error('USER_CHANNEL_STATUS_ERROR', 'API_LINK', { error: channelError, userId: userId, nonce });
 		return NextResponse.json(
 			{ status: "error", error: "A database error occurred." },
 			{ status: 500 }

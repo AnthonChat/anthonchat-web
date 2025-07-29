@@ -11,17 +11,17 @@ export default async function AddChannelPage() {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!claims) {
     return redirect("/login");
   }
 
   // Fetch available channels and user's existing channels
   const [availableChannels, userChannels] = await Promise.all([
     getAllChannels(),
-    getUserChannels(user.id),
+    getUserChannels(claims.claims.sub),
   ])
 
   return (

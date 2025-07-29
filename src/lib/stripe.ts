@@ -35,7 +35,7 @@ export const createStripeCustomer = async (email: string, name?: string) => {
 export const waitForCustomerSync = async (
   customerId: string, 
   maxWaitMs: number = 10000, 
-  intervalMs: number = 500
+  intervalMs: number = 100
 ): Promise<boolean> => {
   const supabase = createServiceRoleClient() // Use service role for stripe schema access
   const startTime = Date.now()

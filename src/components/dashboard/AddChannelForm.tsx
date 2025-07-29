@@ -321,7 +321,7 @@ export function AddChannelForm({ availableChannels, existingChannels }: AddChann
     try {
       uiLogger.info("CHANNEL_VERIFICATION_START", "ADD_CHANNEL_FORM", { channelId: channel.id })
       
-      const response = await fetch('/api/link/start', {
+      const response = await fetch('/api/link/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

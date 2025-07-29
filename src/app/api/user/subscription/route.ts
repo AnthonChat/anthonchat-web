@@ -6,15 +6,15 @@ export async function GET() {
   try {
     const supabase = await createClient()
     
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Get the authenticated user claims
+    const { data: claims, error: authError } = await supabase.auth.getClaims()
     
-    if (authError || !user) {
+    if (authError || !claims) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
     // Get user subscription
-    const subscription = await getUserSubscription(user.id)
+    const subscription = await getUserSubscription(claims.claims.sub)
     
     return NextResponse.json({ subscription })
   } catch (error) {

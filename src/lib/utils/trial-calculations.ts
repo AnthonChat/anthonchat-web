@@ -84,11 +84,3 @@ export function calculateTrialInfo(subscription: SubscriptionData | null): Trial
     timeUntilExpiry
   }
 }
-
-/**
- * Get just the remaining days for simple display
- */
-export function getTrialDaysRemaining(subscription: SubscriptionData | null): number {
-  const trialInfo = calculateTrialInfo(subscription)
-  return trialInfo?.daysRemaining ?? 0
-}

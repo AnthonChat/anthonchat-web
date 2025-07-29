@@ -16,10 +16,10 @@ export default async function LoginPage({
   const { message } = await searchParams;
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
 
-  if (user) {
+  if (claims) {
     return redirect("/dashboard");
   }
 

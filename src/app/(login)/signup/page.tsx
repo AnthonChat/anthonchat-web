@@ -10,10 +10,10 @@ export default async function SignupPage({
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: claims,
+  } = await supabase.auth.getClaims();
 
-  if (user) {
+  if (claims) {
     return redirect("/dashboard");
   }
 

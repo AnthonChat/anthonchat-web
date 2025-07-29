@@ -103,7 +103,7 @@ export default function ChannelVerification({
     try {
       uiLogger.info("CHANNEL_VERIFICATION_START", "CHANNEL_VERIFICATION", { channelName: channel.name, channelId: channel.id });
       
-      const response = await fetch('/api/link/start', {
+      const response = await fetch('/api/link/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

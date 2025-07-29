@@ -1,25 +1,5 @@
-import { formatDistanceToNow, format, parseISO, isValid, differenceInDays } from 'date-fns'
+import { format, parseISO, isValid, differenceInDays } from 'date-fns'
 import { timeLogger } from '@/lib/utils/loggers'
-
-/**
- * Format a date string to a relative time (e.g., "2 hours ago")
- * @param dateString - ISO date string
- * @returns Formatted relative time string
- */
-export function formatRelativeTime(dateString: string): string {
-  try {
-    const date = parseISO(dateString)
-    
-    if (!isValid(date)) {
-      return 'Invalid date'
-    }
-    
-    return formatDistanceToNow(date, { addSuffix: true })
-  } catch (error) {
-    timeLogger.error('Relative Time Format Error', 'RELATIVE_TIME_FORMAT_ERROR', { error, dateString })
-    return 'Invalid date'
-  }
-}
 
 /**
  * Format a date string to a human-readable format
@@ -40,55 +20,7 @@ export function formatDate(dateString: string, formatString: string = 'MMM d, yy
     timeLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString, formatString })
     return 'Invalid date'
   }
-}
-
-/**
- * Get trial time information
- * @param trialEnd - Trial end date string
- * @returns Object with trial status and remaining days
- */
-export function getTrialTimeInfo(trialEnd: string | null): {
-  isTrialActive: boolean
-  daysRemaining: number
-  trialEndFormatted: string
-} {
-  try {
-    if (!trialEnd) {
-      return {
-        isTrialActive: false,
-        daysRemaining: 0,
-        trialEndFormatted: ''
-      }
-    }
-
-    const trialEndDate = parseISO(trialEnd)
-    
-    if (!isValid(trialEndDate)) {
-      return {
-        isTrialActive: false,
-        daysRemaining: 0,
-        trialEndFormatted: 'Invalid date'
-      }
-    }
-
-    const now = new Date()
-    const daysRemaining = Math.max(0, differenceInDays(trialEndDate, now))
-    const isTrialActive = daysRemaining > 0
-
-    return {
-      isTrialActive,
-      daysRemaining,
-      trialEndFormatted: formatDate(trialEnd, 'MMM d, yyyy')
-    }
-  } catch (error) {
-    timeLogger.error('Trial Time Info Error', 'TRIAL_TIME_INFO_ERROR', { error, trialEnd })
-    return {
-      isTrialActive: false,
-      daysRemaining: 0,
-      trialEndFormatted: 'Error'
-    }
-  }
-}
+} 
 
 /**
  * Format usage period for display
@@ -249,62 +181,5 @@ export function formatCurrentBillingPeriod(periodStart: number | null, periodEnd
   } catch (error) {
     timeLogger.error('Current Billing Period Format Error', 'CURRENT_BILLING_PERIOD_FORMAT_ERROR', { error, periodStart, periodEnd })
     return 'Error formatting period'
-  }
-}
-
-/**
- * Format billing period dates for subscription display
- * @param currentPeriodStart - Current period start date
- * @param currentPeriodEnd - Current period end date
- * @returns Object with formatted dates and period info
- */
-export function formatBillingPeriod(
-  currentPeriodStart: string | null,
-  currentPeriodEnd: string | null
-): {
-  periodStart: string
-  periodEnd: string
-  nextBillingDate: string
-  daysUntilRenewal: number
-} {
-  try {
-    if (!currentPeriodStart || !currentPeriodEnd) {
-      return {
-        periodStart: 'N/A',
-        periodEnd: 'N/A',
-        nextBillingDate: 'N/A',
-        daysUntilRenewal: 0
-      }
-    }
-
-    const startDate = parseISO(currentPeriodStart)
-    const endDate = parseISO(currentPeriodEnd)
-    
-    if (!isValid(startDate) || !isValid(endDate)) {
-      return {
-        periodStart: 'Invalid date',
-        periodEnd: 'Invalid date',
-        nextBillingDate: 'Invalid date',
-        daysUntilRenewal: 0
-      }
-    }
-
-    const now = new Date()
-    const daysUntilRenewal = Math.max(0, differenceInDays(endDate, now))
-
-    return {
-      periodStart: format(startDate, 'MMM d, yyyy'),
-      periodEnd: format(endDate, 'MMM d, yyyy'),
-      nextBillingDate: format(endDate, 'MMM d, yyyy'),
-      daysUntilRenewal
-    }
-  } catch (error) {
-    timeLogger.error('Billing Period Format Error', 'BILLING_PERIOD_FORMAT_ERROR', { error, currentPeriodStart, currentPeriodEnd })
-    return {
-      periodStart: 'Error',
-      periodEnd: 'Error',
-      nextBillingDate: 'Error',
-      daysUntilRenewal: 0
-    }
   }
 }

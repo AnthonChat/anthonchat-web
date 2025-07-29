@@ -1,4 +1,4 @@
-// app/api/link/finish/route.ts
+// app/api/link/validate/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";

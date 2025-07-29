@@ -33,8 +33,8 @@ export default function SignupForm({ message }: SignupFormProps) {
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: claims } = await supabase.auth.getClaims();
+      if (claims) {
         router.push('/dashboard');
       }
     };

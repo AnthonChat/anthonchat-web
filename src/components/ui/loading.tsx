@@ -9,7 +9,7 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
+function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "h-4 w-4",
     md: "h-6 w-6",
@@ -31,7 +31,7 @@ interface LoadingStateProps {
   showSpinner?: boolean;
 }
 
-export function LoadingState({ 
+function LoadingState({ 
   message = "Loading...", 
   size = "md", 
   className,
@@ -43,45 +43,6 @@ export function LoadingState({
         {showSpinner && <LoadingSpinner size={size} />}
         <p className="text-sm text-muted-foreground">{message}</p>
       </div>
-    </div>
-  );
-}
-
-interface LoadingOverlayProps {
-  isLoading: boolean;
-  message?: string;
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function LoadingOverlay({ 
-  isLoading, 
-  message = "Loading...", 
-  children, 
-  className 
-}: LoadingOverlayProps) {
-  return (
-    <div className={cn("relative", className)}>
-      {children}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-          <LoadingState message={message} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface SkeletonCardProps {
-  className?: string;
-}
-
-export function SkeletonCard({ className }: SkeletonCardProps) {
-  return (
-    <div className={cn("space-y-3 p-4", className)}>
-      <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-4 w-1/2" />
-      <Skeleton className="h-20 w-full" />
     </div>
   );
 }

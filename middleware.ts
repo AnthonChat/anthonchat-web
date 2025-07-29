@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {
@@ -31,22 +31,23 @@ export async function middleware(request: NextRequest) {
   )
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: claims,
+  } = await supabase.auth.getClaims()
 
   const { pathname } = request.nextUrl;
+  const userId = claims?.claims?.sub;
 
-  middlewareLogger.info('Processing middleware request', 'MIDDLEWARE_PROCESSING', { pathname }, user?.id || undefined);
+  middlewareLogger.info('Processing middleware request', 'MIDDLEWARE_PROCESSING', { pathname }, userId || undefined);
 
   // Paths that are always allowed (login, auth callbacks, static assets)
   const publicPaths = ['/login', '/auth', '/signup'];
 
   // If user is not authenticated and trying to access a protected path, redirect to login
-  if (!user && !publicPaths.some(path => pathname.startsWith(path))) {
+  if (!claims && !publicPaths.some(path => pathname.startsWith(path))) {
     middlewareLogger.info('Redirecting unauthenticated user to login', 'MIDDLEWARE_REDIRECT_TO_LOGIN', { pathname });
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -54,17 +55,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is authenticated, check onboarding status
-  if (user) {
+  if (claims && userId) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('onboarding_complete')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
-    middlewareLogger.info('Fetched user data for onboarding check', 'MIDDLEWARE_USER_DATA_FETCH', { userData, userError }, user.id);
+    middlewareLogger.info('Fetched user data for onboarding check', 'MIDDLEWARE_USER_DATA_FETCH', { userData, userError }, userId);
 
     if (userError || !userData) {
-      middlewareLogger.error('Failed to fetch user onboarding status', 'USER_ONBOARDING_STATUS_FETCH_ERROR', { error: userError }, user.id);
+      middlewareLogger.error('Failed to fetch user onboarding status', 'USER_ONBOARDING_STATUS_FETCH_ERROR', { error: userError }, userId);
       // Handle error, maybe redirect to an error page or logout
       const url = request.nextUrl.clone();
       url.pathname = '/login'; // Fallback to login on error
@@ -72,13 +73,13 @@ export async function middleware(request: NextRequest) {
     }
 
     const onboardingComplete = userData.onboarding_complete;
-    middlewareLogger.info('Checked onboarding status', 'MIDDLEWARE_ONBOARDING_STATUS', { onboardingComplete }, user.id);
+    middlewareLogger.info('Checked onboarding status', 'MIDDLEWARE_ONBOARDING_STATUS', { onboardingComplete }, userId);
 
     // If onboarding is not complete
     if (!onboardingComplete) {
       // If trying to access any page other than signup/complete, redirect to signup/complete
       if (!pathname.startsWith('/signup/complete') && !pathname.startsWith('/auth/callback')) {
-        middlewareLogger.info('Redirecting to signup complete', 'MIDDLEWARE_REDIRECT_TO_SIGNUP_COMPLETE', { pathname }, user.id);
+        middlewareLogger.info('Redirecting to signup complete', 'MIDDLEWARE_REDIRECT_TO_SIGNUP_COMPLETE', { pathname }, userId);
         const url = request.nextUrl.clone();
         url.pathname = '/signup/complete';
         return NextResponse.redirect(url);
@@ -86,7 +87,7 @@ export async function middleware(request: NextRequest) {
     } else {
       // If onboarding is complete and trying to access signup, redirect to dashboard
       if (pathname.startsWith('/signup')) {
-        middlewareLogger.info('Redirecting to dashboard', 'MIDDLEWARE_REDIRECT_TO_DASHBOARD', { pathname }, user.id);
+        middlewareLogger.info('Redirecting to dashboard', 'MIDDLEWARE_REDIRECT_TO_DASHBOARD', { pathname }, userId);
         const url = request.nextUrl.clone();
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);

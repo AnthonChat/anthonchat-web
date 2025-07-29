@@ -8,12 +8,15 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Get authenticated user claims
+    const { data: claims, error: authError } = await supabase.auth.getClaims()
     
-    if (authError || !user) {
+    if (authError || !claims) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const userId = claims.claims.sub
+    const userEmail = claims.claims.email
 
     const { priceId, trial_period_days } = await request.json()
 
@@ -37,10 +40,10 @@ export async function POST(request: NextRequest) {
     const { data: userProfile } = await supabase
       .from('users')
       .select('email, stripe_customer_id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
-    const email = userProfile?.email || user.email
+    const email = userProfile?.email || userEmail
     if (!email) {
       return NextResponse.json({ error: 'User email not found' }, { status: 400 })
     }
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
       priceId,
       successUrl: `${request.nextUrl.origin}/dashboard/subscription?success=true`,
       cancelUrl: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
-      userId: user.id,
+      userId: userId,
       trialPeriodDays: trial_period_days,
     })
 
