@@ -2,9 +2,15 @@
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { uiLogger } from "@/lib/utils/loggers";
+import { uiLogger } from "@/utils/loggers";
 
 interface Props {
   children: ReactNode;
@@ -45,8 +51,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    uiLogger.error('ERROR_BOUNDARY_CAUGHT_ERROR', 'ERROR_BOUNDARY', { error: error.message, stack: error.stack, errorInfo });
-    
+    uiLogger.error("ERROR_BOUNDARY_CAUGHT_ERROR", "ERROR_BOUNDARY", {
+      error: error.message,
+      stack: error.stack,
+      errorInfo,
+    });
+
     this.setState({
       error,
       errorInfo,
@@ -110,7 +120,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
               <CardDescription>
-                We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
+                We encountered an unexpected error. Please try refreshing the
+                page or contact support if the problem persists.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -164,7 +175,9 @@ export function withErrorBoundary<P extends object>(
     </ErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
+  WrappedComponent.displayName = `withErrorBoundary(${
+    Component.displayName || Component.name
+  })`;
 
   return WrappedComponent;
 }

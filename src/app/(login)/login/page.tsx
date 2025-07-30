@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { redirect } from "next/navigation";
 import { signIn } from "../actions";
 import Login from "../login";
@@ -15,9 +15,7 @@ export default async function LoginPage({
   const supabase = await createClient();
   const { message } = await searchParams;
 
-  const {
-    data: claims,
-  } = await supabase.auth.getClaims();
+  const { data: claims } = await supabase.auth.getClaims();
 
   if (claims) {
     return redirect("/dashboard");

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dump:all": "supabase db dump --linked -f db.sql && supabase db dump --linked -f data.sql --data-only"
+    "dump:all": "supabase db dump --linked -f db.sql && supabase db dump --linked -f data.sql --data-only",
+    "structure": "tree -a --dirsfirst -I 'node_modules|.next|.vercel|.git|.DS_Store|.kilocode|REFACTOR_PLAN.md' | grep -v 'directories,' | tee project-structure.txt"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

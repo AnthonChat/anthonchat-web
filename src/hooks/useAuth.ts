@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/browser";
+import { createClient } from "@/lib/db/browser";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface UseAuthState {
@@ -14,7 +14,7 @@ interface UseAuthState {
 
 interface UseAuthActions {
   signOut: () => Promise<void>;
-  refreshSession: () => Promise<{ user: User | null; session: Session | null; }>;
+  refreshSession: () => Promise<{ user: User | null; session: Session | null }>;
   clearError: () => void;
 }
 
@@ -29,7 +29,7 @@ export function useAuth(): UseAuthReturn {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const supabase = createClient();
 
   const clearError = useCallback(() => {
@@ -45,7 +45,8 @@ export function useAuth(): UseAuthReturn {
         throw error;
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to sign out";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign out";
       setError(errorMessage);
       throw err;
     }
@@ -61,7 +62,8 @@ export function useAuth(): UseAuthReturn {
       }
       return data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to refresh session";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to refresh session";
       setError(errorMessage);
       throw err;
     }
@@ -73,10 +75,13 @@ export function useAuth(): UseAuthReturn {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         if (!mounted) return;
-        
+
         if (error) {
           setError(error.message);
         } else {
@@ -85,7 +90,8 @@ export function useAuth(): UseAuthReturn {
         }
       } catch (err) {
         if (!mounted) return;
-        const errorMessage = err instanceof Error ? err.message : "Failed to get session";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get session";
         setError(errorMessage);
       } finally {
         if (mounted) {
@@ -97,20 +103,20 @@ export function useAuth(): UseAuthReturn {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-        
-        // Clear errors on successful auth state changes
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setError(null);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+
+      // Clear errors on successful auth state changes
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setError(null);
       }
-    );
+    });
 
     return () => {
       mounted = false;

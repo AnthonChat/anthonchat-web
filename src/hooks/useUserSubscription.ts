@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/browser";
+import { createClient } from "@/lib/db/browser";
 import { UserSubscription } from "@/lib/queries/subscription";
 import type { User } from "@supabase/supabase-js";
 
@@ -28,7 +28,9 @@ export function useUserSubscription(
 ): UseUserSubscriptionState {
   const { autoRefetch = true, userId: providedUserId } = options;
   const [user, setUser] = useState<User | null>(null);
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+  const [subscription, setSubscription] = useState<UserSubscription | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -47,7 +49,7 @@ export function useUserSubscription(
     }
 
     let mounted = true;
-    
+
     const getUser = async () => {
       try {
         const { data: claims, error } = await supabase.auth.getClaims();
@@ -70,17 +72,17 @@ export function useUserSubscription(
     getUser();
 
     // Listen for auth changes only if userId is not provided
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (mounted) {
-          setUser(session?.user ?? null);
-          // Clear subscription when user changes
-          if (!session?.user) {
-            setSubscription(null);
-          }
+    const {
+      data: { subscription: authSubscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (mounted) {
+        setUser(session?.user ?? null);
+        // Clear subscription when user changes
+        if (!session?.user) {
+          setSubscription(null);
         }
       }
-    );
+    });
 
     return () => {
       mounted = false;
@@ -89,12 +91,12 @@ export function useUserSubscription(
   }, [supabase, providedUserId]);
 
   const refetch = useCallback(async () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
     const currentUserId = providedUserId || user?.id;
-    
+
     if (!autoRefetch || !currentUserId) {
       setIsLoading(false);
       return;
@@ -105,16 +107,21 @@ export function useUserSubscription(
 
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/user/subscription');
-        
+        const response = await fetch("/api/user/subscription");
+
         if (!response.ok) {
-          throw new Error(`Failed to fetch subscription: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch subscription: ${response.statusText}`
+          );
         }
-        
+
         const data = await response.json();
         setSubscription(data.subscription);
       } catch (err) {
-        const error = err instanceof Error ? err : new Error("Failed to fetch subscription");
+        const error =
+          err instanceof Error
+            ? err
+            : new Error("Failed to fetch subscription");
         setError(error);
       } finally {
         setIsLoading(false);

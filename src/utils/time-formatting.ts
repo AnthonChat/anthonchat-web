@@ -1,5 +1,5 @@
 import { format, parseISO, isValid, differenceInDays } from 'date-fns'
-import { timeLogger } from '@/lib/utils/loggers'
+import { timeLogger } from '@/utils/loggers'
 
 /**
  * Format a date string to a human-readable format
