@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/features/dashboard/ThemeToggle";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { DashboardLayout } from "@/components/features/dashboard/DashboardLayout";
-import { uiLogger } from "@/utils/loggers";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -35,7 +34,7 @@ export default async function DashboardPage() {
   );
 
   if (rpcError) {
-    uiLogger.error("DASHBOARD_ONBOARDING_CHECK_FAILED", "DASHBOARD", {
+    console.error("DASHBOARD_ONBOARDING_CHECK_FAILED", {
       rpcError: rpcError.message,
       userId: userId,
     });

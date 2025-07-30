@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
 import { randomUUID } from "crypto";
-import { apiLogger } from "@/utils/loggers";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
     });
 
   if (verificationError) {
-    apiLogger.error("CHANNEL_VERIFICATION_CREATE_ERROR", "API_LINK", {
+    console.error("CHANNEL_VERIFICATION_CREATE_ERROR", {
       error: verificationError,
       userId: userId,
       channelId: channel_id,

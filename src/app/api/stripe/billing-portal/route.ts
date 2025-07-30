@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
 import { createBillingPortalSession } from "@/lib/stripe";
-import { apiLogger } from "@/utils/loggers";
 
 export async function POST(request: NextRequest) {
   let userId: string | null = null;
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    apiLogger.error("Billing Portal Error", "BILLING_PORTAL_ERROR", {
+    console.error("Billing Portal Error", {
       error,
       userId,
     });

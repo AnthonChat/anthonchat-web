@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,34 +15,30 @@ import {
 } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/db/browser";
+import { signUp } from "@/lib/auth/actions";
+import type { FormState } from "@/lib/auth/types";
+import { useNotifications } from "@/hooks/useNotifications";
+import { NotificationErrorType } from "@/lib/notifications/types";
 
 
 interface SignupFormProps {
   message?: string | null;
 }
 
+const initialState: FormState = {
+  message: undefined,
+  errors: undefined,
+  success: false,
+};
+
 export default function SignupForm({ message }: SignupFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [formState, formAction, isPending] = useActionState(signUp, initialState);
   const [loadingStep, setLoadingStep] = useState<
     "auth" | "stripe" | "complete"
   >("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(message || null);
-  const router = useRouter();
-
-  // Check if user is already authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: claims } = await supabase.auth.getClaims();
-      if (claims) {
-        router.push("/dashboard");
-      }
-    };
-    checkAuth();
-  }, [router]);
+  const { showError, showSuccess } = useNotifications();
 
   const getLoadingMessage = () => {
     switch (loadingStep) {
@@ -57,47 +53,74 @@ export default function SignupForm({ message }: SignupFormProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setLoadingStep("auth");
-
-    try {
-      // Create FormData to match the server action signature
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-
-      // Simulate the progression through steps
-      setTimeout(() => setLoadingStep("stripe"), 1500); // Move to Stripe step after 1.5s
-
-      // Call the server action
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Signup failed");
-      }
-
-      // If we get here, the signup was successful
-      setLoadingStep("complete");
-
-      // Small delay to show the completion message
-      setTimeout(() => {
-        router.push("/signup/complete");
-      }, 1000);
-    } catch (error) {
-      console.error("Signup error:", error);
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
-      );
-      setIsLoading(false);
+  // Handle form state changes and loading progression
+  React.useEffect(() => {
+    if (isPending) {
+      setLoadingStep("auth");
+      // Simulate the progression through steps for UX
+      setTimeout(() => setLoadingStep("stripe"), 1500);
+      setTimeout(() => setLoadingStep("complete"), 3000);
     }
-  };
+  }, [isPending]);
+
+  // Handle form state changes for toast notifications
+  useEffect(() => {
+    // Show error toast if there are errors
+    if (formState.errors && formState.errors.length > 0) {
+      const detailedErrorMessage = formState.errors
+        .map((err) => err.message)
+        .join(". ");
+      showError(
+        "Errore di validazione", // Titolo più specifico
+        `Il form contiene errori: ${detailedErrorMessage}`, // Messaggio combinato
+        {
+          errorType: NotificationErrorType.VALIDATION_ERROR,
+          context: "signup_form_validation",
+          config: {
+            duration: 8000,
+          },
+        }
+      );
+    } else if (formState.message && !formState.success) {
+      // Show error toast for general messages if no specific form errors
+      showError(
+        "Errore durante la registrazione",
+        formState.message,
+        {
+          errorType: NotificationErrorType.API_ERROR,
+          context: 'signup_form_action',
+          config: {
+            duration: 8000
+          }
+        }
+      );
+    }
+
+    // Show success toast if registration is successful
+    if (formState.success) {
+      showSuccess(
+        'Registrazione completata!',
+        'Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.'
+      );
+    }
+  }, [formState, showError, showSuccess]);
+
+  // Handle external message prop
+  useEffect(() => {
+    if (message) {
+      showError(
+        'Errore',
+        message,
+        {
+          errorType: NotificationErrorType.API_ERROR,
+          context: 'signup_external_message',
+          config: {
+            duration: 6000
+          }
+        }
+      );
+    }
+  }, [message, showError]);
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
@@ -109,7 +132,7 @@ export default function SignupForm({ message }: SignupFormProps) {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form action={formAction}>
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
@@ -123,7 +146,7 @@ export default function SignupForm({ message }: SignupFormProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={isLoading}
+                disabled={isPending}
                 className="h-11"
               />
             </div>
@@ -140,13 +163,16 @@ export default function SignupForm({ message }: SignupFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={isLoading}
+                disabled={isPending}
                 className="h-11"
               />
+              <CardDescription>
+                Password must be at least 8 characters long and contain at least one number and one letter.
+              </CardDescription>
             </div>
 
             {/* Loading Progress Indicator */}
-            {isLoading && (
+            {isPending && (
               <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-3">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -202,8 +228,8 @@ export default function SignupForm({ message }: SignupFormProps) {
           </CardContent>
 
           <CardFooter className="flex flex-col w-full gap-4 pt-6 px-6">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {getLoadingMessage()}
@@ -217,16 +243,11 @@ export default function SignupForm({ message }: SignupFormProps) {
               variant="outline"
               className="w-full"
               asChild
-              disabled={isLoading}
+              disabled={isPending}
             >
               <Link href="/login">Already have an account? Sign In</Link>
             </Button>
 
-            {error && (
-              <p className="mt-2 p-4 bg-destructive/10 text-destructive text-center w-full rounded-md text-sm">
-                {error}
-              </p>
-            )}
           </CardFooter>
         </form>
       </Card>

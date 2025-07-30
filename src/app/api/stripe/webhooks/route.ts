@@ -4,7 +4,6 @@ import { stripe } from "@/lib/stripe";
 import { createServiceRoleClient } from "@/lib/db/server";
 import Stripe from "stripe";
 import { getTierByPriceId } from "@/lib/queries/tiers";
-import { apiLogger } from "@/utils/loggers";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -19,9 +18,8 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      apiLogger.error(
+      console.error(
         "WEBHOOK_SIGNATURE_VERIFICATION_FAILED",
-        "API_STRIPE_WEBHOOKS",
         { error: err }
       );
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -88,14 +86,14 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        apiLogger.info("UNHANDLED_WEBHOOK_EVENT", "API_STRIPE_WEBHOOKS", {
+        console.info("UNHANDLED_WEBHOOK_EVENT", {
           eventType: event.type,
         });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    apiLogger.error("WEBHOOK_HANDLER_ERROR", "API_STRIPE_WEBHOOKS", { error });
+    console.error("WEBHOOK_HANDLER_ERROR", { error });
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }
@@ -110,7 +108,7 @@ async function handleSubscriptionChange(
   try {
     const userId = subscription.metadata.userId;
     if (!userId) {
-      apiLogger.error("SUBSCRIPTION_MISSING_USER_ID", "API_STRIPE_WEBHOOKS", {
+      console.error("SUBSCRIPTION_MISSING_USER_ID", {
         subscriptionId: subscription.id,
       });
       return;
@@ -119,7 +117,7 @@ async function handleSubscriptionChange(
     // Get the price ID from the subscription
     const priceId = subscription.items.data[0]?.price.id;
     if (!priceId) {
-      apiLogger.error("SUBSCRIPTION_MISSING_PRICE_ID", "API_STRIPE_WEBHOOKS", {
+      console.error("SUBSCRIPTION_MISSING_PRICE_ID", {
         subscriptionId: subscription.id,
       });
       return;
@@ -128,7 +126,7 @@ async function handleSubscriptionChange(
     // Find the tier based on the price ID
     const tier = await getTierByPriceId(priceId);
     if (!tier) {
-      apiLogger.error("TIER_NOT_FOUND_FOR_PRICE_ID", "API_STRIPE_WEBHOOKS", {
+      console.error("TIER_NOT_FOUND_FOR_PRICE_ID", {
         priceId,
         subscriptionId: subscription.id,
       });
@@ -178,14 +176,14 @@ async function handleSubscriptionChange(
       });
 
     if (error) {
-      apiLogger.error("SUBSCRIPTION_UPSERT_ERROR", "API_STRIPE_WEBHOOKS", {
+      console.error("SUBSCRIPTION_UPSERT_ERROR", {
         error,
         subscriptionId: subscription.id,
         userId,
       });
     }
   } catch (err) {
-    apiLogger.error("HANDLE_SUBSCRIPTION_CHANGE_ERROR", "API_STRIPE_WEBHOOKS", {
+    console.error("HANDLE_SUBSCRIPTION_CHANGE_ERROR", {
       error: err,
       subscriptionId: subscription.id,
     });
@@ -203,16 +201,14 @@ async function handleSubscriptionDeleted(
       .eq("stripe_subscription_id", subscription.id);
 
     if (error) {
-      apiLogger.error(
+      console.error(
         "SUBSCRIPTION_DELETE_UPDATE_ERROR",
-        "API_STRIPE_WEBHOOKS",
         { error, subscriptionId: subscription.id }
       );
     }
   } catch (err) {
-    apiLogger.error(
+    console.error(
       "HANDLE_SUBSCRIPTION_DELETED_ERROR",
-      "API_STRIPE_WEBHOOKS",
       { error: err, subscriptionId: subscription.id }
     );
   }

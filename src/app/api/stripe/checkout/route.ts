@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
 import { createCheckoutSession, getStripeCustomerByEmail } from "@/lib/stripe";
 import { getTierByPriceId } from "@/lib/queries/tiers";
-import { apiLogger } from "@/utils/loggers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    apiLogger.error("STRIPE_CHECKOUT_ERROR", "API_STRIPE", { error });
+    console.error("STRIPE_CHECKOUT_ERROR", { error });
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

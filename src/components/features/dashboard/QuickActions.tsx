@@ -20,7 +20,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { uiLogger } from "@/utils/loggers";
 
 interface QuickActionsProps {
   onAction?: (action: string) => void;
@@ -87,23 +86,17 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       setHoveredAction(actionId);
 
       if (route && !prefetchedRoutes.has(route)) {
-        uiLogger.info("ROUTE_PREFETCH_START", "QUICK_ACTIONS", {
-          route,
-          actionId,
-        });
+        console.info("ROUTE_PREFETCH_START", { route, actionId });
         try {
           // Use router.prefetch without additional options for Next.js 15
           router.prefetch(route);
           setPrefetchedRoutes((prev) => new Set([...prev, route]));
-          uiLogger.info("ROUTE_PREFETCH_SUCCESS", "QUICK_ACTIONS", { route });
+          console.info("ROUTE_PREFETCH_SUCCESS", { route });
         } catch (error) {
-          uiLogger.error("ROUTE_PREFETCH_ERROR", "QUICK_ACTIONS", {
-            error,
-            route,
-          });
+          console.error("ROUTE_PREFETCH_ERROR", { error, route });
         }
       } else if (route && prefetchedRoutes.has(route)) {
-        uiLogger.info("ROUTE_ALREADY_PREFETCHED", "QUICK_ACTIONS", { route });
+        console.info("ROUTE_ALREADY_PREFETCHED", { route });
       }
     },
     [router, prefetchedRoutes]
@@ -144,7 +137,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         window.open("mailto:anthon.chat@gmail.com", "_blank");
         break;
       default:
-        uiLogger.info("ACTION_TRIGGERED", "QUICK_ACTIONS", { actionId });
+        console.info("ACTION_TRIGGERED", { actionId });
     }
   };
 

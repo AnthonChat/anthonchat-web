@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/db/browser";
 import ChannelVerification from "../channels/ChannelVerification";
-import { uiLogger } from "@/utils/loggers";
 
 interface Channel {
   id: string;
@@ -127,7 +126,7 @@ export default function SignupCompleteForm({
         );
 
         if (error) {
-          uiLogger.error("CHANNEL_RECORD_ERROR", "SIGNUP", {
+          console.error("CHANNEL_RECORD_ERROR", {
             error,
             channelId,
             userId: user.id,
@@ -135,7 +134,7 @@ export default function SignupCompleteForm({
           setError("Could not save channel connection. Try again?");
         }
       } catch (err) {
-        uiLogger.error("CHANNEL_VERIFICATION_ERROR", "SIGNUP", {
+        console.error("CHANNEL_VERIFICATION_ERROR", {
           err,
           channelId,
           userId: user.id,
@@ -178,7 +177,7 @@ export default function SignupCompleteForm({
       setProfileSaved(true);
       setError(null);
     } catch (err: unknown) {
-      uiLogger.error("PROFILE_SAVE_ERROR", "SIGNUP", { err, userId: user.id });
+      console.error("PROFILE_SAVE_ERROR", { err, userId: user.id });
 
       let errorMessage = "Failed to save profile";
 
@@ -258,7 +257,7 @@ export default function SignupCompleteForm({
       );
 
       if (checkError) {
-        uiLogger.error("ONBOARDING_STATUS_CHECK_ERROR", "SIGNUP", {
+        console.error("ONBOARDING_STATUS_CHECK_ERROR", {
           checkError,
           userId: user.id,
         });
@@ -298,7 +297,7 @@ export default function SignupCompleteForm({
               });
 
             if (subscriptionError) {
-              uiLogger.error("TRIAL_SUBSCRIPTION_CREATE_ERROR", "SIGNUP", {
+              console.error("TRIAL_SUBSCRIPTION_CREATE_ERROR", {
                 subscriptionError,
                 userId: user.id,
                 tierId: tier.id,
@@ -315,7 +314,7 @@ export default function SignupCompleteForm({
         );
       }
     } catch (err: unknown) {
-      uiLogger.error("SETUP_ERROR", "SIGNUP", { err, userId: user.id });
+      console.error("SETUP_ERROR", { err, userId: user.id });
 
       let errorMessage = "An error occurred during setup";
 

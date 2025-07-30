@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/db/server";
-import { userLogger } from "@/utils/loggers";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 
 // Type aliases for better readability
@@ -20,7 +19,7 @@ export async function getUserData(userId: string): Promise<User> {
     .single();
 
   if (error) {
-    userLogger.error("USER_DATA_FETCH", "USER_QUERIES", {
+    console.error("USER_DATA_FETCH:", {
       error: error.message,
       userId,
     });
@@ -47,7 +46,7 @@ export async function updateUserData(
     .single();
 
   if (error) {
-    userLogger.error("USER_DATA_UPDATE", "USER_QUERIES", {
+    console.error("USER_DATA_UPDATE:", {
       error: error.message,
       userId,
       updates,
@@ -71,7 +70,7 @@ export async function createUser(userData: UserInsert): Promise<User> {
     .single();
 
   if (error) {
-    userLogger.error("USER_CREATE", "USER_QUERIES", {
+    console.error("USER_CREATE:", {
       error: error.message,
       userData,
     });

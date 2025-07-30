@@ -21,7 +21,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { uiLogger } from "@/utils/loggers";
+import { useNotifications } from "@/hooks/useNotifications";
+
 
 interface Channel {
   id: string;
@@ -51,6 +52,12 @@ export default function ChannelVerification({
   onVerificationComplete,
   existingChannels = [],
 }: ChannelVerificationProps) {
+  const {
+    showSuccess,
+    showVerificationToast,
+    handleVerificationPollingError,
+    dismissToast
+  } = useNotifications();
   const [channelStates, setChannelStates] = useState<
     Record<string, ChannelVerificationState>
   >(() => {
@@ -69,6 +76,10 @@ export default function ChannelVerification({
 
   const [pollingIntervals, setPollingIntervals] = useState<
     Record<string, NodeJS.Timeout>
+  >({});
+
+  const [verificationToasts, setVerificationToasts] = useState<
+    Record<string, string>
   >({});
 
   // Notify parent about existing verified channels on mount
@@ -100,14 +111,19 @@ export default function ChannelVerification({
     });
   }, [channelStates, channels, onVerificationComplete]);
 
-  // Cleanup polling intervals on unmount
+  // Cleanup polling intervals and toast notifications on unmount
   useEffect(() => {
     return () => {
       Object.values(pollingIntervals).forEach((interval) =>
         clearInterval(interval)
       );
+      
+      // Dismiss all verification toasts
+      Object.values(verificationToasts).forEach((toastId) =>
+        dismissToast(toastId)
+      );
     };
-  }, [pollingIntervals]);
+  }, [pollingIntervals, verificationToasts, dismissToast]);
 
   const updateChannelState = (
     channelId: string,
@@ -123,7 +139,7 @@ export default function ChannelVerification({
     updateChannelState(channel.id, { status: "pending", error: undefined });
 
     try {
-      uiLogger.info("CHANNEL_VERIFICATION_START", "CHANNEL_VERIFICATION", {
+      console.info("CHANNEL_VERIFICATION_START", {
         channelName: channel.name,
         channelId: channel.id,
       });
@@ -138,12 +154,12 @@ export default function ChannelVerification({
         }),
       });
 
-      uiLogger.info("VERIFICATION_API_RESPONSE", "CHANNEL_VERIFICATION", {
+      console.info("VERIFICATION_API_RESPONSE", {
         status: response.status,
         channelId: channel.id,
       });
       const data = await response.json();
-      uiLogger.info("VERIFICATION_API_DATA", "CHANNEL_VERIFICATION", {
+      console.info("VERIFICATION_API_DATA", {
         data,
         channelId: channel.id,
       });
@@ -158,17 +174,30 @@ export default function ChannelVerification({
         command: data.command,
       });
 
-      uiLogger.info("CHANNEL_STATE_UPDATED", "CHANNEL_VERIFICATION", {
+      console.info("CHANNEL_STATE_UPDATED", {
         channelId: channel.id,
         nonce: data.nonce,
         hasDeepLink: !!data.deepLink,
         hasCommand: !!data.command,
       });
 
+      // Show verification toast
+      const toastId = showVerificationToast(
+        channel.name,
+        data.nonce,
+        data.deepLink
+      );
+
+      // Store toast ID for later dismissal
+      setVerificationToasts(prev => ({
+        ...prev,
+        [channel.id]: toastId
+      }));
+
       // Start polling for verification status
       startPolling(channel.id, data.nonce);
     } catch (error) {
-      uiLogger.error("VERIFICATION_START_ERROR", "CHANNEL_VERIFICATION", {
+      console.error("VERIFICATION_START_ERROR", {
         error,
         channelId: channel.id,
         channelName: channel.name,
@@ -207,23 +236,68 @@ export default function ChannelVerification({
             return newIntervals;
           });
 
+          // Dismiss verification toast
+          const toastId = verificationToasts[channelId];
+          if (toastId) {
+            dismissToast(toastId);
+            setVerificationToasts(prev => {
+              const updated = { ...prev };
+              delete updated[channelId];
+              return updated;
+            });
+          }
+
           // Update status to 'done' - the useEffect will handle notification
           updateChannelState(channelId, { status: "done", link: data.link });
-          toast.success("Channel verified successfully!");
+          
+          // Show success toast
+          const channel = channels.find(c => c.id === channelId);
+          showSuccess(
+            "Verifica completata!",
+            `${channel?.name || 'Il canale'} è stato collegato con successo.`
+          );
         }
         // If status is still 'pending', continue polling
       } catch (error) {
-        uiLogger.error("VERIFICATION_POLLING_ERROR", "CHANNEL_VERIFICATION", {
+        const channel = channels.find(c => c.id === channelId);
+        const channelName = channel?.name || 'Il canale';
+        
+        console.error("VERIFICATION_POLLING_ERROR", {
           error,
           channelId,
           nonce,
+          channelName,
         });
+        
         clearInterval(interval);
         setPollingIntervals((prev) => {
           const newIntervals = { ...prev };
           delete newIntervals[channelId];
           return newIntervals;
         });
+
+        // Dismiss verification toast
+        const toastId = verificationToasts[channelId];
+        if (toastId) {
+          dismissToast(toastId);
+          setVerificationToasts(prev => {
+            const updated = { ...prev };
+            delete updated[channelId];
+            return updated;
+          });
+        }
+        
+        // Show error toast with retry functionality
+        handleVerificationPollingError(
+          channelName,
+          nonce,
+          error,
+          async () => {
+            // Retry function - restart the verification process
+            await startVerification(channel!);
+          }
+        );
+        
         updateChannelState(channelId, {
           status: "error",
           error:
@@ -242,7 +316,7 @@ export default function ChannelVerification({
       await navigator.clipboard.writeText(text);
       toast.success("Copied to clipboard!");
     } catch (error) {
-      uiLogger.error("CLIPBOARD_COPY_ERROR", "CHANNEL_VERIFICATION", {
+      console.error("CLIPBOARD_COPY_ERROR", {
         error,
         textLength: text.length,
       });
@@ -260,6 +334,17 @@ export default function ChannelVerification({
         const newIntervals = { ...prev };
         delete newIntervals[channelId];
         return newIntervals;
+      });
+    }
+
+    // Dismiss any active verification toast
+    const toastId = verificationToasts[channelId];
+    if (toastId) {
+      dismissToast(toastId);
+      setVerificationToasts(prev => {
+        const updated = { ...prev };
+        delete updated[channelId];
+        return updated;
       });
     }
 

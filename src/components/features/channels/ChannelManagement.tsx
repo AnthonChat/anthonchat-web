@@ -20,7 +20,6 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { uiLogger } from "@/utils/loggers";
 
 interface Channel {
   id: string;
@@ -77,7 +76,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
 
     setIsLoading(true);
     try {
-      uiLogger.info("CHANNEL_DELETE_ATTEMPT", "CHANNEL_MANAGEMENT", {
+      console.info("CHANNEL_DELETE_ATTEMPT", {
         channelId,
         channelName,
       });
@@ -94,7 +93,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
         throw new Error(errorData.error || "Failed to delete channel");
       }
 
-      uiLogger.info("CHANNEL_DELETE_SUCCESS", "CHANNEL_MANAGEMENT", {
+      console.info("CHANNEL_DELETE_SUCCESS", {
         channelId,
         channelName,
       });
@@ -102,7 +101,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
       // Refresh the page to show updated channel list
       router.refresh();
     } catch (error) {
-      uiLogger.error("CHANNEL_DELETE_ERROR", "CHANNEL_MANAGEMENT", {
+      console.error("CHANNEL_DELETE_ERROR", {
         error,
         channelId,
         channelName,
@@ -121,12 +120,12 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
     setIsLoading(true);
     try {
       // TODO: Implement channel testing
-      uiLogger.info("CHANNEL_TEST_ATTEMPT", "CHANNEL_MANAGEMENT", {
+      console.info("CHANNEL_TEST_ATTEMPT", {
         channelId,
       });
       alert("Channel testing functionality will be implemented soon");
     } catch (error) {
-      uiLogger.error("CHANNEL_TEST_ERROR", "CHANNEL_MANAGEMENT", {
+      console.error("CHANNEL_TEST_ERROR", {
         error,
         channelId,
       });

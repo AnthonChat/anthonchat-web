@@ -45,7 +45,6 @@ import {
   SubscriptionManagementSkeleton,
   LoadingWrapper,
 } from "@/components/ui/loading";
-import { uiLogger } from "@/utils/loggers";
 
 interface SubscriptionManagementProps {
   subscription: UserSubscription | null;
@@ -70,7 +69,7 @@ export function SubscriptionManagement({
         const plans = await getAvailablePlans();
         setAvailablePlans(plans);
       } catch (error) {
-        uiLogger.error("Failed to fetch plans", "SUBSCRIPTION_MANAGEMENT", {
+        console.error("Failed to fetch plans", {
           error,
         });
         toast.error("Could not load subscription plans.");
@@ -225,7 +224,7 @@ function SubscriptionManagementContent({
         }
       }
     } catch (error) {
-      uiLogger.error("CHECKOUT_ERROR", "SUBSCRIPTION_MANAGEMENT", {
+      console.error("CHECKOUT_ERROR", {
         error,
         planSlug,
       });

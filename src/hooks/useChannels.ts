@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/db/browser";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { UserChannelWithChannel } from "@/lib/types/channels";
-import { hookLogger } from "@/utils/loggers";
 
 interface UseChannelsOptions {
   userId?: string;
@@ -231,7 +230,7 @@ export function useChannels(
             filter: `user_id=eq.${userId}`,
           },
           (payload) => {
-            hookLogger.info("REALTIME_CHANNEL_UPDATE", "CHANNELS", {
+            console.info("REALTIME_CHANNEL_UPDATE", {
               payload,
               userId,
             });

@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/db/server";
-import { subscriptionLogger } from "@/utils/loggers";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 import type { Database as StripeDatabase } from "@/lib/db/schemas/stripe";
 
@@ -63,11 +62,7 @@ export async function getUserStripeCustomerId(
     .single();
 
   if (error) {
-    subscriptionLogger.error(
-      "Stripe Customer Id Fetch",
-      "STRIPE_CUSTOMER_ID_FETCH",
-      { error, userId }
-    );
+    console.error("Stripe Customer Id Fetch:", { error, userId });
     return null;
   }
 
@@ -86,11 +81,7 @@ export async function getActiveSubscription(
   const customerId = await getUserStripeCustomerId(userId);
 
   if (!customerId) {
-    subscriptionLogger.error(
-      "Stripe Customer Id Missing",
-      "STRIPE_CUSTOMER_ID_MISSING",
-      { userId }
-    );
+    console.error("Stripe Customer Id Missing:", { userId });
     return null;
   }
 
@@ -104,11 +95,7 @@ export async function getActiveSubscription(
     .limit(1);
 
   if (error) {
-    subscriptionLogger.error(
-      "Active Subscription Fetch",
-      "ACTIVE_SUBSCRIPTION_FETCH",
-      { error, customerId, userId }
-    );
+    console.error("Active Subscription Fetch:", { error, customerId, userId });
     return null;
   }
 
@@ -134,7 +121,7 @@ export async function getProductDetails(
     .single();
 
   if (error) {
-    subscriptionLogger.error("Product Details Fetch", "PRODUCT_DETAILS_FETCH", {
+    console.error("Product Details Fetch:", {
       error,
       productId,
     });
@@ -159,7 +146,7 @@ export async function getTierFeatures(
     .single();
 
   if (error && error.code !== "PGRST116") {
-    subscriptionLogger.error("Tier Features Fetch", "TIER_FEATURES_FETCH", {
+    console.error("Tier Features Fetch:", {
       error,
       productId,
     });
@@ -225,9 +212,8 @@ function extractSubscriptionItemDetails(
 
     return [];
   } catch (error) {
-    subscriptionLogger.error(
-      "Subscription Items Parse",
-      "SUBSCRIPTION_ITEMS_PARSE",
+    console.error(
+      "Subscription Items Parse:",
       { error, subscriptionId: subscription.id }
     );
     return [];
@@ -316,7 +302,7 @@ async function buildSubscriptionResult(
         }
       }
     } catch (error) {
-      subscriptionLogger.error("Period Dates Extract", "PERIOD_DATES_EXTRACT", {
+      console.error("Period Dates Extract:", {
         error,
         subscriptionId: subscription.id,
       });
@@ -324,9 +310,8 @@ async function buildSubscriptionResult(
   }
 
   if (!primaryProductId) {
-    subscriptionLogger.error(
-      "Primary Product Id Missing",
-      "PRIMARY_PRODUCT_ID_MISSING",
+    console.error(
+      "Primary Product Id Missing:",
       { subscriptionId: subscription.id, items }
     );
     return null;

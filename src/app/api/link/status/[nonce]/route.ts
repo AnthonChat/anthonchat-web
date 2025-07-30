@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
-import { apiLogger } from "@/utils/loggers";
 
 export async function GET(
   request: NextRequest,
@@ -69,7 +68,7 @@ export async function GET(
     .maybeSingle(); // We assume they only verify one at a time.
 
   if (channelError) {
-    apiLogger.error("USER_CHANNEL_STATUS_ERROR", "API_LINK", {
+    console.error("USER_CHANNEL_STATUS_ERROR", {
       error: channelError,
       userId: userId,
       nonce,

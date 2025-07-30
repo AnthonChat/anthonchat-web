@@ -1,7 +1,6 @@
 // lib/queries/tiers.ts
 
 import { createClient } from "@/lib/db/server";
-import { tierLogger } from "@/utils/loggers";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 import type { Database as StripeDatabase } from "@/lib/db/schemas/stripe";
 
@@ -40,7 +39,7 @@ export async function getTierByPriceId(
     .single();
 
   if (priceError) {
-    tierLogger.error("PRICE_FETCH_BY_ID", "TIER_QUERIES", {
+    console.error("PRICE_FETCH_BY_ID", {
       error: priceError,
       priceId,
     });
@@ -61,7 +60,7 @@ export async function getTierByPriceId(
     .single();
 
   if (productError) {
-    tierLogger.error("PRODUCT_FETCH_BY_PRICE_ID", "TIER_QUERIES", {
+    console.error("PRODUCT_FETCH_BY_PRICE_ID", {
       error: productError,
       productId: priceData.product,
       priceId,
@@ -77,7 +76,7 @@ export async function getTierByPriceId(
     .single();
 
   if (featuresError && featuresError.code !== "PGRST116") {
-    tierLogger.error("TIER_FEATURES_FETCH", "TIER_QUERIES", {
+    console.error("TIER_FEATURES_FETCH", {
       error: featuresError,
       productId: productData.id,
     });
@@ -92,7 +91,7 @@ export async function getTierByPriceId(
     .eq("active", true);
 
   if (pricesError) {
-    tierLogger.error("PRICES_FETCH_FOR_PRODUCT", "TIER_QUERIES", {
+    console.error("PRICES_FETCH_FOR_PRODUCT", {
       error: pricesError,
       productId: productData.id,
     });
@@ -125,7 +124,7 @@ export async function getTierBySlug(
     .eq("active", true);
 
   if (productError) {
-    tierLogger.error("PRODUCTS_FETCH_BY_SLUG", "TIER_QUERIES", {
+    console.error("PRODUCTS_FETCH_BY_SLUG", {
       error: productError,
       slug,
     });
@@ -150,7 +149,7 @@ export async function getTierBySlug(
     .single();
 
   if (featuresError && featuresError.code !== "PGRST116") {
-    tierLogger.error("TIER_FEATURES_FETCH_BY_SLUG", "TIER_QUERIES", {
+    console.error("TIER_FEATURES_FETCH_BY_SLUG", {
       error: featuresError,
       productId: product.id,
       slug,
@@ -166,7 +165,7 @@ export async function getTierBySlug(
     .eq("active", true);
 
   if (pricesError) {
-    tierLogger.error("PRICES_FETCH_FOR_PRODUCT_BY_SLUG", "TIER_QUERIES", {
+    console.error("PRICES_FETCH_FOR_PRODUCT_BY_SLUG", {
       error: pricesError,
       productId: product.id,
       slug,
@@ -198,7 +197,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .eq("active", true);
 
   if (productsError) {
-    tierLogger.error("ACTIVE_PRODUCTS_FETCH", "TIER_QUERIES", {
+    console.error("ACTIVE_PRODUCTS_FETCH", {
       error: productsError,
     });
     return [];
@@ -214,7 +213,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .select("*");
 
   if (featuresError) {
-    tierLogger.error("ALL_TIER_FEATURES_FETCH", "TIER_QUERIES", {
+    console.error("ALL_TIER_FEATURES_FETCH", {
       error: featuresError,
     });
   }
@@ -227,7 +226,7 @@ export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
     .eq("active", true);
 
   if (pricesError) {
-    tierLogger.error("ALL_PRICES_FETCH", "TIER_QUERIES", {
+    console.error("ALL_PRICES_FETCH", {
       error: pricesError,
     });
   }
@@ -272,7 +271,7 @@ export async function upsertTierFeatures(
     .single();
 
   if (error) {
-    tierLogger.error("TIER_FEATURES_UPSERT", "TIER_QUERIES", {
+    console.error("TIER_FEATURES_UPSERT", {
       error,
       productId,
       features,

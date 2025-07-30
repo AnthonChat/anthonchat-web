@@ -337,8 +337,7 @@ ALTER FUNCTION "public"."get_current_usage"("p_user_id" "uuid") OWNER TO "postgr
 
 CREATE OR REPLACE FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer DEFAULT NULL::integer) RETURNS json
     LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
+    AS $$DECLARE
     v_history_limit integer;
 BEGIN
     -- Fix search_path for SECURITY DEFINER safety
@@ -380,7 +379,8 @@ BEGIN
                 SELECT
                     cm.id AS message_id,
                     uc.channel_id,
-                    cm.created_at
+                    cm.created_at,
+                    cm.content
                 FROM public.chat_messages cm
                 JOIN public.user_channels uc ON cm.user_channel = uc.id
                 WHERE uc.user_id = p_user_id
@@ -391,8 +391,7 @@ BEGIN
             FROM recent r
         ), '[]'::json)
     );
-END;
-$$;
+END;$$;
 
 
 ALTER FUNCTION "public"."get_user_activity"("p_user_id" "uuid", "p_history_limit" integer) OWNER TO "postgres";
@@ -431,8 +430,7 @@ ALTER FUNCTION "public"."get_user_by_channel"("p_channel_id" "text", "p_channel_
 
 CREATE OR REPLACE FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") RETURNS "text"
     LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
+    AS $$DECLARE
     v_plan_slug TEXT;
 BEGIN
     -- This function joins across schemas, so it's best to run with the definer's privileges.
@@ -452,12 +450,11 @@ BEGIN
     JOIN stripe.products p ON pr.product = p.id
     WHERE
         u.id = p_user_id
-        AND s.status = 'active' -- Ensure the subscription is currently active
+        AND (s.status = 'active' OR s.status='trialing') -- Ensure the subscription is currently active or trialing
     LIMIT 1; -- In case of multiple subscription items, return the first one found.
 
     RETURN v_plan_slug;
-END;
-$$;
+END;$$;
 
 
 ALTER FUNCTION "public"."get_user_subscription_plan"("p_user_id" "uuid") OWNER TO "postgres";

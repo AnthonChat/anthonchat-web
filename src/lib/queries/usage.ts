@@ -8,7 +8,6 @@ import type {
   UsageData,
   CurrentUsage,
 } from "@/lib/types/usage";
-import { usageLogger } from "@/utils/loggers";
 
 // Type aliases for better readability
 type UsageRecord = PublicDatabase["public"]["Tables"]["usage_records"]["Row"];
@@ -31,12 +30,7 @@ export async function getUserTierAndUsage(
     });
 
     if (error) {
-      usageLogger.error(
-        "Error fetching user tier and usage",
-        "TIER_USAGE_FETCH",
-        { error },
-        userId
-      );
+      console.error("Error fetching user tier and usage:", { error, userId });
       return null;
     }
 
@@ -55,11 +49,9 @@ export async function getUserTierAndUsage(
       history_limit: usageData.tier_history_limit,
     };
   } catch (error) {
-    usageLogger.error(
-      "Error fetching user tier and usage",
-      "TIER_USAGE_FETCH",
-      { error },
-      userId
+    console.error(
+      "Error fetching user tier and usage:",
+      { error, userId }
     );
     return null;
   }
@@ -82,12 +74,7 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
   const { data: rpcData, error: rpcError } = usageResponse;
 
   if (rpcError) {
-    usageLogger.error(
-      "Error calling get_user_usage_and_limits RPC",
-      "USER_USAGE_FETCH",
-      { error: rpcError.message },
-      userId
-    );
+    console.error("Error calling get_user_usage_and_limits RPC:", { error: rpcError.message, userId });
     // If the RPC fails, we still return a valid default object to prevent UI crashes.
   }
 
@@ -136,12 +123,7 @@ export async function getCurrentUsage(
   });
 
   if (error) {
-    usageLogger.error(
-      "Error fetching current usage",
-      "CURRENT_USAGE_FETCH",
-      { error },
-      userId
-    );
+    console.error("Error fetching current usage:", { error, userId });
     return null;
   }
 
@@ -165,12 +147,7 @@ export async function getUserChannelUsage(
     .order("created_at", { ascending: false });
 
   if (error) {
-    usageLogger.error(
-      "Error fetching user channel usage",
-      "CHANNEL_USAGE_FETCH",
-      { error, channelId },
-      userId
-    );
+    console.error("Error fetching user channel usage:", { error, channelId, userId });
     return [];
   }
 
@@ -192,10 +169,7 @@ export async function createUsageRecord(
     .single();
 
   if (error) {
-    usageLogger.error("Error creating usage record", "USAGE_RECORD_CREATE", {
-      error,
-      usageData,
-    });
+    console.error("Error creating usage record:", { error, usageData });
     return null;
   }
 
@@ -219,11 +193,7 @@ export async function updateUsageRecord(
     .single();
 
   if (error) {
-    usageLogger.error("Error updating usage record", "USAGE_RECORD_UPDATE", {
-      error,
-      id,
-      updates,
-    });
+    console.error("Error updating usage record:", { error, id, updates });
     return null;
   }
 

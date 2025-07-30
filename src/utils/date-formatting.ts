@@ -1,5 +1,3 @@
-import { dateLogger } from '@/utils/loggers'
-
 /**
  * Format a date string consistently for display
  * Uses en-US locale to prevent server/client hydration mismatches
@@ -17,7 +15,8 @@ export function formatDate(dateString?: string | null): string {
       day: 'numeric'
     })
   } catch (error) {
-    dateLogger.error('Date Format Error', 'DATE_FORMAT_ERROR', { error, dateString })
+    // Log error removed - using console.error for critical errors
+    console.error('Date Format Error:', error, { dateString })
     return 'Invalid Date'
   }
 }

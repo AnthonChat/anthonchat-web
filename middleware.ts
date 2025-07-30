@@ -1,9 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { middlewareLogger } from "@/utils/loggers";
 
 export async function middleware(request: NextRequest) {
-  middlewareLogger.info("Middleware entry", "MIDDLEWARE_ENTRY", {
+  console.info("Middleware entry", {
     pathname: request.nextUrl.pathname,
   });
 
@@ -43,9 +42,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const userId = claims?.claims?.sub;
 
-  middlewareLogger.info(
+  console.info(
     "Processing middleware request",
-    "MIDDLEWARE_PROCESSING",
     { pathname },
     userId || undefined
   );
@@ -55,9 +53,8 @@ export async function middleware(request: NextRequest) {
 
   // If user is not authenticated and trying to access a protected path, redirect to login
   if (!claims && !publicPaths.some((path) => pathname.startsWith(path))) {
-    middlewareLogger.info(
+    console.info(
       "Redirecting unauthenticated user to login",
-      "MIDDLEWARE_REDIRECT_TO_LOGIN",
       { pathname }
     );
     const url = request.nextUrl.clone();
@@ -73,17 +70,15 @@ export async function middleware(request: NextRequest) {
       .eq("id", userId)
       .single();
 
-    middlewareLogger.info(
+    console.info(
       "Fetched user data for onboarding check",
-      "MIDDLEWARE_USER_DATA_FETCH",
       { userData, userError },
       userId
     );
 
     if (userError || !userData) {
-      middlewareLogger.error(
+      console.error(
         "Failed to fetch user onboarding status",
-        "USER_ONBOARDING_STATUS_FETCH_ERROR",
         { error: userError },
         userId
       );
@@ -94,9 +89,8 @@ export async function middleware(request: NextRequest) {
     }
 
     const onboardingComplete = userData.onboarding_complete;
-    middlewareLogger.info(
+    console.info(
       "Checked onboarding status",
-      "MIDDLEWARE_ONBOARDING_STATUS",
       { onboardingComplete },
       userId
     );
@@ -108,9 +102,8 @@ export async function middleware(request: NextRequest) {
         !pathname.startsWith("/signup/complete") &&
         !pathname.startsWith("/auth/callback")
       ) {
-        middlewareLogger.info(
+        console.info(
           "Redirecting to signup complete",
-          "MIDDLEWARE_REDIRECT_TO_SIGNUP_COMPLETE",
           { pathname },
           userId
         );
@@ -121,9 +114,8 @@ export async function middleware(request: NextRequest) {
     } else {
       // If onboarding is complete and trying to access signup, redirect to dashboard
       if (pathname.startsWith("/signup")) {
-        middlewareLogger.info(
+        console.info(
           "Redirecting to dashboard",
-          "MIDDLEWARE_REDIRECT_TO_DASHBOARD",
           { pathname },
           userId
         );

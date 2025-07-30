@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { uiLogger } from "@/utils/loggers";
 
 interface Props {
   children: ReactNode;
@@ -51,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    uiLogger.error("ERROR_BOUNDARY_CAUGHT_ERROR", "ERROR_BOUNDARY", {
+    console.error("ERROR_BOUNDARY_CAUGHT_ERROR", {
       error: error.message,
       stack: error.stack,
       errorInfo,

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/db/browser";
 import type { UsageData } from "@/lib/types/usage";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { hookLogger } from "@/utils/loggers";
 
 interface UseRealtimeUsageOptions {
   userId: string;
@@ -42,7 +41,7 @@ export function useRealtimeUsage({
       });
 
       if (error) {
-        hookLogger.error("USAGE_FETCH_ERROR", "REALTIME_USAGE", {
+        console.error("USAGE_FETCH_ERROR", {
           error: error.message,
           userId,
         });
@@ -74,7 +73,7 @@ export function useRealtimeUsage({
       const remainingTime = Math.max(0, minLoadingTime - elapsed);
       setTimeout(() => setIsInitialLoading(false), remainingTime);
     } catch (err) {
-      hookLogger.error("FETCH_LATEST_USAGE_ERROR", "REALTIME_USAGE", {
+      console.error("FETCH_LATEST_USAGE_ERROR", {
         error: err instanceof Error ? err.message : String(err),
         userId,
       });
@@ -101,7 +100,7 @@ export function useRealtimeUsage({
         .single();
 
       if (channelError || !channelData) {
-        hookLogger.error("USER_CHANNEL_REALTIME_ERROR", "REALTIME_USAGE", {
+        console.error("USER_CHANNEL_REALTIME_ERROR", {
           error: channelError?.message,
           userId,
         });
@@ -122,7 +121,7 @@ export function useRealtimeUsage({
             filter: `user_channel_id=eq.${userChannelId}`,
           },
           (payload) => {
-            hookLogger.info("REALTIME_USAGE_UPDATE", "REALTIME_USAGE", {
+            console.info("REALTIME_USAGE_UPDATE", {
               payload,
               userId,
             });
@@ -165,7 +164,7 @@ export function useRealtimeUsage({
     isConnected,
     error,
     reconnect: () => {
-      hookLogger.info("USAGE_RECONNECT_ATTEMPT", "REALTIME_USAGE", { userId });
+      console.info("USAGE_RECONNECT_ATTEMPT", { userId });
       fetchLatestUsage();
     },
     isInitialLoading,

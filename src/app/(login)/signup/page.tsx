@@ -1,21 +1,13 @@
-import { createClient } from "@/lib/db/server";
-import { redirect } from "next/navigation";
-import SignupForm from "@/components/features/signup/SignupForm";
+import SignupPageWrapper from "@/components/features/signup/SignupPageWrapper";
 
 export default async function SignupPage({
   searchParams,
 }: {
   searchParams: Promise<{ message: string }>;
 }) {
-  const supabase = await createClient();
-
-  const { data: claims } = await supabase.auth.getClaims();
-
-  if (claims) {
-    return redirect("/dashboard");
-  }
-
   const resolvedSearchParams = await searchParams;
 
-  return <SignupForm message={resolvedSearchParams?.message} />;
+  // L'auth checking è ora gestito dal SignupPageWrapper tramite useAuthState
+  // che utilizza il nostro AuthProvider unificato
+  return <SignupPageWrapper message={resolvedSearchParams?.message} />;
 }

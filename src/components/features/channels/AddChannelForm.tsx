@@ -16,9 +16,8 @@ import {
   XCircle,
   RotateCcw,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { uiLogger } from "@/utils/loggers";
-import { cn } from "@/lib/utils";
+import { useRouter }            from "next/navigation";
+import { cn }                   from "@/lib/utils";
 import type { Channel, UserChannelWithChannel } from "@/lib/types/channels";
 
 interface ChannelVerificationState {
@@ -45,7 +44,7 @@ const saveVerificationStates = (
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
   } catch (error) {
-    uiLogger.error("STORAGE_SAVE_ERROR", "ADD_CHANNEL_FORM", { error });
+    console.error("STORAGE_SAVE_ERROR", { error });
   }
 };
 
@@ -83,7 +82,7 @@ const loadVerificationStates = (): Record<string, ChannelVerificationState> => {
       return cleanStates;
     }
   } catch (error) {
-    uiLogger.error("STORAGE_LOAD_ERROR", "ADD_CHANNEL_FORM", { error });
+    console.error("STORAGE_LOAD_ERROR", { error });
   }
   return {};
 };
@@ -97,7 +96,7 @@ const clearVerificationState = (channelId: string) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
     }
   } catch (error) {
-    uiLogger.error("STORAGE_CLEAR_ERROR", "ADD_CHANNEL_FORM", { error });
+    console.error("STORAGE_CLEAR_ERROR", { error });
   }
 };
 
@@ -269,7 +268,7 @@ export function AddChannelForm({
             throw new Error(data.error || "Verification failed");
           }
         } catch (error) {
-          uiLogger.error("POLLING_ERROR", "ADD_CHANNEL_FORM", {
+          console.error("POLLING_ERROR", {
             error,
             channelId,
             nonce,
@@ -359,7 +358,7 @@ export function AddChannelForm({
     });
 
     try {
-      uiLogger.info("CHANNEL_VERIFICATION_START", "ADD_CHANNEL_FORM", {
+      console.info("CHANNEL_VERIFICATION_START", {
         channelId: channel.id,
       });
 
@@ -390,7 +389,7 @@ export function AddChannelForm({
       // Start polling for verification status
       startPolling(channel.id, data.nonce);
     } catch (error) {
-      uiLogger.error("CHANNEL_VERIFICATION_ERROR", "ADD_CHANNEL_FORM", {
+      console.error("CHANNEL_VERIFICATION_ERROR", {
         error,
         channelId: channel.id,
       });

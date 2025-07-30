@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
-import { apiLogger } from "@/utils/loggers";
 
 export async function POST(request: NextRequest) {
   // ❗️ SECURITY: Protect this endpoint, as it is called by your bot, not a browser user.
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
 
   // 3️⃣ Handle errors from the remote procedure call itself
   if (rpcError) {
-    apiLogger.error("FINALIZE_CHANNEL_LINK_RPC_ERROR", "API_LINK", {
+    console.error("FINALIZE_CHANNEL_LINK_RPC_ERROR", {
       error: rpcError,
       nonce,
       link,
