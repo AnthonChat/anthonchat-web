@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { useUserSubscription } from "@/hooks/useUserSubscription";
+import { useUserSubscription } from "@/hooks/use-user-subscription";
 import { SubscriptionManagement } from "@/components/features/subscription/SubscriptionManagement";
 
 interface SubscriptionPageClientProps {

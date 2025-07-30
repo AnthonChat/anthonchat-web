@@ -18,7 +18,7 @@ import {
   supabaseErrorToAuthError
 } from "@/lib/auth/types";
 import { useAuthActions } from "./AuthProvider";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 
 interface AuthErrorBoundaryProps {

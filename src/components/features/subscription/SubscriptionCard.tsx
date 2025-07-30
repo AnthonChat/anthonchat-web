@@ -20,7 +20,7 @@ import {
 // --- Step 1: Import the new data types and utility functions ---
 import { UserSubscription } from "@/lib/queries/subscription";
 import type { UsageData } from "@/lib/types/usage";
-import { useRealtimeUsage } from "@/hooks/useRealtimeUsage";
+import { useRealtimeUsage } from "@/hooks/use-realtime-usage";
 import { formatTrialTimeRemaining } from "@/utils/time-formatting";
 import { cn } from "@/lib/utils";
 import {

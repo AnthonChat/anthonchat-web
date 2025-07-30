@@ -4,7 +4,6 @@ import { getUserChannels } from "@/lib/queries/channels";
 import { ChannelManagement } from "@/components/features/channels/ChannelManagement";
 import { MessageSquare } from "lucide-react";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
-import { DashboardLayout } from "@/components/features/dashboard/DashboardLayout";
 
 export default async function ChannelsPage() {
   const supabase = await createClient();
@@ -19,7 +18,7 @@ export default async function ChannelsPage() {
   const [channels] = await Promise.all([getUserChannels(claims.claims.sub)]);
 
   return (
-    <DashboardLayout>
+    <div>
       <DashboardHeader
         title="Channel Management"
         description="Manage your connected communication channels"
@@ -31,6 +30,6 @@ export default async function ChannelsPage() {
       <main className="container mx-auto px-6 py-8">
         <ChannelManagement channels={channels} />
       </main>
-    </DashboardLayout>
+    </div>
   );
 }

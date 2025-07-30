@@ -5,7 +5,6 @@ import { AddChannelForm } from "@/components/features/channels/AddChannelForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
-import { DashboardLayout } from "@/components/features/dashboard/DashboardLayout";
 
 export default async function AddChannelPage() {
   const supabase = await createClient();
@@ -23,7 +22,7 @@ export default async function AddChannelPage() {
   ]);
 
   return (
-    <DashboardLayout>
+    <div>
       <DashboardHeader
         title="Add Channel"
         description="Connect a new channel to start receiving messages"
@@ -62,6 +61,6 @@ export default async function AddChannelPage() {
           </div>
         </div>
       </main>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ import {
 import { Loader2, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { signInWithState } from "@/app/(login)/actions";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 
 /**

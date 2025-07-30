@@ -11,7 +11,6 @@ import { QuickActions } from "@/components/features/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/features/dashboard/ThemeToggle";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
-import { DashboardLayout } from "@/components/features/dashboard/DashboardLayout";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -55,7 +54,7 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <DashboardLayout variant="enhanced">
+    <div>
       <DashboardHeader
         title="Dashboard"
         description={`Welcome back, ${userEmail}`}
@@ -127,6 +126,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       </main>
-    </DashboardLayout>
+    </div>
   );
 }

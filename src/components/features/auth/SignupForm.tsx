@@ -17,7 +17,7 @@ import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 
 

@@ -20,7 +20,7 @@ import {
 	RefreshCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useChannels } from "@/hooks/useChannels";
+import { useChannels } from "@/hooks/use-channels";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingWrapper } from "@/components/ui/loading";
