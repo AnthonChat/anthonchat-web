@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -82,6 +81,61 @@ export default function SignupCompleteForm({
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setProfileSaved(false); // Mark as unsaved when data changes
+        
+    // Auto-save profile on input change with debounce
+    debouncedSaveProfile(field, value);
+  };
+
+  // Debounced auto-save function
+  const debouncedSaveProfile = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout | null = null;
+      return (field: string, value: string) => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(async () => {
+          await autoSaveProfile(field, value);
+        }, 1000); // 1 second debounce
+      };
+    })(),
+    [formData, user.id] // Add dependencies to ensure access to latest data
+  );
+
+  const autoSaveProfile = async (field?: string, value?: string) => {
+    // Use current formData if field/value not provided
+    const currentData = field && value !== undefined
+      ? { ...formData, [field]: value }
+      : formData;
+
+    try {
+      const supabase = createClient();
+
+      // Prepare update object - use empty strings for empty fields (NOT NULL constraint)
+      const updateData: { [key: string]: string } = {};
+      
+      // Use empty strings instead of null due to NOT NULL constraints
+      updateData.nickname = currentData.nickname.trim();
+      updateData.first_name = currentData.first_name.trim();
+      updateData.last_name = currentData.last_name.trim();
+
+      // Update user profile - empty strings will clear the field content
+      const { error: profileError } = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      setProfileSaved(true);
+      setError(null);
+      
+      // Hide success message after 2 seconds
+      setTimeout(() => setProfileSaved(false), 2000);
+    } catch (err: unknown) {
+      console.error("AUTO_SAVE_PROFILE_ERROR", { err, userId: user.id });
+      // Don't show user-facing errors for auto-save failures to avoid disruption
+    }
   };
 
   // Check if profile data has changed from initial values
@@ -90,11 +144,8 @@ export default function SignupCompleteForm({
     formData.first_name !== (userProfile?.first_name || "") ||
     formData.last_name !== (userProfile?.last_name || "");
 
-  // Check if profile data is complete
-  const profileDataComplete =
-    formData.nickname.trim() &&
-    formData.first_name.trim() &&
-    formData.last_name.trim();
+  // Check if profile data is complete (no longer required since all fields are optional)
+  const profileDataComplete = true;
 
   const handleVerificationComplete = useCallback(
     async (channelId: string, link: string) => {
@@ -146,36 +197,12 @@ export default function SignupCompleteForm({
   ); // Dependency array for useCallback
 
   const saveProfile = async () => {
-    // Validate profile fields only
-    if (
-      !formData.nickname.trim() ||
-      !formData.first_name.trim() ||
-      !formData.last_name.trim()
-    ) {
-      setError("Please fill in all profile fields");
-      return;
-    }
-
     setProfileSaving(true);
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Update user profile
-      const { error: profileError } = await supabase
-        .from("users")
-        .update({
-          nickname: formData.nickname.trim(),
-          first_name: formData.first_name.trim(),
-          last_name: formData.last_name.trim(),
-        })
-        .eq("id", user.id);
-
-      if (profileError) throw profileError;
-
+      await autoSaveProfile();
       setProfileSaved(true);
-      setError(null);
     } catch (err: unknown) {
       console.error("PROFILE_SAVE_ERROR", { err, userId: user.id });
 
@@ -203,16 +230,6 @@ export default function SignupCompleteForm({
   };
 
   const validateForm = () => {
-    // Check profile fields
-    if (
-      !formData.nickname.trim() ||
-      !formData.first_name.trim() ||
-      !formData.last_name.trim()
-    ) {
-      setError("Please fill in all profile fields");
-      return false;
-    }
-
     // Check if at least one channel is verified
     if (!allChannelsVerified) {
       setError("Please verify at least one channel before continuing");
@@ -235,14 +252,16 @@ export default function SignupCompleteForm({
     try {
       const supabase = createClient();
 
-      // Update user profile
+      // Prepare update object - use empty strings for empty fields (NOT NULL constraint)
+      const updateData: { [key: string]: string } = {};
+      updateData.nickname = formData.nickname.trim();
+      updateData.first_name = formData.first_name.trim();
+      updateData.last_name = formData.last_name.trim();
+
+      // Update user profile (all fields optional) - empty strings will clear field content
       const { error: profileError } = await supabase
         .from("users")
-        .update({
-          nickname: formData.nickname.trim(),
-          first_name: formData.first_name.trim(),
-          last_name: formData.last_name.trim(),
-        })
+        .update(updateData)
         .eq("id", user.id);
 
       if (profileError) throw profileError;
@@ -394,29 +413,7 @@ export default function SignupCompleteForm({
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-3">
-          {profileSaved && (
-            <div className="w-full p-3 bg-success/5 border border-success/20 rounded-md">
-              <p className="text-success text-sm text-center">
-                ✓ Profile saved successfully!
-              </p>
-            </div>
-          )}
-
-          <Button
-            type="button"
-            onClick={saveProfile}
-            disabled={
-              profileSaving ||
-              !profileDataComplete ||
-              (!profileDataChanged && !profileSaved)
-            }
-            variant="outline"
-            className="w-full h-11"
-          >
-            {profileSaving ? "Saving Profile..." : "Save Profile"}
-          </Button>
-        </CardFooter>
+      
       </Card>
 
       <div className="mt-8">
