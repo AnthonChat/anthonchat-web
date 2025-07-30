@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/browser";
+import { createClient } from "@/lib/db/client";
 
 export interface Product {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/db/browser";
+import { createClient } from "@/lib/db/client";
 import type { UsageData } from "@/lib/types/usage";
 import { RealtimeChannel } from "@supabase/supabase-js";
 

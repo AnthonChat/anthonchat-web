@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/lib/db/browser";
+import { createClient } from "@/lib/db/client";
 import ChannelVerification from "../channels/ChannelVerification";
 
 interface Channel {
