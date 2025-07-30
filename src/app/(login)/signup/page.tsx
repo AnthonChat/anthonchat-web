@@ -1,4 +1,4 @@
-import SignupPageWrapper from "@/components/features/signup/SignupPageWrapper";
+import SignupPageWrapper from "@/components/features/auth/SignupPageWrapper";
 
 export default async function SignupPage({
   searchParams,

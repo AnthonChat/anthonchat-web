@@ -53,9 +53,7 @@ export default function SignupCompleteForm({
 }: SignupCompleteFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [profileSaving, setProfileSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileSaved, setProfileSaved] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -80,7 +78,6 @@ export default function SignupCompleteForm({
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setProfileSaved(false); // Mark as unsaved when data changes
         
     // Auto-save profile on input change with debounce
     debouncedSaveProfile(field, value);
@@ -127,25 +124,13 @@ export default function SignupCompleteForm({
 
       if (profileError) throw profileError;
 
-      setProfileSaved(true);
-      setError(null);
-      
       // Hide success message after 2 seconds
-      setTimeout(() => setProfileSaved(false), 2000);
+      setTimeout(() => setError(null), 2000);
     } catch (err: unknown) {
       console.error("AUTO_SAVE_PROFILE_ERROR", { err, userId: user.id });
       // Don't show user-facing errors for auto-save failures to avoid disruption
     }
   };
-
-  // Check if profile data has changed from initial values
-  const profileDataChanged =
-    formData.nickname !== (userProfile?.nickname || "") ||
-    formData.first_name !== (userProfile?.first_name || "") ||
-    formData.last_name !== (userProfile?.last_name || "");
-
-  // Check if profile data is complete (no longer required since all fields are optional)
-  const profileDataComplete = true;
 
   const handleVerificationComplete = useCallback(
     async (channelId: string, link: string) => {
@@ -195,39 +180,6 @@ export default function SignupCompleteForm({
     },
     [user.id]
   ); // Dependency array for useCallback
-
-  const saveProfile = async () => {
-    setProfileSaving(true);
-    setError(null);
-
-    try {
-      await autoSaveProfile();
-      setProfileSaved(true);
-    } catch (err: unknown) {
-      console.error("PROFILE_SAVE_ERROR", { err, userId: user.id });
-
-      let errorMessage = "Failed to save profile";
-
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === "object" && err !== null) {
-        const supabaseError = err as {
-          message?: string;
-          error_description?: string;
-          [key: string]: unknown;
-        };
-        if (supabaseError.message) {
-          errorMessage = supabaseError.message;
-        } else if (supabaseError.error_description) {
-          errorMessage = supabaseError.error_description;
-        }
-      }
-
-      setError(errorMessage);
-    } finally {
-      setProfileSaving(false);
-    }
-  };
 
   const validateForm = () => {
     // Check if at least one channel is verified

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/db/server";
-import SignupCompleteForm from "@/components/features/signup/SignupCompleteForm";
+import SignupCompleteForm from "@/components/features/auth/SignupCompleteForm";
 
 export default async function SignupCompletePage() {
   const supabase = await createClient();
