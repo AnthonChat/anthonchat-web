@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/db/server";
 import { redirect } from "next/navigation";
 import { signIn } from "../actions";
-import Login from "../login";
+import Login from "./login";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
