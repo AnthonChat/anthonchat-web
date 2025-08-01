@@ -10,13 +10,15 @@ import SignupForm from "./SignupForm";
 
 interface SignupPageWrapperProps {
   message?: string | null;
+  link?: string | null;
+  channel?: string | null;
 }
 
 /**
  * Wrapper component che gestisce l'auth checking per la signup page
  * Separato dal SignupForm per evitare problemi di ordine degli hooks
  */
-export default function SignupPageWrapper({ message }: SignupPageWrapperProps) {
+export default function SignupPageWrapper({ message, link, channel }: SignupPageWrapperProps) {
   const { isAuthenticated, isLoading, isInitialized } = useAuthState();
   const router = useRouter();
 
@@ -43,7 +45,7 @@ export default function SignupPageWrapper({ message }: SignupPageWrapperProps) {
 
   // Se l'utente non è autenticato, mostra il form di signup
   if (!isAuthenticated) {
-    return <SignupForm message={message} />;
+    return <SignupForm message={message} link={link} channel={channel} />;
   }
 
   // Se l'utente è autenticato, mostra loading (verrà reindirizzato)

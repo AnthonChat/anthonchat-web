@@ -46,7 +46,9 @@ export type Database = {
           expires_at: string
           id: string
           nonce: string
-          user_id: string
+          user_id: string | null
+          user_handle: string | null
+          chat_metadata: Json | null
         }
         Insert: {
           channel_id: string
@@ -54,7 +56,9 @@ export type Database = {
           expires_at: string
           id?: string
           nonce: string
-          user_id: string
+          user_id?: string | null
+          user_handle?: string | null
+          chat_metadata?: Json | null
         }
         Update: {
           channel_id?: string
@@ -62,7 +66,9 @@ export type Database = {
           expires_at?: string
           id?: string
           nonce?: string
-          user_id?: string
+          user_id?: string | null
+          user_handle?: string | null
+          chat_metadata?: Json | null
         }
         Relationships: [
           {

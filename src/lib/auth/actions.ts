@@ -8,7 +8,7 @@ import {
   linkCustomerToUser,
   debugCheckCustomerExists,
 } from "@/lib/stripe";
-import { updateUserData } from "@/lib/queries/user";
+import { updateUserData, linkChannelToUserSecure, validateChannelLinkNonce } from "@/lib/queries/user";
 import {
   type FormState,
   type SignupFormData,
@@ -28,12 +28,12 @@ import {
  * 5. Fallback linking se sync fallisce
  * 6. Update user data con Stripe customer ID
  * 
- * @param prevState - Stato precedente del form (non utilizzato ma richiesto da useFormState)
+ * @param _prevState - Stato precedente del form (non utilizzato ma richiesto da useFormState)
  * @param formData - Dati del form di signup
  * @returns Promise<FormState> - Stato aggiornato del form o redirect su successo
  */
 export async function signUp(
-  prevState: FormState,
+  _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
   try {
@@ -67,9 +67,6 @@ export async function signUp(
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: SIGNUP_CONFIG.EMAIL_REDIRECT,
-      },
     });
       
     if (authError) {
@@ -184,7 +181,42 @@ export async function signUp(
       );
     }
  
-    // Step 8: Su success finale, chiamare redirect('/signup/complete')
+    // Step 8: Collegamento canale sicuro (solo se nonce valido)
+    const channel = formData.get("channel");
+    const nonce = formData.get("link"); // Questo è il nonce, non il link
+    if (channel && nonce) {
+      try {
+        // Validazione preliminare
+        const { isValid, verification } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
+        
+        if (!isValid) {
+          console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {
+            userId: user.id,
+            channel: channel.toString(),
+            nonce: nonce.toString().substring(0, 8) + "...",
+          });
+          
+          // Non bloccare la registrazione, ma non collegare il canale
+          console.info("Signup completed without channel linking due to invalid nonce");
+        } else {
+          // Per le registrazioni, linkChannelToUserSecure gestisce già la logica corretta
+          // (registrazioni hanno verification.user_id = null, che è valido)
+          await linkChannelToUserSecure(user.id, channel.toString(), nonce.toString());
+          console.info("Channel linked successfully during signup");
+        }
+      } catch (error) {
+        console.error("CHANNEL_LINK_ERROR_DURING_SIGNUP:", {
+          error: error instanceof Error ? error.message : error,
+          userId: user.id,
+          channel: channel.toString(),
+        });
+        
+        // Non far fallire l'intera registrazione per un errore di collegamento canale
+        // L'utente potrà collegare il canale successivamente
+      }
+    }
+
+    // Step 9: Su success finale, chiamare redirect('/signup/complete')
     console.info("Signup process completed successfully", {
       userId: user.id,
       email,

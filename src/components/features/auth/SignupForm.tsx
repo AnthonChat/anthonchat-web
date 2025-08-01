@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, CreditCard, CheckCircle } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
@@ -23,6 +23,8 @@ import { NotificationErrorType } from "@/lib/notifications/types";
 
 interface SignupFormProps {
   message?: string | null;
+  link?: string | null;
+  channel?: string | null;
 }
 
 const initialState: FormState = {
@@ -31,11 +33,21 @@ const initialState: FormState = {
   success: false,
 };
 
-export default function SignupForm({ message }: SignupFormProps) {
+export default function SignupForm({ message, link, channel }: SignupFormProps) {
   const [formState, formAction, isPending] = useActionState(signUp, initialState);
   const [loadingStep, setLoadingStep] = useState<
     "auth" | "stripe" | "complete"
   >("auth");
+
+  // Stato per validazione nonce
+  const [nonceValidation, setNonceValidation] = useState<{
+    isValidating: boolean;
+    isValid: boolean | null;
+    error?: string;
+  }>({
+    isValidating: false,
+    isValid: null,
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { showError, showSuccess } = useNotifications();
@@ -53,13 +65,48 @@ export default function SignupForm({ message }: SignupFormProps) {
     }
   };
 
+  // Validazione nonce quando componente monta
+  useEffect(() => {
+    if (link && channel) {
+      validateNonceOnMount();
+    }
+  }, [link, channel]);
+
+  const validateNonceOnMount = async () => {
+    if (!link || !channel) return;
+    
+    setNonceValidation({ isValidating: true, isValid: null });
+    
+    try {
+      const response = await fetch('/api/link/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nonce: link, channelId: channel }),
+      });
+      
+      const result = await response.json();
+      
+      setNonceValidation({
+        isValidating: false,
+        isValid: result.isValid,
+        error: result.isValid ? undefined : "Link non valido o scaduto",
+      });
+    } catch (error) {
+      setNonceValidation({
+        isValidating: false,
+        isValid: false,
+        error: "Errore durante la validazione del link",
+      });
+    }
+  };
+
   // Handle form state changes and loading progression
-  React.useEffect(() => {
+  useEffect(() => {
     if (isPending) {
       setLoadingStep("auth");
       // Simulate the progression through steps for UX
-      setTimeout(() => setLoadingStep("stripe"), 1500);
-      setTimeout(() => setLoadingStep("complete"), 3000);
+      setTimeout(() => setLoadingStep("stripe"), 1000);
+      setTimeout(() => setLoadingStep("complete"), 2000);
     }
   }, [isPending]);
 
@@ -132,7 +179,35 @@ export default function SignupForm({ message }: SignupFormProps) {
           </CardDescription>
         </CardHeader>
 
+        {/* Indicatore validazione nonce */}
+        {(link && channel) && (
+          <div className="px-6 pb-2">
+            {nonceValidation.isValidating && (
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Validazione link in corso...
+              </div>
+            )}
+            
+            {nonceValidation.isValid === true && (
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <CheckCircle className="w-4 h-4" />
+                Link valido - Il tuo canale {channel} verrà collegato automaticamente
+              </div>
+            )}
+            
+            {nonceValidation.isValid === false && (
+              <div className="flex items-center gap-2 text-sm text-red-600">
+                <XCircle className="w-4 h-4" />
+                {nonceValidation.error} - Potrai collegare il canale dopo la registrazione
+              </div>
+            )}
+          </div>
+        )}
+
         <form action={formAction}>
+          {channel && <input type="hidden" name="channel" value={channel} />}
+          {link && <input type="hidden" name="link" value={link} />}
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
