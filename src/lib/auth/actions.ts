@@ -187,7 +187,7 @@ export async function signUp(
     if (channel && nonce) {
       try {
         // Validazione preliminare
-        const { isValid, verification } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
+        const { isValid } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
         
         if (!isValid) {
           console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {

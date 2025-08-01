@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/db/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 
 // Type aliases for better readability
@@ -167,7 +168,7 @@ export async function linkChannelToUserSecure(
   }
 
   // 4. Usa la funzione database sicura invece di insert diretto
-  const { data, error } = await supabase.rpc("finalize_channel_link", {
+  const { error } = await supabase.rpc("finalize_channel_link", {
     p_nonce: nonce,
     p_link: verification.user_handle || "", // Il vero handle dal bot
   });
@@ -193,7 +194,6 @@ export async function linkChannelToUserSecure(
 
 // Service role client per validazioni
 const getServiceRoleClient = () => {
-  const { createClient: createSupabaseClient } = require("@supabase/supabase-js");
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY!;
   
@@ -204,11 +204,22 @@ const getServiceRoleClient = () => {
   return createSupabaseClient(supabaseUrl, supabaseSecretKey);
 };
 
+// Type for channel verification
+interface ChannelVerification {
+  id: string;
+  nonce: string;
+  channel_id: string;
+  user_id: string | null;
+  user_handle: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
 // Funzione di validazione separata per controlli preliminari
 export async function validateChannelLinkNonce(
   nonce: string,
   channelId: string
-): Promise<{ isValid: boolean; verification?: any; isRegistration?: boolean }> {
+): Promise<{ isValid: boolean; verification?: ChannelVerification; isRegistration?: boolean }> {
   if (!nonce || !channelId) {
     return { isValid: false };
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,14 +65,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
   };
 
-  // Validazione nonce quando componente monta
-  useEffect(() => {
-    if (link && channel) {
-      validateNonceOnMount();
-    }
-  }, [link, channel]);
-
-  const validateNonceOnMount = async () => {
+  const validateNonceOnMount = useCallback(async () => {
     if (!link || !channel) return;
     
     setNonceValidation({ isValidating: true, isValid: null });
@@ -91,14 +84,21 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         isValid: result.isValid,
         error: result.isValid ? undefined : "Link non valido o scaduto",
       });
-    } catch (error) {
+    } catch {
       setNonceValidation({
         isValidating: false,
         isValid: false,
         error: "Errore durante la validazione del link",
       });
     }
-  };
+  }, [link, channel]);
+
+  // Validazione nonce quando componente monta
+  useEffect(() => {
+    if (link && channel) {
+      validateNonceOnMount();
+    }
+  }, [link, channel, validateNonceOnMount]);
 
   // Handle form state changes and loading progression
   useEffect(() => {

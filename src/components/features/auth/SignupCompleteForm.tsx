@@ -83,23 +83,7 @@ export default function SignupCompleteForm({
     debouncedSaveProfile(field, value);
   };
 
-  // Debounced auto-save function
-  const debouncedSaveProfile = useCallback(
-    (() => {
-      let timeoutId: NodeJS.Timeout | null = null;
-      return (field: string, value: string) => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(async () => {
-          await autoSaveProfile(field, value);
-        }, 1000); // 1 second debounce
-      };
-    })(),
-    [formData, user.id] // Add dependencies to ensure access to latest data
-  );
-
-  const autoSaveProfile = async (field?: string, value?: string) => {
+  const autoSaveProfile = useCallback(async (field?: string, value?: string) => {
     // Use current formData if field/value not provided
     const currentData = field && value !== undefined
       ? { ...formData, [field]: value }
@@ -130,7 +114,21 @@ export default function SignupCompleteForm({
       console.error("AUTO_SAVE_PROFILE_ERROR", { err, userId: user.id });
       // Don't show user-facing errors for auto-save failures to avoid disruption
     }
-  };
+  }, [formData, user.id, setError]);
+
+  // Debounced auto-save function
+  const debouncedSaveProfile = useCallback(
+    (field: string, value: string) => {
+      let timeoutId: NodeJS.Timeout | null = null;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(async () => {
+        await autoSaveProfile(field, value);
+      }, 1000); // 1 second debounce
+    },
+    [autoSaveProfile] // Now depends on autoSaveProfile instead of formData and user.id
+  );
 
   const handleVerificationComplete = useCallback(
     async (channelId: string, link: string) => {
