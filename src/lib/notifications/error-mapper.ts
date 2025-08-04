@@ -132,7 +132,6 @@ export function mapHttpStatusToErrorType(status: number): NotificationErrorType 
  */
 export function generateContextualActions(
   errorType: NotificationErrorType,
-  context?: string,
   customCallbacks?: {
     onRetry?: () => void | Promise<void>;
     onSignOut?: () => void | Promise<void>;
@@ -239,7 +238,6 @@ export function generateContextualActions(
  */
 export function createErrorNotificationOptions(
   error: unknown,
-  context?: string,
   customActions?: NotificationAction[],
   customCallbacks?: {
     onRetry?: () => void | Promise<void>;
@@ -249,11 +247,10 @@ export function createErrorNotificationOptions(
   }
 ): ErrorNotificationOptions {
   const errorType = mapErrorToNotificationType(error);
-  const actions = customActions || generateContextualActions(errorType, context, customCallbacks);
+  const actions = customActions || generateContextualActions(errorType, customCallbacks);
 
   return {
     errorType,
-    context,
     originalError: error,
     customActions: actions.length > 0 ? actions : undefined,
     userSuggestion: getErrorMessage(errorType).userSuggestion

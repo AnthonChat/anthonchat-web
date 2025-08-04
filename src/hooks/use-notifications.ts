@@ -301,13 +301,11 @@ export function useNotifications() {
    */
   const handleVerificationPollingError = useCallback((
     channelName: string,
-    nonce: string,
     error: unknown,
     retryFn?: () => Promise<void>
   ) => {
     const errorOptions = createErrorNotificationOptions(
       error,
-      'channel_verification_polling',
       retryFn ? [{
         label: 'Riprova verifica',
         onClick: retryFn,

@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
 import { deleteUserChannel } from "@/lib/queries/channels";
 
 export async function DELETE(
-  request: NextRequest,
   { params }: { params: Promise<{ channelId: string }> }
 ) {
   let userId: string | null = null;

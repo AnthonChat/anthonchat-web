@@ -290,7 +290,6 @@ export default function ChannelVerification({
         // Show error toast with retry functionality
         handleVerificationPollingError(
           channelName,
-          nonce,
           error,
           async () => {
             // Retry function - restart the verification process

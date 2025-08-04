@@ -24,7 +24,6 @@ export default async function DashboardPage() {
   const userId = claims.claims.sub;
   const userEmail = claims.claims.email;
 
-  // This RPC call remains unchanged and is a robust way to enforce profile completion.
   const { data: isOnboarded, error: rpcError } = await supabase.rpc(
     "check_onboarding_complete",
     {

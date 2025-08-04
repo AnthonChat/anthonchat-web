@@ -183,8 +183,6 @@ export const SIGNUP_CONFIG = {
   STRIPE_SYNC_INTERVAL: 100,
   /** URL di redirect dopo signup completato */
   COMPLETION_REDIRECT: '/signup/complete',
-  /** URL di redirect per conferma email */
-  EMAIL_REDIRECT: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
 } as const;
 
 /**

@@ -74,7 +74,7 @@ export function useUserSubscription(
     // Listen for auth changes only if userId is not provided
     const {
       data: { subscription: authSubscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) {
         setUser(session?.user ?? null);
         // Clear subscription when user changes

@@ -28,12 +28,12 @@ export async function signIn(formData: FormData) {
  * Server Action migliorata per il login con FormState
  * Compatibile con useActionState e sistema di toast
  *
- * @param prevState - Stato precedente del form
+ * @param _prevState - Stato precedente del form
  * @param formData - Dati del form di login
  * @returns Promise<FormState> - Stato aggiornato del form o redirect su successo
  */
 export async function signInWithState(
-  prevState: FormState,
+  _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
   try {
