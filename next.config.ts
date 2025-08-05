@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   experimental: {
     serverActions: {
-      allowedOrigins: ["localhost:3001", "lpjkp0xm-3001.euw.devtunnels.ms"],
+      allowedOrigins: ["lpjkp0xm-3000.euw.devtunnels.ms"],
     },
   },
 };
