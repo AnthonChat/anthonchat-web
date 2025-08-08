@@ -1,7 +1,6 @@
 // app/dashboard/page.tsx:
 
 import { createClient } from "@/lib/db/server";
-import { redirect } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 import { getUserSubscription } from "@/lib/queries/subscription";
 import { getUserUsage } from "@/lib/queries/usage";
@@ -11,14 +10,18 @@ import { QuickActions } from "@/components/features/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/features/dashboard/ThemeToggle";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
+import { localeRedirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { type Locale } from "@/i18n/routing";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const locale = await getLocale();
 
   const { data: claims } = await supabase.auth.getClaims();
 
   if (!claims) {
-    return redirect("/login");
+    localeRedirect("/login", locale as Locale);
   }
 
   const userId = claims.claims.sub;
@@ -41,7 +44,7 @@ export default async function DashboardPage() {
   }
 
   if (!isOnboarded) {
-    return redirect("/signup/complete");
+    localeRedirect("/signup/complete", locale as Locale);
   }
 
   // --- Step 4: Fetch all necessary data in parallel ---
@@ -61,7 +64,7 @@ export default async function DashboardPage() {
         actions={
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <form action="/auth/signout" method="post">
+            <form action="/api/auth/signout" method="post">
               <Button
                 type="submit"
                 variant="outline"

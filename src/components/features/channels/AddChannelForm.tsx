@@ -16,7 +16,7 @@ import {
   XCircle,
   RotateCcw,
 } from "lucide-react";
-import { useRouter }            from "next/navigation";
+import { useLocaleRouter }      from "@/hooks/use-locale-router";
 import { cn }                   from "@/lib/utils";
 import type { Channel, UserChannelWithChannel } from "@/lib/types/channels";
 
@@ -155,7 +155,7 @@ export function AddChannelForm({
     Record<string, NodeJS.Timeout>
   >({});
   const pollingInitialized = useRef(false);
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   const updateChannelState = useCallback(
     (channelId: string, updates: Partial<ChannelVerificationState>) => {

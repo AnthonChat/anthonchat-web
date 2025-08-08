@@ -1,11 +1,13 @@
-import Link from "next/link";
 import { createClient } from "@/lib/db/server";
-import { redirect } from "next/navigation";
 import { signIn } from "../actions";
 import Login from "./login";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LocaleLink } from "@/components/ui/locale-link";
+import { localeRedirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { type Locale } from "@/i18n/routing";
 
 export default async function LoginPage({
   searchParams,
@@ -14,11 +16,12 @@ export default async function LoginPage({
 }) {
   const supabase = await createClient();
   const { message } = await searchParams;
+  const locale = await getLocale();
 
   const { data: claims } = await supabase.auth.getClaims();
 
   if (claims) {
-    return redirect("/dashboard");
+    localeRedirect("/dashboard", locale as Locale);
   }
 
   return (
@@ -31,7 +34,7 @@ export default async function LoginPage({
         <>
           <Button className="w-full">Sign In</Button>
           <Button variant="outline" className="w-full" asChild>
-            <Link href="/signup">Don&apos;t have an account? Sign Up</Link>
+            <LocaleLink href="/signup">Don&apos;t have an account? Sign Up</LocaleLink>
           </Button>
         </>
       }

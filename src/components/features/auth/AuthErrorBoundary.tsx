@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AlertTriangle, LogOut, RefreshCw, Home } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import {
   AuthError,
   AuthErrorType,
@@ -41,7 +41,7 @@ function AuthErrorFallback({
   resetErrorBoundary: () => void;
   onAuthError?: (error: AuthError) => void;
 }) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { signOut, clearError } = useAuthActions();
   const { showError } = useNotifications();
 
@@ -321,7 +321,7 @@ export function withAuthErrorBoundary<P extends object>(
  */
 export function useAuthErrorHandler() {
   const { setError, clearError } = useAuthActions();
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   const handleAuthError = useCallback((error: unknown) => {
     const authError = supabaseErrorToAuthError(error);

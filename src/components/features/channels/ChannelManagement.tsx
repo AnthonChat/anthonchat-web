@@ -19,7 +19,7 @@ import {
   AlertCircle,
   Link as LinkIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 
 interface Channel {
   id: string;
@@ -38,7 +38,7 @@ interface ChannelManagementProps {
 
 export function ChannelManagement({ channels }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   const getChannelIcon = (channelId: string) => {
     switch (channelId.toLowerCase()) {

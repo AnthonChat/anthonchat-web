@@ -1,0 +1,141 @@
+{
+  "common": {
+    "appName": "Anthon",
+    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci" }
+  },
+  "marketing": {
+    "hero": {
+      "title": "TRY ANTHON",
+      "subtitle": "L'AI clone di Antonio Valente",
+      "description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Non solo WhatsApp o Telegram: collega anche Web Chat, Email, Instagram e altri canali."
+    },
+    "chat": {
+      "demo": {
+        "username": "Tu",
+        "message": "Ho paura di sbagliare il rigore decisivo domani",
+        "reply": "\"Ehi Marco! 💪 So perfettamente cosa provi... quella sensazione allo stomaco, vero?\"\n\n🎯 30 secondi prima: visualizza il pallone che ENTRA nell’angolino destro\n🫁 Respirazione quadrata: 4-4-4-4\n🗣️ Ripeti: ‘Io comando il pallone’\n\nDomani richiama questa sequenza e spacca!"
+      },
+      "info": {
+        "title": "Provalo gratis su tutti i tuoi canali",
+        "subtitle": "ZERO CARTE. ZERO FREGATURE. SE NON TI FA DIRE WOW, CANCELLI.",
+        "bullets": {
+          "1": "• Risposte AI in tempo reale",
+          "2": "• Regole di routing e fallback umano",
+          "3": "• Attivazione in pochi minuti"
+        }
+      }
+    },
+    "claims": {
+      "1": "NON È CHATGPT.\nÈ ANTHON",
+      "2": "IL VERO NEMICO?\nQUELLA VOCINA CHE TI SABOTA",
+      "3": "ANTHON LO SPEGNE\nIN TEMPO REALE"
+    },
+    "features": {
+      "title": "L’UNICO COACH AI ISTRUITO SUL CAMPO",
+      "description": "Allenato con migliaia di dati e aggiornato quotidianamente con strategie che producono risultati. Oggi la stessa intelligenza opera su più canali: WhatsApp, Telegram, Web Chat, Email, Instagram e altri via API.",
+      "features": {
+        "1": {
+          "title": "MIGLIAIA DI DATI REALI",
+          "description": "Casi e strategie reali presi da anni di risultati"
+        },
+        "2": {
+          "title": "METODO SINCRO",
+          "description": "Processi validati sul campo, adattati all’AI"
+        },
+        "3": {
+          "title": "ISTRUITO DA ESPERTI",
+          "description": "Know-how trasferito, non un bot generico"
+        },
+        "4": {
+          "title": "AGGIORNATO LIVE",
+          "description": "Migliora costantemente con feedback e analytics"
+        }
+      }
+    },
+    "autosabotage": {
+      "title": "L’AUTOSABOTAGGIO",
+      "bullets": {
+        "1": "✗ Ti frena prima della “partita”: allenamento, amichevole o match reale",
+        "2": "✗ Ti fa mollare quando serve lucidità",
+        "3": "✗ Ti convince che “non sei all’altezza”",
+        "4": "✗ Ti fa pensare che “tanto non cambierà nulla”"
+      },
+      "conclusion": "È autosabotaggio."
+    },
+    "realtime": {
+      "title": "RISPOSTE IN TEMPO REALE",
+      "subtitle": "Quando serve. Come serve. Con strumenti concreti e personalizzati su ogni canale.",
+      "bullets": {
+        "1": "Ti risveglia quando sei “spento”",
+        "2": "Ti chiarisce quando sei confuso",
+        "3": "Ti guida quando ti stai perdendo",
+        "4": "Ti fornisce strumenti diretti, con handover umano quando necessario"
+      }
+    },
+    "target": {
+      "title": "È PER TE SE:",
+      "bullets": {
+        "1": "Vuoi rendere per ciò che vali davvero, come atleta o come team",
+        "2": "Sei un genitore o un coach e vuoi un supporto costante, H24",
+        "3": "Gestisci community e clienti su più canali e ti serve ordine",
+        "4": "Vuoi più lucidità, concentrazione e continuità nelle conversazioni"
+      }
+    },
+    "how": {
+      "title": "COME FUNZIONA?",
+      "steps": {
+        "1": "Scegli i canali: WhatsApp, Telegram, Web Chat, Email, Instagram o altri via API",
+        "2": "Scrivi la tua situazione o importa la tua conoscenza (FAQ, documenti, link)",
+        "3": "Chatta e imposta regole: conversazioni mirate, mini sessioni guidate dall’AI",
+        "4": "Ti sblocchi. Ti chiarisci. Agisci. Con analytics a supporto"
+      }
+    },
+    "why": {
+      "title": "PERCHÉ FUNZIONA COSÌ BENE?",
+      "subtitle": "Non è motivazione da Baci Perugina. È una macchina costruita su:",
+      "bullets": {
+        "1": "Strategie vere usate sul campo e codificate in flussi AI",
+        "2": "Dati raccolti in anni di esperienza, ruoli e contesti diversi",
+        "3": "Risultati misurabili, con miglioramenti continui grazie ad analytics"
+      },
+      "conclusion": "E soprattutto, continua a imparare ogni giorno. Nessun altro lo fa così."
+    },
+    "cost": {
+      "title": "QUANTO COSTA?",
+      "subtitle": "Puoi testarlo gratis. Nessuna carta. Nessun rischio. Provalo, poi decidi.",
+      "offer": " OFFERTA VALIDA SOLO PER I PRIMI 1.000 UTENTI - POI DIVENTA A PAGAMENTO"
+    },
+    "footer": {
+      "title": "PROVALO • SARÀ COME PARLARE CON UN COACH • SEMPRE",
+      "description": "Provalo gratis. Poi dimmi se sbaglio."
+    },
+    "cta": {
+      "title": "PRONTO A PROVARE ANTHON?",
+      "subtitle": "Provalo GRATIS su tutti i tuoi canali",
+      "button": "Inizia ora"
+    },
+    "testimonials": {
+      "1": {
+        "text": "È come avere Antonio sempre in tasca. Sa esattamente cosa dirmi.",
+        "author": "- Centrocampista Serie B"
+      },
+      "2": {
+        "text": "Mio figlio è tornato a divertirsi. E a segnare come prima.",
+        "author": "- Padre di talento 16 anni"
+      }
+    }
+  },
+  "auth": {
+    "login": { "title": "Bentornato", "subtitle": "Accedi al tuo account" },
+    "signup": {
+      "title": "Crea il tuo account",
+      "subtitle": "Inizia oggi la tua prova gratuita"
+    }
+  },
+  "dashboard": {
+    "header": {
+      "greeting": "Benvenuto",
+      "subtitle": "Panoramica del tuo workspace"
+    }
+  }
+}

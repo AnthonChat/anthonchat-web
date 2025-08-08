@@ -1,18 +1,21 @@
 import { createClient } from "@/lib/db/server";
-import { redirect } from "next/navigation";
 import { getAllChannels, getUserChannels } from "@/lib/queries/channels";
 import { AddChannelForm } from "@/components/features/channels/AddChannelForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
+import { localeRedirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { type Locale } from "@/i18n/routing";
 
 export default async function AddChannelPage() {
   const supabase = await createClient();
+  const locale = await getLocale();
 
   const { data: claims } = await supabase.auth.getClaims();
 
   if (!claims) {
-    return redirect("/login");
+    localeRedirect("/login", locale as Locale);
   }
 
   // Fetch available channels and user's existing channels

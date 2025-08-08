@@ -3,6 +3,24 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/db/server";
 import type { FormState } from "@/lib/auth/types";
+import { getPathWithLocale, type Locale, defaultLocale } from "@/i18n/routing";
+import { headers } from "next/headers";
+
+/**
+ * Get current locale from request headers
+ */
+async function getCurrentLocale(): Promise<Locale> {
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') || '';
+  
+  // Extract locale from pathname like /en/login or /it/signup
+  const localeMatch = pathname.match(/^\/([a-z]{2})\//);
+  if (localeMatch && (localeMatch[1] === 'en' || localeMatch[1] === 'it')) {
+    return localeMatch[1] as Locale;
+  }
+  
+  return defaultLocale;
+}
 
 /**
  * Server Action originale per il login (manteniamo per compatibilità)
@@ -11,6 +29,7 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const supabase = await createClient();
+  const locale = await getCurrentLocale();
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -18,10 +37,10 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    return redirect("/login?message=Could not authenticate user");
+    return redirect(getPathWithLocale("/login?message=Could not authenticate user", locale));
   }
 
-  return redirect("/dashboard");
+  return redirect(getPathWithLocale("/dashboard", locale));
 }
 
 /**
@@ -126,7 +145,8 @@ export async function signInWithState(
     });
 
     // Redirect su successo - questo terminerà l'esecuzione
-    redirect("/dashboard");
+    const locale = await getCurrentLocale();
+    redirect(getPathWithLocale("/dashboard", locale));
 
   } catch (error) {
     // Se l'errore è un redirect, lascialo propagare

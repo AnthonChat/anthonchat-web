@@ -19,7 +19,7 @@ import {
 	Link as LinkIcon,
 	RefreshCw
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useChannels } from "@/hooks/use-channels";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -113,7 +113,7 @@ ChannelItem.displayName = "ChannelItem";
 // Loading skeleton for channels
 // Main component content
 function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
-	const router = useRouter();
+	const router = useLocaleRouter();
 	
 	// Use the channels hook for real-time updates
 	const {

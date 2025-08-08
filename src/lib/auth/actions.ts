@@ -17,6 +17,9 @@ import {
   SIGNUP_CONFIG,
 } from "./types";
 
+import { headers, cookies } from "next/headers";
+import { getPathWithLocale, deriveLocaleFromSignals } from "@/i18n/routing";
+
 /**
  * Server Action consolidata per il processo di signup utente
  * 
@@ -223,8 +226,15 @@ export async function signUp(
       timestamp: new Date().toISOString(),
     });
 
+    // Determine locale for redirect using reliable signals and redirect there
+    const _headers = await headers();
+    const referer = _headers.get("referer");
+    const _cookies = await cookies();
+    const nextLocaleCookie = _cookies.get("NEXT_LOCALE")?.value ?? null;
+    const localeForRedirect = deriveLocaleFromSignals(referer, nextLocaleCookie);
+    const redirectPath = getPathWithLocale(SIGNUP_CONFIG.COMPLETION_REDIRECT, localeForRedirect);
     // Redirect to completion page - this will throw and prevent return
-    redirect(SIGNUP_CONFIG.COMPLETION_REDIRECT);
+    redirect(redirectPath);
 
   } catch (error) {
     // Step 9: Gestione errori robusta che ritorna FormState (non throws)

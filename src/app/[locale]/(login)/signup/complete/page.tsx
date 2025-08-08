@@ -1,14 +1,17 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/db/server";
 import SignupCompleteForm from "@/components/features/auth/SignupCompleteForm";
+import { localeRedirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { type Locale } from "@/i18n/routing";
 
 export default async function SignupCompletePage() {
   const supabase = await createClient();
+  const locale = await getLocale();
 
   const { data: claims } = await supabase.auth.getClaims();
 
   if (!claims) {
-    redirect("/login");
+    localeRedirect("/login", locale as Locale);
   }
 
   const userId = claims.claims.sub;
@@ -31,7 +34,7 @@ export default async function SignupCompletePage() {
 
   // 2. If the function returns `true`, redirect immediately
   if (isOnboarded === true) {
-    redirect("/dashboard");
+    localeRedirect("/dashboard", locale as Locale);
   }
 
   // 3. If the user is NOT onboarded, we continue and fetch their profile details

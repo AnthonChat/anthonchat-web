@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import {
   Clock,
   Zap,
@@ -416,7 +416,7 @@ function SubscriptionCardContent({
   usage,
   userId,
 }: SubscriptionCardProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   // The real-time hook is initialized with the server-fetched usage data.
   const {

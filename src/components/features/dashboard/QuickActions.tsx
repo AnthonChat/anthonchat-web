@@ -17,7 +17,7 @@ import {
   Bell,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useState, useCallback } from "react";
 import Link from "next/link";
 
@@ -26,7 +26,7 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onAction }: QuickActionsProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const [prefetchedRoutes, setPrefetchedRoutes] = useState<Set<string>>(
     new Set()
   );

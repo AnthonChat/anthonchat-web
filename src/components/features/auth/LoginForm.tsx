@@ -14,8 +14,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, Mail, Lock } from "lucide-react";
-import Link from "next/link";
-import { signInWithState } from "@/app/(login)/actions";
+import { LocaleLink } from "@/components/ui/locale-link";
+import { signInWithState } from "@/app/[locale]/(login)/actions";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 
@@ -207,7 +207,7 @@ export default function LoginForm({ message }: LoginFormProps) {
               asChild
               disabled={isPending}
             >
-              <Link href="/signup">Non hai un account? Registrati</Link>
+              <LocaleLink href="/signup">Non hai un account? Registrati</LocaleLink>
             </Button>
           </CardFooter>
         </form>

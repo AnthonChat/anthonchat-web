@@ -3,6 +3,7 @@ import { createClient } from "@/lib/db/server";
 import { deleteUserChannel } from "@/lib/queries/channels";
 
 export async function DELETE(
+  _request: Request,
   { params }: { params: Promise<{ channelId: string }> }
 ) {
   let userId: string | null = null;

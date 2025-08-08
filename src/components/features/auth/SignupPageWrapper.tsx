@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -20,7 +20,7 @@ interface SignupPageWrapperProps {
  */
 export default function SignupPageWrapper({ message, link, channel }: SignupPageWrapperProps) {
   const { isAuthenticated, isLoading, isInitialized } = useAuthState();
-  const router = useRouter();
+  const router = useLocaleRouter();
 
   // Redirect to dashboard if user is already authenticated
   useEffect(() => {

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Clock } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useLocaleRouter } from "@/hooks/use-locale-router"
 import { useEffect } from "react"
 
 interface ComingSoonProps {
@@ -19,7 +19,7 @@ export function ComingSoon({
   redirectPath = "/dashboard",
   autoRedirectDelay = 3000
 }: ComingSoonProps) {
-  const router = useRouter()
+  const router = useLocaleRouter()
 
   useEffect(() => {
     const timer = setTimeout(() => {

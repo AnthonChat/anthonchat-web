@@ -1,3 +1,5 @@
+"use client";
+
 import { ReactNode } from 'react'
 import {
   Card,
@@ -7,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 export default function Login({
   action,
@@ -19,16 +22,21 @@ export default function Login({
   action: ((formData: FormData) => void) | ((formData: FormData) => Promise<void>)
   message: string | null
   children: ReactNode
-  title: string
-  description: string
+  title?: string
+  description?: string
   footer: ReactNode
 }) {
+  const t = useTranslations('auth')
+
+  const resolvedTitle = title ?? t('login.title')
+  const resolvedDescription = description ?? t('login.subtitle')
+
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Card className="shadow-lg">
         <CardHeader className="text-center space-y-3 pb-6">
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          <CardDescription className="text-base">{description}</CardDescription>
+          <CardTitle className="text-2xl">{resolvedTitle}</CardTitle>
+          <CardDescription className="text-base">{resolvedDescription}</CardDescription>
         </CardHeader>
         <form action={action}>
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">

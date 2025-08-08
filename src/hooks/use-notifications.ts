@@ -5,7 +5,7 @@
 
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useLocaleRouter } from '@/hooks/use-locale-router';
 import { useAuthActions } from '@/components/features/auth/AuthProvider';
 
 // Importazioni dei tipi e utility
@@ -36,7 +36,7 @@ import {
  * Hook centralizzato per la gestione delle notifiche
  */
 export function useNotifications() {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const { signOut } = useAuthActions();
   const [activeToasts, setActiveToasts] = useState<Map<string, NotificationData>>(new Map());
   const toastIds = useRef<Map<string, string | number>>(new Map());

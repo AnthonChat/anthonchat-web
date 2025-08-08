@@ -11,6 +11,7 @@
     "structure": "tree -a --dirsfirst -I 'node_modules|.next|.vercel|.git|.DS_Store|.kilocode|REFACTOR_PLAN.md' | grep -v 'directories,' | tee project-structure.txt"
   },
   "dependencies": {
+    "next-intl": "^3.23.3",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",

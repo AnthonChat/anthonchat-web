@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useLocaleRouter } from '@/hooks/use-locale-router'
 import { toast } from 'sonner'
 
 export function StripeSuccessHandler() {
   const searchParams = useSearchParams()
-  const router = useRouter()
+  const router = useLocaleRouter()
   
   useEffect(() => {
     const success = searchParams.get('success')

@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/ui/locale-link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DashboardHeaderProps {
-  title: string;
+  title?: string;
   description?: React.ReactNode;
   backHref?: string;
   backLabel?: string;
@@ -21,13 +22,19 @@ export function DashboardHeader({
   title,
   description,
   backHref,
-  backLabel = "Back to Dashboard",
+  backLabel,
   icon,
   actions,
   variant = "default",
   className,
 }: DashboardHeaderProps) {
   const isEnhanced = variant === "enhanced";
+  const t = useTranslations("dashboard");
+
+  const resolvedBackLabel = backLabel ?? "Back to Dashboard";
+  const resolvedTitle = title ?? t("header.greeting");
+  const resolvedDescription =
+    description ?? t("header.subtitle");
 
   return (
     <header
@@ -43,13 +50,11 @@ export function DashboardHeader({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {backHref && (
-              <Link href={backHref}>
+              <LocaleLink href={backHref}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    isEnhanced && "hover-lift group"
-                  )}
+                  className={cn(isEnhanced && "hover-lift group")}
                 >
                   <ArrowLeft
                     className={cn(
@@ -57,11 +62,11 @@ export function DashboardHeader({
                       isEnhanced && "group-hover:-translate-x-1 transition-transform"
                     )}
                   />
-                  {backLabel}
+                  {resolvedBackLabel}
                 </Button>
-              </Link>
+              </LocaleLink>
             )}
-            
+
             <div className="flex items-center gap-3">
               {icon && (
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -77,16 +82,16 @@ export function DashboardHeader({
                       : "text-2xl"
                   )}
                 >
-                  {title}
+                  {resolvedTitle}
                 </h1>
-                {description && (
+                {resolvedDescription && (
                   <p
                     className={cn(
                       "text-muted-foreground",
                       isEnhanced ? "text-sm font-medium" : "text-sm"
                     )}
                   >
-                    {description}
+                    {resolvedDescription}
                   </p>
                 )}
               </div>

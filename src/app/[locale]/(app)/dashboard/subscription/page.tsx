@@ -1,16 +1,19 @@
 import { createClient } from "@/lib/db/server";
-import { redirect } from "next/navigation";
 import { SubscriptionPageClient } from "@/components/features/subscription/SubscriptionPageClient";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { CreditCard } from "lucide-react";
+import { localeRedirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { type Locale } from "@/i18n/routing";
 
 export default async function SubscriptionPage() {
   const supabase = await createClient();
+  const locale = await getLocale();
 
   const { data: claims } = await supabase.auth.getClaims();
 
   if (!claims) {
-    return redirect("/login");
+    localeRedirect("/login", locale as Locale);
   }
 
   return (
