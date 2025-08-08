@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Anthon",
+    "appName": "TryAnthon",
+    "appDescription": "Your personal assistant for mental growth and support.",
     "actions": {
       "signIn": "Sign in",
       "signUp": "Sign up",

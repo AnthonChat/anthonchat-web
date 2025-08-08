@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Anthon",
+    "appName": "TryAnthon",
+    "appDescription": "Il tuo assistente personale per la crescita e il supporto mentale.",
     "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci" }
   },
   "marketing": {
