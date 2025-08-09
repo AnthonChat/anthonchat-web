@@ -18,9 +18,6 @@ import {
   SIGNUP_CONFIG,
 } from "./types";
 
-import { headers, cookies } from "next/headers";
-import { getPathWithLocale, deriveLocaleFromSignals } from "@/i18n/routing";
-
 /**
  * Server Action consolidata per il processo di signup utente
  * 
@@ -120,7 +117,7 @@ export async function signUp(
         await updateUserData(user.id, {
           stripe_customer_id: stripeCustomer.id,
         });
-  
+
         console.info(
           "User updated with Stripe customer ID",
           {
@@ -128,13 +125,13 @@ export async function signUp(
             customerId: stripeCustomer.id,
           }
         );
-  
+
         // Automatically create a Stripe subscription to activate trial (if configured)
         const trialPriceId = process.env.DEFAULT_TRIAL_PRICE_ID;
         const trialDays = process.env.DEFAULT_TRIAL_DAYS
           ? parseInt(process.env.DEFAULT_TRIAL_DAYS, 10)
           : undefined;
-  
+
         if (trialPriceId) {
           try {
             const idempotencyKey = `signup-sub-${user.id}-${Date.now()}`;
@@ -154,7 +151,7 @@ export async function signUp(
               error: err instanceof Error ? err.message : err,
               userId: user.id,
             });
-            // don't block signup; webhook or reconciliation will handle it later
+            // don't block signup; webhook or reconciliation can handle later
           }
         } else {
           console.info("DEFAULT_TRIAL_PRICE_ID not set; skipping automatic subscription creation");
@@ -221,19 +218,16 @@ export async function signUp(
     const nonce = formData.get("link"); // Questo è il nonce, non il link
     if (channel && nonce) {
       try {
-        // Validazione preliminare e recupero dei metadati della verification (se presenti)
-        const { isValid, verification } = await validateChannelLinkNonce(
-          nonce.toString(),
-          channel.toString()
-        );
-
-        if (!isValid || !verification) {
+        // Validazione preliminare
+        const { isValid } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
+        
+        if (!isValid) {
           console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {
             userId: user.id,
             channel: channel.toString(),
             nonce: nonce.toString().substring(0, 8) + "...",
           });
-
+          
           // Non bloccare la registrazione, ma non collegare il canale
           console.info("Signup completed without channel linking due to invalid nonce");
         } else {
@@ -248,7 +242,7 @@ export async function signUp(
           userId: user.id,
           channel: channel.toString(),
         });
-
+        
         // Non far fallire l'intera registrazione per un errore di collegamento canale
         // L'utente potrà collegare il canale successivamente
       }
@@ -261,13 +255,24 @@ export async function signUp(
       timestamp: new Date().toISOString(),
     });
 
-    // Determine locale for redirect using reliable signals and redirect there
-    const _headers = await headers();
-    const referer = _headers.get("referer");
-    const _cookies = await cookies();
-    const nextLocaleCookie = _cookies.get("NEXT_LOCALE")?.value ?? null;
-    const localeForRedirect = deriveLocaleFromSignals(referer, nextLocaleCookie);
-    const redirectPath = getPathWithLocale(SIGNUP_CONFIG.COMPLETION_REDIRECT, localeForRedirect);
+    // Build redirect URL and preserve channel/link query params if provided
+    const channelParam = formData.get("channel");
+    const linkParam = formData.get("link");
+    let redirectPath: string = String(SIGNUP_CONFIG.COMPLETION_REDIRECT);
+
+    try {
+      const params = new URLSearchParams();
+      if (channelParam) params.set("channel", String(channelParam));
+      if (linkParam) params.set("link", String(linkParam));
+      const qs = params.toString();
+      if (qs) {
+        redirectPath = `${redirectPath}${redirectPath.includes("?") ? "&" : "?"}${qs}`;
+      }
+    } catch (err) {
+      console.warn("SIGNUP_REDIRECT_QS_BUILD_FAILED", { err });
+      // non-fatal; fall back to base redirectPath
+    }
+
     // Redirect to completion page - this will throw and prevent return
     redirect(redirectPath);
 

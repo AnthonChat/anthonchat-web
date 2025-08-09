@@ -1,12 +1,27 @@
 import { createClient } from "@/lib/db/server";
 import SignupCompleteForm from "@/components/features/auth/SignupCompleteForm";
+import DeeplinkOnMount from "@/components/features/auth/DeeplinkOnMount";
 import { localeRedirect } from "@/lib/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
-export default async function SignupCompletePage() {
+export default async function SignupCompletePage({
+  searchParams,
+}: {
+  // We accept searchParams here so we can preserve and honor incoming
+  // query params such as `channel` and `link` that may have been forwarded
+  // by the server-side signup flow. If the user is already onboarded but
+  // the request includes a registration `channel=telegram` and `link` nonce,
+  // we avoid a server-side redirect to /dashboard so the client-side code
+  // can run and trigger the Telegram deeplink.
+  searchParams?: { message?: string; link?: string; channel?: string };
+}) {
   const supabase = await createClient();
   const locale = await getLocale();
+  // `searchParams` may be a Promise-like object in Next.js server routes.
+  // Await it to get a resolved params object before reading properties.
+  // This prevents "searchParams should be awaited" runtime errors.
+  const resolvedSearchParams = await searchParams;
 
   const { data: claims } = await supabase.auth.getClaims();
 
@@ -32,8 +47,17 @@ export default async function SignupCompletePage() {
     });
   }
 
-  // 2. If the function returns `true`, redirect immediately
-  if (isOnboarded === true) {
+  // 2. If the function returns `true`, redirect immediately.
+  // However, if the request includes channel/link query params (for example
+  // when the signup flow was initiated from Telegram), avoid redirecting on
+  // the server so the client can read those params and perform the deeplink
+  // navigation. Only redirect server-side when there are no channel/link params.
+  const incomingChannel = resolvedSearchParams?.channel;
+  const incomingLink = resolvedSearchParams?.link;
+  const shouldPreserveForClient =
+    !!incomingChannel && !!incomingLink && incomingChannel.toLowerCase() === "telegram";
+
+  if (isOnboarded === true && !shouldPreserveForClient) {
     localeRedirect("/dashboard", locale as Locale);
   }
 
@@ -76,6 +100,7 @@ export default async function SignupCompletePage() {
         </p>
       </div>
 
+      <DeeplinkOnMount />
       <SignupCompleteForm
         user={{ id: userId }}
         userProfile={userProfile}
