@@ -25,9 +25,9 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: Locale };
+  params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  const localeParam = params?.locale as Locale;
+  const localeParam = (await params)?.locale as Locale;
   const locale = isSupportedLocale(localeParam) ? localeParam : defaultLocale;
 
   // Load messages (typed to next-intl's Messages type)

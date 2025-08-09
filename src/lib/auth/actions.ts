@@ -7,6 +7,7 @@ import {
   waitForCustomerSync,
   linkCustomerToUser,
   debugCheckCustomerExists,
+  createSubscriptionWithTrial,
 } from "@/lib/stripe";
 import { updateUserData, linkChannelToUserSecure, validateChannelLinkNonce } from "@/lib/queries/user";
 import {
@@ -119,7 +120,7 @@ export async function signUp(
         await updateUserData(user.id, {
           stripe_customer_id: stripeCustomer.id,
         });
-
+  
         console.info(
           "User updated with Stripe customer ID",
           {
@@ -127,6 +128,37 @@ export async function signUp(
             customerId: stripeCustomer.id,
           }
         );
+  
+        // Automatically create a Stripe subscription to activate trial (if configured)
+        const trialPriceId = process.env.DEFAULT_TRIAL_PRICE_ID;
+        const trialDays = process.env.DEFAULT_TRIAL_DAYS
+          ? parseInt(process.env.DEFAULT_TRIAL_DAYS, 10)
+          : undefined;
+  
+        if (trialPriceId) {
+          try {
+            const idempotencyKey = `signup-sub-${user.id}-${Date.now()}`;
+            const subscription = await createSubscriptionWithTrial({
+              customerId: stripeCustomer.id,
+              priceId: trialPriceId,
+              userId: user.id,
+              trialPeriodDays: trialDays,
+              idempotencyKey,
+            });
+            console.info("Created Stripe subscription for trial during signup", {
+              userId: user.id,
+              subscriptionId: subscription.id,
+            });
+          } catch (err) {
+            console.error("Failed to create Stripe subscription during signup", {
+              error: err instanceof Error ? err.message : err,
+              userId: user.id,
+            });
+            // don't block signup; webhook or reconciliation will handle it later
+          }
+        } else {
+          console.info("DEFAULT_TRIAL_PRICE_ID not set; skipping automatic subscription creation");
+        }
       } else {
         // Step 6: Linking fallback con linkCustomerToUser() se sync fallisce
         console.warn(
@@ -189,16 +221,19 @@ export async function signUp(
     const nonce = formData.get("link"); // Questo è il nonce, non il link
     if (channel && nonce) {
       try {
-        // Validazione preliminare
-        const { isValid } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
-        
-        if (!isValid) {
+        // Validazione preliminare e recupero dei metadati della verification (se presenti)
+        const { isValid, verification } = await validateChannelLinkNonce(
+          nonce.toString(),
+          channel.toString()
+        );
+
+        if (!isValid || !verification) {
           console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {
             userId: user.id,
             channel: channel.toString(),
             nonce: nonce.toString().substring(0, 8) + "...",
           });
-          
+
           // Non bloccare la registrazione, ma non collegare il canale
           console.info("Signup completed without channel linking due to invalid nonce");
         } else {
@@ -213,7 +248,7 @@ export async function signUp(
           userId: user.id,
           channel: channel.toString(),
         });
-        
+
         // Non far fallire l'intera registrazione per un errore di collegamento canale
         // L'utente potrà collegare il canale successivamente
       }

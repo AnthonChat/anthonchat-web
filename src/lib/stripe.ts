@@ -221,6 +221,56 @@ export const createCheckoutSession = async ({
   return await stripe.checkout.sessions.create(sessionConfig);
 };
 
+export const createSubscriptionWithTrial = async ({
+  customerId,
+  priceId,
+  userId,
+  trialPeriodDays,
+  idempotencyKey,
+}: {
+  customerId: string;
+  priceId: string;
+  userId: string;
+  trialPeriodDays?: number;
+  idempotencyKey?: string;
+}) => {
+  try {
+    const params: Stripe.SubscriptionCreateParams = {
+      customer: customerId,
+      items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId,
+      },
+    };
+
+    if (trialPeriodDays && trialPeriodDays > 0) {
+      // Stripe expects `trial_period_days` at top-level for subscriptions
+      // when creating a subscription directly.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - stripe typings sometimes differ across versions
+      params.trial_period_days = trialPeriodDays;
+    }
+
+    // If no trial is provided, ensure card is collected later via payment settings,
+    // but for trial flows we generally don't require a payment method upfront.
+    const options = idempotencyKey ? { idempotencyKey } : undefined;
+    const subscription = await stripe.subscriptions.create(params, options);
+    return subscription;
+  } catch (error) {
+    console.error("[CREATE_SUBSCRIPTION_WITH_TRIAL] Error creating subscription", {
+      error: error instanceof Error ? error.message : error,
+      customerId,
+      priceId,
+      userId,
+    });
+    throw error;
+  }
+};
 export const createBillingPortalSession = async ({
   customerId,
   returnUrl,
