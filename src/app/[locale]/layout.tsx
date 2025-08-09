@@ -11,6 +11,7 @@ import {
   defaultLocale,
 } from "@/i18n/routing";
 import { loadMessages } from "@/lib/i18n/messages";
+import HtmlLang from "@/components/features/i18n/HtmlLang";
 
 export const dynamicParams = false;
 
@@ -42,7 +43,7 @@ export async function generateMetadata({
   const siteName = local?.common?.appName ?? "TryAnthon";
   const title = local?.marketing?.hero?.title ?? siteName;
   const description =
-    local?.common?.appDescription ??  
+    local?.common?.appDescription ??
     local?.marketing?.hero?.description ??
     "An AI coach that provides personalized, multi-channel support for athletes and teams.";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
@@ -101,6 +102,8 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      {/* Keep <html lang> synchronized with active locale on the client */}
+      <HtmlLang />
       {children}
     </NextIntlClientProvider>
   );
