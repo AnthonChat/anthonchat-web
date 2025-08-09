@@ -1,143 +1,146 @@
 {
   "common": {
     "appName": "TryAnthon",
-    "appDescription": "Your personal assistant for mental growth and support.",
+    "appDescription": "Your on-demand performance & mindset coach — available 24/7.",
     "actions": {
-      "signIn": "Sign in",
-      "signUp": "Sign up",
-      "signOut": "Sign out"
+      "signIn": "Sign In",
+      "signUp": "Join Free",
+      "signOut": "Log Out"
     }
   },
   "marketing": {
     "hero": {
-      "title": "Build AI-native customer support",
-      "subtitle": "Automate conversations while staying personal",
-      "description": "The mental coach for professional footballers and VIPs. Now always with you 24 HOURS A DAY 7 DAYS A WEEK. Not just WhatsApp or Telegram: also connect Web Chat, Email, Instagram and other channels."
+      "title": "TRY ANTHON",
+      "subtitle": "The AI Clone of Antonio Valente",
+      "description": "The mental coach trusted by elite footballers and VIPs — now in your pocket, 24/7. More than WhatsApp or Telegram: connect Web Chat, Email, Instagram and more, all in minutes."
     },
     "chat": {
       "demo": {
         "username": "You",
-        "message": "I'm afraid of missing the decisive penalty tomorrow",
-        "reply": "\"Hey Marco! 💪 I totally get what you're feeling... that knot in your stomach, right?\"\n\n🎯 30 seconds before: visualize the ball going into the bottom right corner\n🫁 Square breathing: 4-4-4-4\n🗣️ Repeat: ‘I command the ball’\n\nTomorrow, recall this sequence and crush it!"
+        "message": "I’m afraid of missing the decisive penalty tomorrow",
+        "reply": "\"Hey Marco! 💪 I know exactly what that feels like — that knot in your stomach, right?\"\n\n🎯 30 seconds before: visualize the ball hitting the top-right corner\n🫁 Box breathing: 4-4-4-4\n🗣️ Say: ‘I own the ball’\n\nRun this tomorrow — and own the moment."
       },
       "info": {
-        "title": "Try it for free on all your channels",
-        "subtitle": "NO CARDS. NO HASSLE. IF IT DOESN'T MAKE YOU SAY WOW, YOU CANCEL.",
+        "title": "Test it on Every Channel — Free",
+        "subtitle": "NO CARD. NO TRAPS. IF IT DOESN’T MAKE YOU SAY ‘WOW’, JUST CANCEL.",
         "bullets": {
-          "1": "• Real-time AI responses",
-          "2": "• Routing rules and human fallback",
-          "3": "• Activation in minutes"
+          "1": "• Instant, human-like AI responses",
+          "2": "• Smart routing & human backup",
+          "3": "• Setup in under 5 minutes"
         }
       }
     },
     "claims": {
-      "1": "IT'S NOT CHATGPT.\nIT'S ANTHON",
-      "2": "THE REAL ENEMY?\nTHAT LITTLE VOICE THAT SABOTAGES YOU",
+      "1": "NOT CHATGPT.\nTHIS IS ANTHON",
+      "2": "THE REAL ENEMY?\nTHAT VOICE IN YOUR HEAD",
       "3": "ANTHON SHUTS IT DOWN\nIN REAL TIME"
     },
     "features": {
-      "title": "THE ONLY AI COACH TRAINED ON THE FIELD",
-      "description": "Trained with thousands of data points and updated daily with result-producing strategies. Today, the same intelligence operates across multiple channels: WhatsApp, Telegram, Web Chat, Email, Instagram, and others via API.",
+      "title": "THE ONLY AI COACH TRAINED ON REAL BATTLES",
+      "description": "Fed with thousands of real cases, updated daily with winning strategies. Works everywhere: WhatsApp, Telegram, Web Chat, Email, Instagram — and via API.",
       "features": {
         "1": {
-          "title": "THOUSANDS OF REAL DATA",
-          "description": "Real cases and strategies taken from years of results"
+          "title": "THOUSANDS OF PROVEN CASES",
+          "description": "Data pulled from years of real-world wins"
         },
         "2": {
-          "title": "SYNCHRO METHOD",
-          "description": "Field-validated processes, adapted to AI"
+          "title": "THE SINCRO METHOD",
+          "description": "Field-tested processes, AI-enhanced"
         },
         "3": {
           "title": "TRAINED BY EXPERTS",
-          "description": "Transferred know-how, not a generic bot"
+          "description": "Not a generic bot — a transferred mindset"
         },
         "4": {
-          "title": "LIVE UPDATES",
-          "description": "Constantly improves with feedback and analytics"
+          "title": "LIVE PERFORMANCE UPDATES",
+          "description": "Gets sharper every day through feedback & analytics"
         }
       }
     },
     "autosabotage": {
-      "title": "SELF-SABOTAGE",
+      "title": "THE SILENT KILLER: SELF-SABOTAGE",
       "bullets": {
-        "1": "✗ Holds you back before the \"game\": training, friendly, or real match",
-        "2": "✗ Makes you give up when clarity is needed",
-        "3": "✗ Convinces you that \"you're not good enough\"",
-        "4": "✗ Makes you think that \"nothing will change anyway\""
+        "1": "✗ Slows you down before training, friendlies, or the big match",
+        "2": "✗ Makes you quit when clarity is needed most",
+        "3": "✗ Whispers ‘you’re not enough’",
+        "4": "✗ Convinces you ‘nothing will change’"
       },
-      "conclusion": "It's self-sabotage."
+      "conclusion": "That’s self-sabotage — and Anthon destroys it."
     },
     "realtime": {
-      "title": "REAL-TIME RESPONSES",
-      "subtitle": "When you need it. How you need it. With concrete and personalized tools on every channel.",
+      "title": "REAL-TIME PERFORMANCE BOOST",
+      "subtitle": "Exactly when you need it. Exactly how you need it.",
       "bullets": {
-        "1": "Wakes you up when you're \"off\"",
-        "2": "Clarifies when you're confused",
-        "3": "Guides you when you're lost",
-        "4": "Provides direct tools, with human handover when necessary"
+        "1": "Snaps you into peak state instantly",
+        "2": "Brings crystal clarity to messy thoughts",
+        "3": "Keeps you locked in when focus fades",
+        "4": "Delivers tools that work — with human takeover if needed"
       }
     },
     "target": {
-      "title": "IT'S FOR YOU IF:",
+      "title": "WHO IT’S FOR:",
       "bullets": {
-        "1": "You want to perform to your true potential, as an athlete or as a team",
-        "2": "You are a parent or a coach and want constant support, 24/7",
-        "3": "You manage communities and clients across multiple channels and need order",
-        "4": "You want more clarity, focus, and continuity in conversations"
+        "1": "Athletes or teams who want to perform at 100% — every time",
+        "2": "Parents & coaches who want 24/7 support",
+        "3": "Leaders managing communities or clients across multiple channels",
+        "4": "Anyone who wants sharper focus and more consistent conversations"
       }
     },
     "how": {
-      "title": "HOW DOES IT WORK?",
+      "title": "HOW IT WORKS",
       "steps": {
-        "1": "Choose your channels: WhatsApp, Telegram, Web Chat, Email, Instagram, or others via API",
-        "2": "Describe your situation or import your knowledge (FAQs, documents, links)",
-        "3": "Chat and set rules: targeted conversations, AI-guided mini-sessions",
-        "4": "You unlock. You clarify. You act. With analytics support"
+        "1": "Pick your channels: WhatsApp, Telegram, Web Chat, Email, Instagram, or API",
+        "2": "Share your scenario or upload your knowledge base (FAQs, docs, links)",
+        "3": "Chat and set smart rules: targeted convos, AI-led mini sessions",
+        "4": "Unblock. Refocus. Execute. With full analytics."
       }
     },
     "why": {
-      "title": "WHY DOES IT WORK SO WELL?",
-      "subtitle": "It's not a fortune cookie motivation. It's a machine built on:",
+      "title": "WHY IT WINS WHERE OTHERS FAIL",
+      "subtitle": "No fluff. No motivational clichés. Just:",
       "bullets": {
-        "1": "Real strategies used on the field and codified into AI flows",
-        "2": "Data collected over years of experience, different roles, and contexts",
-        "3": "Measurable results, with continuous improvements thanks to analytics"
+        "1": "Battle-tested strategies hardcoded into AI flows",
+        "2": "Years of multi-context data in sports & performance",
+        "3": "Constant improvement via analytics"
       },
-      "conclusion": "And most importantly, it continues to learn every day. No one else does it like this."
+      "conclusion": "Plus — it learns every single day. No other AI coach does this."
     },
     "cost": {
-      "title": "HOW MUCH DOES IT COST?",
-      "subtitle": "You can test it for free. No card. No risk. Try it, then decide.",
-      "offer": "OFFER VALID ONLY FOR THE FIRST 1,000 USERS - THEN IT BECOMES PAID"
+      "title": "PRICING",
+      "subtitle": "Free to try. No card required. No risk. Try it first, then decide.",
+      "offer": " EXCLUSIVE: FIRST 1,000 USERS GET IT FREE — THEN IT GOES PAID"
     },
     "footer": {
-      "title": "TRY IT • IT WILL BE LIKE TALKING TO A COACH • ALWAYS",
-      "description": "Try it for free. Then tell me if I'm wrong."
+      "title": "TRY IT • IT’S LIKE HAVING A COACH • 24/7",
+      "description": "Test it free. Then tell me I’m wrong."
     },
     "cta": {
-      "title": "READY TO TRY ANTHON?",
-      "subtitle": "Try it FOR FREE on all your channels",
-      "button": "Start now"
+      "title": "READY TO EXPERIENCE ANTHON?",
+      "subtitle": "Free trial. All channels. No strings.",
+      "button": "Start Free"
     },
     "testimonials": {
       "1": {
-        "text": "It's like having Antonio always in my pocket. He knows exactly what to say to me.",
-        "author": "- Serie B Midfielder"
+        "text": "It’s like having Antonio in my pocket. Always says exactly what I need to hear.",
+        "author": "- Pro Midfielder, Serie B"
       },
       "2": {
-        "text": "My son is back to having fun. And to scoring like before.",
+        "text": "My son’s loving football again — and scoring like he used to.",
         "author": "- Father of a 16-year-old talent"
       }
     }
   },
   "auth": {
-    "login": { "title": "Welcome back", "subtitle": "Sign in to your account" },
+    "login": { "title": "Welcome Back", "subtitle": "Log in to continue" },
     "signup": {
-      "title": "Create your account",
-      "subtitle": "Start your free trial today"
+      "title": "Join Anthon",
+      "subtitle": "Start your free trial now"
     }
   },
   "dashboard": {
-    "header": { "greeting": "Welcome", "subtitle": "Your workspace overview" }
+    "header": {
+      "greeting": "Welcome",
+      "subtitle": "Your performance command center"
+    }
   }
 }
