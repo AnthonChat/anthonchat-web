@@ -14,7 +14,7 @@ export default async function SignupCompletePage({
   // the request includes a registration `channel=telegram` and `link` nonce,
   // we avoid a server-side redirect to /dashboard so the client-side code
   // can run and trigger the Telegram deeplink.
-  searchParams?: { message?: string; link?: string; channel?: string };
+  searchParams?: Promise<{ message?: string; link?: string; channel?: string }>;
 }) {
   const supabase = await createClient();
   const locale = await getLocale();
@@ -89,6 +89,16 @@ export default async function SignupCompletePage({
     });
   }
 
+  // If we came from a Telegram registration link, avoid rendering the full UI
+  // and immediately trigger the deeplink client-side with a minimal shell.
+  if (shouldPreserveForClient) {
+    return (
+      <div className="max-w-2xl w-full">
+        <DeeplinkOnMount />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl w-full space-y-8">
       <div className="text-center">
@@ -100,7 +110,6 @@ export default async function SignupCompletePage({
         </p>
       </div>
 
-      <DeeplinkOnMount />
       <SignupCompleteForm
         user={{ id: userId }}
         userProfile={userProfile}

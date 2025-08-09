@@ -23,11 +23,11 @@ export default function DeeplinkOnMount() {
       const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
       if (channelParam?.toLowerCase() === "telegram" && botUsername) {
-        const primary = `tg://resolve?domain=${encodeURIComponent(
+        const primary = `https://t.me/${encodeURIComponent(botUsername)}`;
+
+        const fallback = `tg://resolve?domain=${encodeURIComponent(
           botUsername
         )}`;
-
-        const fallback = `https://t.me/${encodeURIComponent(botUsername)}`;
 
         // Try native Telegram deeplink first
         window.location.assign(primary);
