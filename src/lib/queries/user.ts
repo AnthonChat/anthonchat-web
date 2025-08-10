@@ -172,7 +172,7 @@ export async function linkChannelToUserSecure(
     p_nonce: nonce,
     p_link: verification.user_handle || "", // Il vero handle dal bot
   });
-
+  
   if (error) {
     console.error("CHANNEL_LINK_FINALIZE_ERROR:", {
       error: error.message,
@@ -182,7 +182,57 @@ export async function linkChannelToUserSecure(
     });
     throw error;
   }
-
+  
+  // 4.a Fire a webhook to notify external service that the channel was validated.
+  // Include the channel (e.g., "telegram"/"whatsapp") and a best-effort chat id:
+  // prefer verification.user_handle (set for registrations), otherwise look into chat_metadata.
+  try {
+    const chatMetadata = verification.chat_metadata as Record<string, unknown> | null | undefined;
+    let chatIdFromMetadata: string | null = null;
+    if (chatMetadata) {
+      const possible = (chatMetadata as Record<string, unknown>)["chat_id"] ?? (chatMetadata as Record<string, unknown>)["chatId"] ?? (chatMetadata as Record<string, unknown>)["id"];
+      if (typeof possible === "string" || typeof possible === "number") {
+        chatIdFromMetadata = String(possible);
+      }
+    }
+    const chatId = verification.user_handle ?? chatIdFromMetadata ?? null;
+  
+    const payload = {
+      channel: verification.channel_id,
+      chatid: chatId,
+    };
+  
+    // Use the global fetch available in Node 18+/Next.js server runtime.
+    // We await the request but do not fail the main flow if the webhook fails.
+    const webhookRes = await fetch(
+      "https://matteosca.app.n8n.cloud/webhook/validated",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+  
+    if (!webhookRes.ok) {
+      console.warn("CHANNEL_VALIDATED_WEBHOOK_FAILED", {
+        status: webhookRes.status,
+        statusText: webhookRes.statusText,
+        payload,
+      });
+    } else {
+      console.info("CHANNEL_VALIDATED_WEBHOOK_SENT", {
+        status: webhookRes.status,
+        payload,
+      });
+    }
+  } catch (webhookError) {
+    console.warn("CHANNEL_VALIDATED_WEBHOOK_ERROR", {
+      error: (webhookError as Error).message ?? webhookError,
+      nonce: nonce.substring(0, 8) + "...",
+      channelId,
+    });
+  }
+  
   console.info("Channel linked securely", {
     userId,
     channelId,
