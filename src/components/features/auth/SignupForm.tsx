@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, CreditCard, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
@@ -50,7 +50,13 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
   });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { showError, showSuccess } = useNotifications();
+  // Ref per evitare toast duplicati in loop: memorizza ultimo toast mostrato (type + value)
+  const lastShownErrorRef = useRef<{ type: 'validation' | 'message' | 'external' | 'success' | null; value?: string } | null>(null);
+  // Field-level errors derivati dallo stato del server (se presenti)
+  const emailError = formState.errors?.find((e) => e.field === "email")?.message;
+  const passwordError = formState.errors?.find((e) => e.field === "password")?.message;
 
   const getLoadingMessage = () => {
     switch (loadingStep) {
@@ -110,51 +116,69 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
   }, [isPending]);
 
-  // Handle form state changes for toast notifications
+  // Handle form state changes for toast notifications (guarded to avoid duplicate loops)
   useEffect(() => {
-    // Show error toast if there are errors
+    const prev = lastShownErrorRef.current;
+
+    // Show validation errors only once per unique message
     if (formState.errors && formState.errors.length > 0) {
       const detailedErrorMessage = formState.errors
         .map((err) => err.message)
         .join(". ");
-      showError(
-        "Errore di validazione", // Titolo più specifico
-        `Il form contiene errori: ${detailedErrorMessage}`, // Messaggio combinato
-        {
-          errorType: NotificationErrorType.VALIDATION_ERROR,
-          context: "signup_form_validation",
-          config: {
-            duration: 8000,
-          },
-        }
-      );
-    } else if (formState.message && !formState.success) {
-      // Show error toast for general messages if no specific form errors
-      showError(
-        "Errore durante la registrazione",
-        formState.message,
-        {
-          errorType: NotificationErrorType.API_ERROR,
-          context: 'signup_form_action',
-          config: {
-            duration: 8000
+      if (prev?.type !== 'validation' || prev.value !== detailedErrorMessage) {
+        showError(
+          "Errore di validazione",
+          `Il form contiene errori: ${detailedErrorMessage}`,
+          {
+            errorType: NotificationErrorType.VALIDATION_ERROR,
+            context: "signup_form_validation",
+            config: {
+              duration: 8000,
+            },
           }
-        }
-      );
+        );
+        lastShownErrorRef.current = { type: 'validation', value: detailedErrorMessage };
+      }
+      return;
     }
 
-    // Show success toast if registration is successful
+    // Show general API error only if changed
+    if (formState.message && !formState.success) {
+      if (prev?.type !== 'message' || prev.value !== formState.message) {
+        showError(
+          "Errore durante la registrazione",
+          formState.message,
+          {
+            errorType: NotificationErrorType.API_ERROR,
+            context: 'signup_form_action',
+            config: {
+              duration: 8000
+            }
+          }
+        );
+        lastShownErrorRef.current = { type: 'message', value: formState.message };
+      }
+      return;
+    }
+
+    // Show success toast once
     if (formState.success) {
-      showSuccess(
-        'Registrazione completata!',
-        'Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.'
-      );
+      const successValue = formState.userId || 'success';
+      if (prev?.type !== 'success' || prev.value !== successValue) {
+        showSuccess(
+          'Registrazione completata!',
+          'Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.'
+        );
+        lastShownErrorRef.current = { type: 'success', value: successValue };
+      }
     }
   }, [formState, showError, showSuccess]);
 
-  // Handle external message prop
+  // Handle external message prop (guarded)
   useEffect(() => {
-    if (message) {
+    if (!message) return;
+    const prev = lastShownErrorRef.current;
+    if (prev?.type !== 'external' || prev.value !== message) {
       showError(
         'Errore',
         message,
@@ -166,6 +190,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
           }
         }
       );
+      lastShownErrorRef.current = { type: 'external', value: message };
     }
   }, [message, showError]);
 
@@ -219,31 +244,69 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  // Resetta il guard per validation toast quando l'utente modifica il campo
+                  if (lastShownErrorRef.current?.type === 'validation') {
+                    lastShownErrorRef.current = null;
+                  }
+                }}
                 required
                 disabled={isPending}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? "email-error" : undefined}
                 className="h-11"
               />
+              {emailError && (
+                <p id="email-error" className="mt-1 text-xs text-destructive">
+                  {emailError}
+                </p>
+              )}
             </div>
 
             <div className="space-y-3">
               <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isPending}
-                className="h-11"
-              />
-              <CardDescription>
-                Password must be at least 8 characters long and contain at least one number and one letter.
-              </CardDescription>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Resetta il guard per validation toast quando l'utente modifica il campo
+                    if (lastShownErrorRef.current?.type === 'validation') {
+                      lastShownErrorRef.current = null;
+                    }
+                  }}
+                  required
+                  disabled={isPending}
+                  aria-invalid={!!passwordError}
+                  aria-describedby={passwordError ? "password-error" : undefined}
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  aria-pressed={showPassword}
+                  aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {passwordError ? (
+                <CardDescription className="text-destructive" aria-live="polite">
+                  {passwordError}
+                </CardDescription>
+              ) : (
+                <CardDescription aria-live="polite">
+                  Password must be at least 8 characters long and contain at least one number and one letter.
+                </CardDescription>
+              )}
             </div>
 
             {/* Loading Progress Indicator */}
