@@ -7,6 +7,19 @@ import { getTierByPriceId } from "@/lib/queries/tiers";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+export async function OPTIONS() {
+  // CORS preflight for webhook POSTs (if needed)
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, stripe-signature",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();

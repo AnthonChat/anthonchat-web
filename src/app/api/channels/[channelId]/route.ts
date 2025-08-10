@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
 import { deleteUserChannel } from "@/lib/queries/channels";
 
+export async function OPTIONS() {
+  // CORS preflight for DELETE
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
+
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ channelId: string }> }
