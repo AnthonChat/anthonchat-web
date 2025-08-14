@@ -138,5 +138,134 @@
       "greeting": "Benvenuto",
       "subtitle": "Panoramica del tuo workspace"
     }
+  },
+  "legal": {
+    "privacy": {
+      "metaTitle": "Informativa Privacy — TryAnthon",
+      "metaDescription": "Come TryAnthon raccoglie, utilizza e protegge i tuoi dati personali.",
+      "title": "Informativa sul Trattamento dei Dati Personali",
+      "lastUpdated": "Ultimo aggiornamento: 14 Agosto 2025",
+      "sections": {
+        "intro": {
+          "title": "Introduzione",
+          "p1": "Questa informativa descrive come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali quando utilizzi TryAnthon sul web e sui canali integrati.",
+          "p2": ""
+        },
+        "controller": {
+          "title": "Titolare del trattamento",
+          "p1": "Sincro Group S.R.L., Via Monte Napoleone 8, 20121 Milano (MI), Italia — C.F./P.IVA 13508690966, codice univoco M5UXCR1. Legale rappresentante: Antonio Valente. Contatti: info@valenteantonio.it."
+        },
+        "data": {
+          "title": "Dati trattati",
+          "bullets": {
+            "1": "Dati account (email, nome, lingua)",
+            "2": "Cookie e tecnologie di tracciamento",
+            "3": "Metadati di fatturazione e abbonamento gestiti da Stripe"
+          }
+        },
+        "limitations": {
+          "title": "Limitazioni automatiche",
+          "bullets": {
+            "1": "Nessun trattamento di dati sanitari",
+            "2": "Nessun trattamento di dati finanziari personali",
+            "3": "Nessun dato di minori di 14 anni",
+            "4": "Nessun contenuto illegale, inappropriato o sensibile"
+          }
+        },
+        "use": {
+          "title": "Finalità del trattamento",
+          "bullets": {
+            "1": "Erogare e mantenere il servizio",
+            "2": "Autenticazione e sicurezza della piattaforma",
+            "3": "Personalizzare contenuti e funzionalità",
+            "4": "Analisi delle performance e miglioramento del prodotto",
+            "5": "Comunicazioni operative, email transazionali e supporto"
+          }
+        },
+        "legal": {
+          "title": "Basi giuridiche (GDPR)",
+          "bullets": {
+            "1": "Esecuzione del contratto (Art. 6.1.b)",
+            "2": "Consenso ove richiesto (Art. 6.1.a)",
+            "3": "Legittimo interesse, es. sicurezza e miglioramento (Art. 6.1.f)",
+            "4": "Adempimento di obblighi di legge"
+          }
+        },
+        "ai": {
+          "title": "Trattamenti AI e consenso",
+          "bullets": {
+            "1": "Elaborazione e analisi delle conversazioni",
+            "2": "Personalizzazione delle risposte",
+            "3": "Archiviazione temporanea delle chat",
+            "4": "Uso di conversazioni anonimizzate per migliorare l’AI"
+          },
+          "note": "Il servizio non fornisce consulenze professionali (mediche, legali, finanziarie). Evita di basare decisioni esclusivamente sulle risposte."
+        },
+        "age": {
+          "title": "Età minima",
+          "p1": "L’uso è consentito solo a utenti di età pari o superiore a 14 anni; per i minori di 14 anni è necessario il consenso genitoriale verificabile.",
+          "p2": "Il Titolare non risponde di dichiarazioni false sull’età fornite dagli utenti."
+        },
+        "sharing": {
+          "title": "Destinatari e responsabili",
+          "p1": "Non vendiamo i tuoi dati. Utilizziamo fornitori terzi solo per l’erogazione del servizio (es. Supabase per hosting/auth/database e Stripe per pagamenti)."
+        },
+        "transfers": {
+          "title": "Trasferimenti extra UE",
+          "bullets": {
+            "1": "Paesi coperti da decisioni di adeguatezza",
+            "2": "Clausole Contrattuali Standard (art. 46 GDPR)",
+            "3": "Altre garanzie idonee nel rispetto della normativa UE"
+          }
+        },
+        "retention": {
+          "title": "Conservazione dei dati",
+          "p1": "I dati sono conservati per il tempo necessario alle finalità descritte o per obblighi di legge. Puoi richiedere la cancellazione dei dati del tuo account.",
+          "items": {
+            "1": "Dati account: per la durata del rapporto + 24 mesi per difesa legale; fino a 10 anni per obblighi fiscali.",
+            "2": "Conversazioni: messaggi in chiaro 30 giorni; dati anonimizzati per AI fino a 12 mesi; backup cifrati fino a 6 mesi.",
+            "3": "Backup di sistema: fino a 6 mesi, cifrati e ad accesso ristretto."
+          }
+        },
+        "marketing": {
+          "title": "Marketing e profilazione (facoltativi)",
+          "bullets": {
+            "1": "Comunicazioni commerciali, aggiornamenti e promozioni (con consenso).",
+            "2": "Contenuti personalizzati in base alle interazioni con Anthon Chat.",
+            "3": "Inviti a eventi, webinar o offerte esclusive. Il consenso è revocabile in qualsiasi momento."
+          }
+        },
+        "security": {
+          "title": "Sicurezza dei dati",
+          "bullets": {
+            "1": "Cifratura end‑to‑end delle conversazioni dove supportato",
+            "2": "Backup protetti e accessi tracciati",
+            "3": "Cancellazione automatica secondo i tempi indicati",
+            "4": "Sistemi di moderazione automatica",
+            "5": "Accesso ai dati riservato a personale autorizzato"
+          }
+        },
+        "rights": {
+          "title": "Diritti dell’interessato",
+          "bullets": {
+            "1": "Accesso ai dati",
+            "2": "Rettifica dei dati inesatti",
+            "3": "Cancellazione dei dati (\"diritto all’oblio\")",
+            "4": "Limitazione o opposizione al trattamento",
+            "5": "Portabilità dei dati",
+            "6": "Revoca del consenso in qualsiasi momento (se il trattamento si basa sul consenso)",
+            "7": "Reclamo all’autorità di controllo competente"
+          }
+        },
+        "changes": {
+          "title": "Modifiche all’informativa",
+          "p1": "Possiamo aggiornare questa informativa in qualsiasi momento. Verifica la versione più recente disponibile sulla piattaforma."
+        },
+        "contact": {
+          "title": "Contatti",
+          "p1": "Per esercitare i diritti o per richieste privacy, utilizza i canali in app oppure scrivi a info@valenteantonio.it."
+        }
+      }
+    }
   }
 }

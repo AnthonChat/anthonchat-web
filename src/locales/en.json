@@ -142,5 +142,134 @@
       "greeting": "Welcome",
       "subtitle": "Your performance command center"
     }
+  },
+  "legal": {
+    "privacy": {
+      "metaTitle": "Privacy Policy — TryAnthon",
+      "metaDescription": "How TryAnthon collects, uses and protects your data.",
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: 14 August 2025",
+      "sections": {
+        "intro": {
+          "title": "Introduction",
+          "p1": "This notice explains how we collect, use and protect your personal data when you use TryAnthon across the web and connected channels.",
+          "p2": ""
+        },
+        "controller": {
+          "title": "Data Controller",
+          "p1": "Sincro Group S.R.L., Via Monte Napoleone 8, 20121 Milano (MI), Italy — VAT/C.F. 13508690966, unique code M5UXCR1. Legal representative: Antonio Valente. Contact: info@valenteantonio.it."
+        },
+        "data": {
+          "title": "Data we collect",
+          "bullets": {
+            "1": "Account data (email, name, locale)",
+            "2": "Cookies and tracking technologies",
+            "3": "Billing and subscription metadata processed by Stripe"
+          }
+        },
+        "limitations": {
+          "title": "Automatic limitations",
+          "bullets": {
+            "1": "No processing of health data",
+            "2": "No processing of personal financial data",
+            "3": "No data of children under 14 years old",
+            "4": "No illegal, inappropriate or sensitive content"
+          }
+        },
+        "use": {
+          "title": "How we use your data",
+          "bullets": {
+            "1": "To provide and maintain the service",
+            "2": "To authenticate you and secure the platform",
+            "3": "To personalize content and features",
+            "4": "To analyze performance and improve the product",
+            "5": "To communicate updates, transactional emails and support"
+          }
+        },
+        "legal": {
+          "title": "Legal bases (GDPR)",
+          "bullets": {
+            "1": "Performance of a contract (Art. 6.1.b)",
+            "2": "Consent where required (Art. 6.1.a)",
+            "3": "Legitimate interests, e.g., safety and improvement (Art. 6.1.f)",
+            "4": "Compliance with legal obligations"
+          }
+        },
+        "ai": {
+          "title": "AI processing and consent",
+          "bullets": {
+            "1": "Processing and analysis of conversations",
+            "2": "Personalization of responses",
+            "3": "Temporary storage of chats",
+            "4": "Use of anonymized conversations to improve AI"
+          },
+          "note": "The service does not provide professional advice (medical, legal, financial). Do not base decisions solely on responses."
+        },
+        "age": {
+          "title": "Minimum age",
+          "p1": "Use is allowed only for users aged 14 or older; under 14 requires verifiable parental consent.",
+          "p2": "The Controller is not responsible for false age declarations made by users."
+        },
+        "sharing": {
+          "title": "Sharing and processors",
+          "p1": "We do not sell your data. We use third‑party processors strictly to operate the service (e.g., Supabase for hosting/auth/database and Stripe for payments)."
+        },
+        "transfers": {
+          "title": "Extra‑EU data transfers",
+          "bullets": {
+            "1": "Transfers to countries covered by adequacy decisions",
+            "2": "Standard Contractual Clauses (Art. 46 GDPR)",
+            "3": "Other appropriate safeguards in compliance with EU law"
+          }
+        },
+        "retention": {
+          "title": "Data retention",
+          "p1": "We retain data only as long as necessary for the purposes described or to meet legal obligations. You may request deletion of your account data.",
+          "items": {
+            "1": "Account data: for the duration of the relationship + 24 months for legal defense; up to 10 years for tax obligations.",
+            "2": "Conversations: clear messages 30 days; anonymized data for AI up to 12 months; encrypted backups up to 6 months.",
+            "3": "System backups: up to 6 months, encrypted and access‑restricted."
+          }
+        },
+        "marketing": {
+          "title": "Marketing and profiling (optional)",
+          "bullets": {
+            "1": "Commercial communications, updates and promotions (with consent).",
+            "2": "Personalized content based on interactions with Anthon Chat.",
+            "3": "Invitations to events, webinars or exclusive offers. Consent can be revoked at any time."
+          }
+        },
+        "security": {
+          "title": "Data security",
+          "bullets": {
+            "1": "End‑to‑end encryption of conversations where supported",
+            "2": "Protected backups and audited access",
+            "3": "Automatic deletion after the indicated retention periods",
+            "4": "Automated moderation systems",
+            "5": "Access restricted to authorized personnel only"
+          }
+        },
+        "rights": {
+          "title": "Your rights",
+          "bullets": {
+            "1": "Access your data",
+            "2": "Rectify inaccurate data",
+            "3": "Erase your data (“right to be forgotten”)",
+            "4": "Restrict or object to processing",
+            "5": "Data portability",
+            "6": "Withdraw consent at any time (where processing is based on consent)",
+            "7": "Lodge a complaint with a supervisory authority"
+          }
+        },
+        "changes": {
+          "title": "Changes to this notice",
+          "p1": "We may update this notice at any time. Please check the latest version available in the platform."
+        },
+        "contact": {
+          "title": "Contact",
+          "p1": "For privacy inquiries, use the contact options in the app or write to info@valenteantonio.it."
+        }
+      }
+    }
   }
 }
