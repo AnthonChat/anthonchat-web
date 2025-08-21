@@ -102,7 +102,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         error: t("nonce.error"),
       });
     }
-  }, [link, channel]);
+  }, [link, channel, t]);
 
   // Validazione nonce quando componente monta
   useEffect(() => {
@@ -177,7 +177,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         lastShownErrorRef.current = { type: 'success', value: successValue };
       }
     }
-  }, [formState, showError, showSuccess]);
+  }, [formState, showError, showSuccess, t]);
 
   // Handle external message prop (guarded)
   useEffect(() => {
@@ -197,7 +197,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       );
       lastShownErrorRef.current = { type: 'external', value: message };
     }
-  }, [message, showError]);
+  }, [message, showError, t]);
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
