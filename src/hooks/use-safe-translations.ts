@@ -18,7 +18,6 @@ export function useSafeTranslations(namespace?: string): Translator {
       return baseT(key, values);
     } catch (e) {
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
         console.warn(
           "[i18n-miss]",
           namespace ? `${namespace}.${String(key)}` : String(key),
