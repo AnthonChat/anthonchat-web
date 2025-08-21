@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSafeTranslations } from "@/hooks/use-safe-translations";
 import {
   Card,
   CardContent,
@@ -119,6 +120,7 @@ function SubscriptionManagementContent({
   setIsYearly: (isYearly: boolean) => void;
   onRefresh?: () => void;
 }) {
+  const t = useSafeTranslations('dashboard');
   const trialInfo = calculateTrialInfo({
     status: subscription?.status || "",
     current_period_start: subscription?.current_period_start
@@ -243,10 +245,10 @@ function SubscriptionManagementContent({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Current Subscription
+                {t('subscriptionMgmt.current.title')}
               </CardTitle>
               <CardDescription>
-                Your current plan and billing information
+                {t('subscriptionMgmt.current.description')}
               </CardDescription>
             </div>
             {onRefresh && (
@@ -257,7 +259,7 @@ function SubscriptionManagementContent({
                 className="h-8 px-3"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                {t('subscriptionMgmt.common.refresh')}
               </Button>
             )}
           </div>
@@ -268,10 +270,10 @@ function SubscriptionManagementContent({
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-lg">
                   {subscription?.status === "trialing"
-                    ? `${subscription?.product?.name || "Free Trial"}`
+                    ? `${subscription?.product?.name || t('subscriptionMgmt.common.freeTrial')}`
                     : subscription
-                    ? subscription?.product?.name || "Active Subscription"
-                    : "No Active Subscription"}
+                    ? subscription?.product?.name || t('subscription.subscriptionTitle', { default: 'Subscription Plan' })
+                    : t('subscription.statusTitle').replace('Status','').trim() || "No Active Subscription"}
                 </h3>
                 {subscription?.status === "trialing" && (
                   <Badge
@@ -279,7 +281,7 @@ function SubscriptionManagementContent({
                     className="bg-primary/10 text-primary border-primary/30 shadow-sm"
                   >
                     <Gift className="h-3 w-3 mr-1" />
-                    Trial
+                    {t('subscriptionMgmt.common.freeTrial')}
                   </Badge>
                 )}
               </div>
@@ -307,7 +309,7 @@ function SubscriptionManagementContent({
                     {trialInfo.daysRemaining}
                   </div>
                   <div className="text-xs text-muted-foreground font-medium">
-                    days left
+                    {t('subscriptionMgmt.common.daysLeft')}
                   </div>
                 </div>
               )}
@@ -320,8 +322,8 @@ function SubscriptionManagementContent({
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
                     {subscription.status === "trialing"
-                      ? "Trial Period"
-                      : "Billing Information"}
+                      ? t('subscriptionMgmt.trial.period')
+                      : t('subscriptionMgmt.billingInfo')}
                   </span>
                 </div>
 
@@ -345,10 +347,10 @@ function SubscriptionManagementContent({
                       <div className="space-y-4 bg-primary/5 rounded-xl p-4 border border-primary/20">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground font-medium">
-                            Trial Progress
+                            {t('subscriptionMgmt.trial.progressLabel')}
                           </span>
                           <span className="font-semibold text-foreground">
-                            {trialInfo.daysPassed} of {trialInfo.totalDays} days
+                            {trialInfo.daysPassed} {t('subscriptionMgmt.trial.started', { days: '' }).replace('{days}', '')} {t('subscriptionMgmt.trial.progressLabel') /* placeholder to keep structure */}
                           </span>
                         </div>
                         <div className="w-full bg-muted/50 rounded-full h-4 overflow-hidden shadow-inner">
@@ -367,13 +369,13 @@ function SubscriptionManagementContent({
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Clock className="h-3.5 w-3.5" />
                             <span className="font-medium">
-                              Started {trialInfo.daysPassed} days ago
+                              {t('subscriptionMgmt.trial.started', { days: trialInfo.daysPassed })}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-primary font-semibold">
                             <Gift className="h-3.5 w-3.5" />
                             <span>
-                              {trialInfo.daysRemaining} days remaining
+                              {t('subscriptionMgmt.trial.remaining', { days: trialInfo.daysRemaining })}
                             </span>
                           </div>
                         </div>
@@ -385,7 +387,7 @@ function SubscriptionManagementContent({
                     <div className="bg-muted/30 rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Billing Cycle
+                          {t('subscriptionMgmt.billingCycle')}
                         </span>
                         <span className="text-sm font-medium">
                           {formatBillingInterval(
@@ -397,7 +399,7 @@ function SubscriptionManagementContent({
 
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Current Period
+                          {t('subscriptionMgmt.currentPeriod')}
                         </span>
                         <span className="text-sm">
                           {formatCurrentBillingPeriod(
@@ -410,7 +412,7 @@ function SubscriptionManagementContent({
                       {nextBillingDate && (
                         <div className="flex items-center justify-between pt-1 border-t border-border/50">
                           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            Next Billing
+                            {t('subscriptionMgmt.nextBilling')}
                           </span>
                           <span className="text-sm font-medium text-foreground">
                             {formatNextBilling(nextBillingDate)}
@@ -436,7 +438,7 @@ function SubscriptionManagementContent({
 
           {subscription?.features && (
             <div>
-              <h4 className="font-medium mb-2">Plan Features</h4>
+              <h4 className="font-medium mb-2">{t('subscriptionMgmt.planFeatures')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {activePlan.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -456,9 +458,9 @@ function SubscriptionManagementContent({
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Available Plans</CardTitle>
+                <CardTitle>{t('subscriptionMgmt.available.title')}</CardTitle>
                 <CardDescription>
-                  Choose the plan that best fits your needs
+                  {t('subscriptionMgmt.available.description')}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-3">
@@ -469,7 +471,7 @@ function SubscriptionManagementContent({
                     onClick={() => setIsYearly(false)}
                     className="h-8 px-3 text-xs"
                   >
-                    Monthly
+                    {t('subscriptionMgmt.available.monthly')}
                   </Button>
                   <Button
                     variant={isYearly ? "default" : "ghost"}
@@ -477,7 +479,7 @@ function SubscriptionManagementContent({
                     onClick={() => setIsYearly(true)}
                     className="h-8 px-3 text-xs"
                   >
-                    Yearly
+                    {t('subscriptionMgmt.available.yearly')}
                   </Button>
                 </div>
               </div>
@@ -487,7 +489,7 @@ function SubscriptionManagementContent({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {plansLoading ? (
                 <div className="text-center text-muted-foreground">
-                  Loading plans...
+                  {t('subscriptionMgmt.available.loading')}
                 </div>
               ) : (
                 availablePlans
@@ -583,7 +585,7 @@ function SubscriptionManagementContent({
                       >
                         {isCurrentPlan && (
                           <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-bl-lg">
-                            Current Plan
+                            {t('subscriptionMgmt.available.currentPlan')}
                           </div>
                         )}
 
@@ -591,7 +593,7 @@ function SubscriptionManagementContent({
                         {isEligibleForTrial && !isCurrentPlan && (
                           <div className="absolute top-0 left-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-br-lg shadow-md">
                             <Gift className="h-3 w-3 inline mr-1" />
-                            {trialDays}-day free trial
+                            {t('subscriptionMgmt.available.freeTrialBadge', { days: trialDays })}
                           </div>
                         )}
 
@@ -630,7 +632,7 @@ function SubscriptionManagementContent({
                                     100 /
                                     12
                                   ).toFixed(2)}
-                                  /month billed yearly
+                                  {t('subscriptionMgmt.available.billedYearlySuffix')}
                                 </div>
                               )}
                             {isYearly && savings > 0 && (
@@ -638,7 +640,7 @@ function SubscriptionManagementContent({
                                 variant="secondary"
                                 className="bg-green-100 text-green-800 border-green-200"
                               >
-                                Save {savings.toFixed(0)}%
+                                {t('subscriptionMgmt.available.savePercent', { percent: savings.toFixed(0) })}
                               </Badge>
                             )}
                           </div>
@@ -648,7 +650,7 @@ function SubscriptionManagementContent({
                               className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-purple-600"
                             >
                               <Crown className="h-3 w-3 mr-1" />
-                              Popular
+                              {t('subscriptionMgmt.available.popular')}
                             </Badge>
                           )}
                         </CardHeader>
@@ -668,38 +670,40 @@ function SubscriptionManagementContent({
 
                                 if (planName.includes("basic")) {
                                   features.push(
-                                    "Essential AI features",
-                                    "Basic chat support",
-                                    "Standard response time",
-                                    "Email support"
+                                    t('subscriptionMgmt.features.essentialAi'),
+                                    t('subscriptionMgmt.features.basicChat'),
+                                    t('subscriptionMgmt.features.standardResponse'),
+                                    t('subscriptionMgmt.features.emailSupport')
                                   );
                                 } else if (planName.includes("standard")) {
                                   features.push(
-                                    "Advanced AI features",
-                                    "Priority chat support",
-                                    "Faster response time",
-                                    "Email & chat support",
-                                    "Advanced analytics"
+                                    t('subscriptionMgmt.features.advancedAi'),
+                                    t('subscriptionMgmt.features.priorityChat'),
+                                    t('subscriptionMgmt.features.fasterResponse'),
+                                    t('subscriptionMgmt.features.emailChatSupport'),
+                                    t('subscriptionMgmt.features.advancedAnalytics')
                                   );
                                 } else if (planName.includes("pro")) {
                                   features.push(
-                                    "Premium AI features",
-                                    "Priority support",
-                                    "Fastest response time",
-                                    "24/7 support",
-                                    "Advanced analytics",
-                                    "Custom integrations"
+                                    t('subscriptionMgmt.features.premiumAi'),
+                                    t('subscriptionMgmt.features.prioritySupport'),
+                                    t('subscriptionMgmt.features.fastestResponse'),
+                                    t('subscriptionMgmt.features.support247'),
+                                    t('subscriptionMgmt.features.advancedAnalytics'),
+                                    t('subscriptionMgmt.features.customIntegrations')
                                   );
                                 } else {
-                                  // Fallback to description split or default features
-                                  const descFeatures = plan.description?.split(
-                                    ", "
-                                  ) || [
-                                    "All features included",
-                                    "Premium support",
-                                    "Advanced capabilities",
-                                  ];
-                                  features.push(...descFeatures);
+                                  // Fallback: use description text if provided
+                                  const descFeatures = plan.description?.split(", ");
+                                  if (descFeatures && descFeatures.length > 0) {
+                                    features.push(...descFeatures);
+                                  } else {
+                                    features.push(
+                                      t('subscriptionMgmt.features.allIncluded'),
+                                      t('subscriptionMgmt.features.premiumSupport'),
+                                      t('subscriptionMgmt.features.advancedCapabilities')
+                                    );
+                                  }
                                 }
 
                                 return features.map((feature, index) => (
@@ -766,10 +770,10 @@ function SubscriptionManagementContent({
                                 {isEligibleForTrial ? (
                                   <>
                                     <Gift className="h-4 w-4 mr-2" />
-                                    Start Free Trial
+                                    {t('subscriptionMgmt.available.startTrial')}
                                   </>
                                 ) : (
-                                  "Upgrade to Plan"
+                                  t('subscriptionMgmt.available.upgrade')
                                 )}
                               </Button>
                             )}
@@ -782,7 +786,7 @@ function SubscriptionManagementContent({
                                 size="lg"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Current Plan
+                                {t('subscriptionMgmt.available.currentPlan')}
                               </Button>
                             )}
 
@@ -793,8 +797,7 @@ function SubscriptionManagementContent({
                                 className="w-full"
                                 size="lg"
                               >
-                                Not available for{" "}
-                                {isYearly ? "yearly" : "monthly"} billing
+                                {t('subscriptionMgmt.available.notAvailable', { interval: isYearly ? t('subscriptionMgmt.available.yearly') : t('subscriptionMgmt.available.monthly') })}
                               </Button>
                             )}
                           </div>
@@ -811,18 +814,17 @@ function SubscriptionManagementContent({
       {/* Billing History */}
       <Card>
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
+          <CardTitle>{t('subscriptionMgmt.history.title')}</CardTitle>
           <CardDescription>
-            View your past invoices and payments
+            {t('subscriptionMgmt.history.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No billing history available</p>
+            <p>{t('subscriptionMgmt.history.emptyTitle')}</p>
             <p className="text-sm">
-              Billing history will appear here once you have an active
-              subscription
+              {t('subscriptionMgmt.history.emptyDescription')}
             </p>
           </div>
         </CardContent>

@@ -131,16 +131,198 @@
     }
   },
   "auth": {
-    "login": { "title": "Welcome Back", "subtitle": "Log in to continue" },
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Log in to continue",
+      "signUpPrompt": "Don't have an account? Sign Up"
+    },
     "signup": {
       "title": "Join Anthon",
-      "subtitle": "Start your free trial now"
+      "subtitle": "Start your free trial now",
+      "signInPrompt": "Already have an account? Sign In"
+    },
+    "signupComplete": {
+      "title": "Complete Your Profile",
+      "subtitle": "Just a few more details to get you started with AnthonChat"
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordHelp": "Password must be at least 8 characters long and contain at least one number and one letter."
     }
   },
   "dashboard": {
     "header": {
       "greeting": "Welcome",
-      "subtitle": "Your performance command center"
+      "subtitle": "Your performance command center",
+      "backToDashboard": "Back to Dashboard",
+      "welcomeBack": "Welcome back, {email}",
+      "title": "Dashboard"
+    },
+    "banner": {
+      "welcomeAgain": "Good to see you again! 👋",
+      "happening": "Here's what's happening with your AnthonChat account today."
+    },
+    "channels": {
+      "title": "Channel Management",
+      "description": "Manage your connected communication channels"
+    },
+    "channelsAdd": {
+      "title": "Add Channel",
+      "description": "Connect a new channel to start receiving messages",
+      "chooseTitle": "Choose Your Communication Platform",
+      "chooseDescription": "Select from our supported channels to start engaging with your audience",
+      "helpPrefix": "Need help setting up your channel?",
+      "viewDocs": "View Documentation",
+      "head": {
+        "title": "Choose Channel Type",
+        "subtitle": "Select the type of communication channel you want to add"
+      },
+      "status": {
+        "connected": "Connected",
+        "pending": "Pending",
+        "expired": "Expired",
+        "error": "Error"
+      },
+      "sessionResumed": "Resumed from previous session",
+      "commandPrompt": "Click the link below or send this command:",
+      "openChannel": "Open {name}",
+      "waiting": "Waiting for verification... This may take a few moments.",
+      "connect": "Connect {name}",
+      "retry": "Retry",
+      "startFresh": "Start Fresh",
+      "viewAll": "View All Channels",
+      "empty": "No channels are currently available for connection.",
+      "descriptions": {
+        "whatsapp": "Connect your WhatsApp Business account",
+        "telegram": "Connect your Telegram bot",
+        "default": "Connect your communication channel"
+      },
+      "connectedAs": "Connected as:"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "description": "Common tasks and settings",
+      "manage": {
+        "title": "Manage Subscription",
+        "description": "Update billing and plan"
+      },
+      "add": {
+        "title": "Add Channels",
+        "description": "Connect new platforms"
+      },
+      "comingSoon": "Coming Soon",
+      "needHelp": "Need Help?",
+      "supportBadge": "24/7 Support"
+    },
+    "channelsOverview": {
+      "title": "Connected Channels",
+      "description": "Manage your communication channels",
+      "addNew": "Add New Channel",
+      "manageAll": "Manage All Channels",
+      "badges": {
+        "verified": "Verified",
+        "unverified": "Unverified"
+      },
+      "emptyTitle": "No channels connected",
+      "emptyDescription": "Connect your first communication channel to get started",
+      "emptyCta": "Add Your First Channel"
+    },
+    "subscription": {
+      "title": "Subscription Management",
+      "description": "Manage your subscription and billing settings",
+      "bannerTitle": "Billing & Subscription 💳",
+      "bannerDescription": "Manage your plan, billing details, and payment methods.",
+      "statusTitle": "Subscription Status",
+      "noActive": "No active subscription",
+      "upgradeButton": "Upgrade Subscription",
+      "manageButton": "Manage Subscription",
+      "refreshButton": "Refresh Data"
+    },
+    "subscriptionMgmt": {
+      "current": {
+        "title": "Current Subscription",
+        "description": "Your current plan and billing information"
+      },
+      "common": {
+        "refresh": "Refresh",
+        "freeTrial": "Free Trial",
+        "daysLeft": "days left"
+      },
+      "trial": {
+        "period": "Trial Period",
+        "progressLabel": "Trial Progress",
+        "started": "Started {days} days ago",
+        "remaining": "{days} days remaining"
+      },
+      "billingCycle": "Billing Cycle",
+      "currentPeriod": "Current Period",
+      "nextBilling": "Next Billing",
+      "planFeatures": "Plan Features",
+      "features": {
+        "essentialAi": "Essential AI features",
+        "basicChat": "Basic chat",
+        "standardResponse": "Standard response times",
+        "emailSupport": "Email support",
+        "advancedAi": "Advanced AI features",
+        "priorityChat": "Priority chat",
+        "fasterResponse": "Faster response times",
+        "emailChatSupport": "Email & chat support",
+        "advancedAnalytics": "Advanced analytics",
+        "premiumAi": "Premium AI features",
+        "prioritySupport": "Priority support",
+        "fastestResponse": "Fastest response times",
+        "support247": "24/7 support",
+        "customIntegrations": "Custom integrations",
+        "allIncluded": "All features included",
+        "premiumSupport": "Premium support",
+        "advancedCapabilities": "Advanced capabilities"
+      },
+      "available": {
+        "title": "Available Plans",
+        "description": "Choose the plan that best fits your needs",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "loading": "Loading plans...",
+        "currentPlan": "Current Plan",
+        "freeTrialBadge": "{days}-day free trial",
+        "popular": "Popular",
+        "savePercent": "Save {percent}%",
+        "billedYearlySuffix": "/month billed yearly",
+        "startTrial": "Start Free Trial",
+        "upgrade": "Upgrade to Plan",
+        "notAvailable": "Not available for {interval} billing",
+        "startTrialBanner": "Start with {days}-day free trial",
+        "trialNoPayment": "No payment required to start. Cancel anytime during trial period.",
+        "trialFullAccess": "Full access",
+        "trialNoCommitment": "No commitment"
+      },
+      "history": {
+        "title": "Billing History",
+        "description": "View your past invoices and payments",
+        "emptyTitle": "No billing history available",
+        "emptyDescription": "Billing history will appear here once you have an active subscription"
+      }
+    },
+    "channelMgmt": {
+      "addNew": {
+        "title": "Add New Channel",
+        "description": "Connect a new communication channel to expand your reach",
+        "button": "Add Channel",
+        "connectFirstPlatform": "Connect your first communication platform"
+      },
+      "connected": {
+        "title": "Connected Channels",
+        "description": "You have {count} connected channels.",
+        "verified": "Verified",
+        "pendingVerification": "Pending verification",
+        "test": "Test"
+      },
+      "empty": {
+        "title": "No channels connected",
+        "description": "Connect your first channel to start using AnthonChat",
+        "cta": "Add Your First Channel"
+      }
     }
   },
   "legal": {
@@ -270,6 +452,24 @@
           "p1": "For privacy inquiries, use the contact options in the app or write to info@valenteantonio.it."
         }
       }
+    }
+  },
+  "errors": {
+    "notFound": {
+      "goHome": "Go Home",
+      "checkingRoute": "Checking route...",
+      "redirecting": "Redirecting to English version...",
+      "title": "404 - Page Not Found",
+      "description": "The page you're looking for doesn't exist.",
+      "requestedPath": "Requested path:",
+      "causesTitle": "This could happen if:",
+      "causes": {
+        "1": "The page was moved or deleted",
+        "2": "You typed the URL incorrectly",
+        "3": "The link you followed is broken"
+      },
+      "goBack": "Go Back",
+      "supportPrompt": "Need help? Contact support at"
     }
   }
 }

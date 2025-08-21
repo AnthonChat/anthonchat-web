@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { localeRedirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
 export default async function AddChannelPage() {
   const supabase = await createClient();
   const locale = await getLocale();
+  const tDash = await getTranslations('dashboard');
 
   const { data: claims } = await supabase.auth.getClaims();
 
@@ -27,8 +28,8 @@ export default async function AddChannelPage() {
   return (
     <div>
       <DashboardHeader
-        title="Add Channel"
-        description="Connect a new channel to start receiving messages"
+        title={tDash('channelsAdd.title')}
+        description={tDash('channelsAdd.description')}
         backHref="/dashboard/channels"
         icon={<Plus className="h-5 w-5" />}
       />
@@ -39,11 +40,10 @@ export default async function AddChannelPage() {
           {/* Description */}
           <div className="text-center">
             <h2 className="text-xl font-medium text-foreground">
-              Choose Your Communication Platform
+              {tDash('channelsAdd.chooseTitle')}
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Select from our supported channels to start engaging with your
-              audience
+              {tDash('channelsAdd.chooseDescription')}
             </p>
           </div>
 
@@ -56,9 +56,9 @@ export default async function AddChannelPage() {
           {/* Help */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Need help setting up your channel?{" "}
+              {tDash('channelsAdd.helpPrefix')}{" "}
               <Button variant="link" className="h-auto p-0 text-sm">
-                View Documentation
+                {tDash('channelsAdd.viewDocs')}
               </Button>
             </p>
           </div>

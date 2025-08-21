@@ -21,6 +21,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 const SITE_NAME = "TryAnthon";
 const DEFAULT_DESCRIPTION =
   "An AI coach that provides personalized, multi-channel support for athletes and teams.";
+const AUTHORS = [
+  { name: "Antonio Valente", role: "Founder" },
+  { name: "Tommaso Coviello", role: "Co-Founder & Lead Developer" },
+  { name: "Matteo Scarselletta", role: "Co-Founder & Developer" },
+];
 const DEFAULT_IMAGE = "/file.svg";
  
 // Root-level metadata: sensible defaults, keyword hints and language alternates.
@@ -36,8 +41,9 @@ export const metadata: Metadata = {
     "athlete support",
     "customer support",
     "real-time AI",
+    "SINCRO GROUP SRL"
   ],
-  authors: [{ name: SITE_NAME }],
+  authors: AUTHORS,
   openGraph: {
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,

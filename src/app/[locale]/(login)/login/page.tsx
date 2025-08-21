@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LocaleLink } from "@/components/ui/locale-link";
 import { localeRedirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
 export default async function LoginPage({
@@ -17,6 +17,8 @@ export default async function LoginPage({
   const supabase = await createClient();
   const { message } = await searchParams;
   const locale = await getLocale();
+  const tAuth = await getTranslations('auth');
+  const tCommon = await getTranslations('common');
 
   const { data: claims } = await supabase.auth.getClaims();
 
@@ -28,20 +30,20 @@ export default async function LoginPage({
     <Login
       action={signIn}
       message={message}
-      title="Welcome Back!"
-      description="Sign in to your AnthonChat account"
+      title={tAuth('login.title')}
+      description={tAuth('login.subtitle')}
       footer={
         <>
-          <Button className="w-full">Sign In</Button>
+          <Button className="w-full">{tCommon('actions.signIn')}</Button>
           <Button variant="outline" className="w-full" asChild>
-            <LocaleLink href="/signup">Don&apos;t have an account? Sign Up</LocaleLink>
+            <LocaleLink href="/signup">{tAuth('login.signUpPrompt')}</LocaleLink>
           </Button>
         </>
       }
     >
       <div className="space-y-3">
         <Label htmlFor="email" className="text-sm font-medium">
-          Email
+          {tAuth('fields.email')}
         </Label>
         <Input
           name="email"
@@ -53,7 +55,7 @@ export default async function LoginPage({
       </div>
       <div className="space-y-3">
         <Label htmlFor="password" className="text-sm font-medium">
-          Password
+          {tAuth('fields.password')}
         </Label>
         <Input
           type="password"

@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/features/dashboard/ThemeToggle";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { localeRedirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const locale = await getLocale();
+
+  const tDash = await getTranslations('dashboard');
+  const tCommon = await getTranslations('common');
 
   const { data: claims } = await supabase.auth.getClaims();
 
@@ -58,8 +61,8 @@ export default async function DashboardPage() {
   return (
     <div>
       <DashboardHeader
-        title="Dashboard"
-        description={`Welcome back, ${userEmail}`}
+        title={tDash('header.title')}
+        description={tDash('header.welcomeBack', { email: userEmail })}
         variant="enhanced"
         actions={
           <div className="flex items-center gap-4">
@@ -72,7 +75,7 @@ export default async function DashboardPage() {
                 className="hover-lift group"
               >
                 <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
-                Sign Out
+                {tCommon('actions.signOut')}
               </Button>
             </form>
           </div>
@@ -86,11 +89,11 @@ export default async function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-3 text-foreground">
-                Good to see you again! 👋
+                {tDash('banner.welcomeAgain')}
               </h2>
               <p className="text-muted-foreground text-lg font-medium">
-                Here&apos;s what&apos;s happening with your AnthonChat account
-                today.
+                {tDash('banner.happening')}
+                
               </p>
             </div>
             <div className="hidden md:block">

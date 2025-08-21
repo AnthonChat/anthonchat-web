@@ -19,6 +19,7 @@ import {
 import { useLocaleRouter }      from "@/hooks/use-locale-router";
 import { cn }                   from "@/lib/utils";
 import type { Channel, UserChannelWithChannel } from "@/lib/types/channels";
+import { useSafeTranslations } from "@/hooks/use-safe-translations";
 
 interface ChannelVerificationState {
   status: "idle" | "pending" | "done" | "error" | "expired";
@@ -156,6 +157,7 @@ export function AddChannelForm({
   >({});
   const pollingInitialized = useRef(false);
   const router = useLocaleRouter();
+  const t = useSafeTranslations('dashboard');
 
   const updateChannelState = useCallback(
     (channelId: string, updates: Partial<ChannelVerificationState>) => {
@@ -341,11 +343,11 @@ export function AddChannelForm({
   const getChannelDescription = (channelId: string) => {
     switch (channelId.toLowerCase()) {
       case "whatsapp":
-        return "Connect your WhatsApp Business account";
+        return t('channelsAdd.descriptions.whatsapp');
       case "telegram":
-        return "Connect your Telegram bot";
+        return t('channelsAdd.descriptions.telegram');
       default:
-        return "Connect your communication channel";
+        return t('channelsAdd.descriptions.default');
     }
   };
 
@@ -471,28 +473,28 @@ export function AddChannelForm({
         return (
           <Badge variant="success">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Connected
+            {t('channelsAdd.status.connected')}
           </Badge>
         );
       case "pending":
         return (
           <Badge variant="secondary">
             <Clock className="h-3 w-3 mr-1 animate-pulse" />
-            Pending
+            {t('channelsAdd.status.pending')}
           </Badge>
         );
       case "expired":
         return (
           <Badge variant="warning">
             <Timer className="h-3 w-3 mr-1" />
-            Expired
+            {t('channelsAdd.status.expired')}
           </Badge>
         );
       case "error":
         return (
           <Badge variant="destructive">
             <XCircle className="h-3 w-3 mr-1" />
-            Error
+            {t('channelsAdd.status.error')}
           </Badge>
         );
       default:
@@ -512,10 +514,10 @@ export function AddChannelForm({
     <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold text-foreground">
-          Choose Channel Type
+          {t('channelsAdd.head.title')}
         </h2>
         <p className="text-muted-foreground">
-          Select the type of communication channel you want to add
+          {t('channelsAdd.head.subtitle')}
         </p>
       </div>
 
@@ -559,7 +561,7 @@ export function AddChannelForm({
                 {isConnected && (
                   <div className="mb-4 p-3 bg-success/10 rounded-lg">
                     <p className="text-sm text-success">
-                      Connected as:{" "}
+                      {t('channelsAdd.connectedAs')}{" "}
                       <span className="font-mono">{state.link}</span>
                     </p>
                   </div>
@@ -571,13 +573,13 @@ export function AddChannelForm({
                       <div className="p-2 bg-info/10 rounded-lg border border-info/20">
                         <p className="text-xs text-info flex items-center gap-1">
                           <RefreshCw className="h-3 w-3" />
-                          Resumed from previous session
+                          {t('channelsAdd.sessionResumed')}
                         </p>
                       </div>
                     )}
                     <div className="p-3 bg-info/5 rounded-lg">
                       <p className="text-sm text-info mb-2">
-                        Click the link below or send this command:
+                        {t('channelsAdd.commandPrompt')}
                       </p>
                       <div className="flex items-center gap-2 mb-2">
                         <code className="flex-1 px-2 py-1 bg-white rounded text-xs font-mono">
@@ -598,11 +600,11 @@ export function AddChannelForm({
                         onClick={() => window.open(state.deepLink, "_blank")}
                       >
                         <ExternalLink className="h-3 w-3 mr-2" />
-                        Open {getChannelName(channel.id)}
+                        {t('channelsAdd.openChannel', { name: getChannelName(channel.id) })}
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Waiting for verification... This may take a few moments.
+                      {t('channelsAdd.waiting')}
                     </p>
                   </div>
                 )}
@@ -687,7 +689,7 @@ export function AddChannelForm({
                       className="w-full"
                       onClick={() => startVerification(channel)}
                     >
-                      Connect {getChannelName(channel.id)}
+                      {t('channelsAdd.connect', { name: getChannelName(channel.id) })}
                     </Button>
                   )}
 
@@ -698,7 +700,7 @@ export function AddChannelForm({
                       onClick={() => retryVerification(channel)}
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Retry
+                      {t('channelsAdd.retry')}
                     </Button>
                   )}
 
@@ -713,7 +715,7 @@ export function AddChannelForm({
                       {state.status === "expired" ? (
                         <>
                           <RotateCcw className="h-4 w-4 mr-2" />
-                          Start Fresh
+                          {t('channelsAdd.startFresh')}
                         </>
                       ) : (
                         <>
@@ -730,7 +732,7 @@ export function AddChannelForm({
                       className="w-full"
                       onClick={() => router.push("/dashboard/channels")}
                     >
-                      View All Channels
+                      {t('channelsAdd.viewAll')}
                     </Button>
                   )}
                 </div>
@@ -743,7 +745,7 @@ export function AddChannelForm({
       {availableChannels.length === 0 && (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
-            No channels are currently available for connection.
+            {t('channelsAdd.empty')}
           </p>
         </div>
       )}

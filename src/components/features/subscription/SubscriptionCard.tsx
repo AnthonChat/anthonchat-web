@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/ui/animated-number";
 import { AnimatedProgress } from "@/components/ui/animated-progress";
 
+
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import {
   SubscriptionCardSkeleton,
@@ -48,6 +49,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useTranslations } from "next-intl";
+
+
 
 // --- Step 2: Update the component's props interface ---
 interface SubscriptionCardProps {
@@ -74,6 +78,7 @@ const UsageDisplay = React.memo(
     percent: number;
     getProgressColor: (percent: number) => string;
   }) => {
+    const t = useTranslations('dashboard');
     // Ensure all values are valid numbers
     const safeUsed = typeof used === "number" && !isNaN(used) ? used : 0;
     const safeLimit =
@@ -391,14 +396,14 @@ const UsageDisplay = React.memo(
             <div className="flex gap-4 pt-1 px-1">
               <Button className="flex-1 h-10 text-sm font-medium">
                 <TrendingUp className="h-4 w-4 mr-2" />
-                Upgrade Plan
+                {t('subscription.upgradeButton')}
               </Button>
               <Button
                 variant="outline"
                 className="h-10 px-4 text-sm font-medium"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Data
+                {t('subscription.refreshButton')}
               </Button>
             </div>
           </div>
@@ -417,6 +422,7 @@ function SubscriptionCardContent({
   userId,
 }: SubscriptionCardProps) {
   const router = useLocaleRouter();
+  const t = useTranslations('dashboard');
 
   // The real-time hook is initialized with the server-fetched usage data.
   const {
@@ -507,14 +513,14 @@ function SubscriptionCardContent({
                 <Zap className="h-6 w-6 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold text-foreground">
-                Subscription Status
+                {t('subscription.statusTitle')}
               </span>
             </div>
           </CardTitle>
           {/* Realtime status indicators removed */}
         </div>
         <CardDescription className="text-base font-semibold mt-2 text-muted-foreground">
-          {subscription?.product?.name || "No active subscription"}
+          {subscription?.product?.name || t('subscription.noActive')}
         </CardDescription>
       </CardHeader>
 
@@ -607,7 +613,7 @@ function SubscriptionCardContent({
               onClick={handleUpgradeClick}
             >
               <Zap className="h-5 w-5 mr-2 group-hover:animate-bounce" />
-              Upgrade Subscription
+              {t('subscription.upgradeButton')}
             </Button>
           </div>
         )}
@@ -620,7 +626,7 @@ function SubscriptionCardContent({
               onClick={handleUpgradeClick}
             >
               <TrendingUp className="h-5 w-5 mr-2 group-hover:scale-110" />
-              Manage Subscription
+              {t('subscription.manageButton')}
             </Button>
           </div>
         )}

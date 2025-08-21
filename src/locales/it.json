@@ -127,16 +127,194 @@
     }
   },
   "auth": {
-    "login": { "title": "Bentornato", "subtitle": "Accedi al tuo account" },
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi al tuo account",
+      "signUpPrompt": "Non hai un account? Registrati"
+    },
     "signup": {
       "title": "Crea il tuo account",
-      "subtitle": "Inizia oggi la tua prova gratuita"
+      "subtitle": "Inizia oggi la tua prova gratuita",
+      "signInPrompt": "Hai già un account? Accedi"
+    },
+    "signupComplete": {
+      "title": "Completa il tuo profilo",
+      "subtitle": "Ancora pochi dettagli e sei pronto per usare AnthonChat"
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordHelp": "La password deve contenere almeno 8 caratteri, inclusi almeno un numero e una lettera."
     }
   },
   "dashboard": {
     "header": {
       "greeting": "Benvenuto",
-      "subtitle": "Panoramica del tuo workspace"
+      "subtitle": "Panoramica del tuo workspace",
+      "backToDashboard": "Torna alla Dashboard",
+      "welcomeBack": "Bentornato, {email}",
+      "title": "Dashboard"
+    },
+    "banner": {
+      "welcomeAgain": "Felice di rivederti! 👋",
+      "happening": "Ecco cosa sta succedendo sul tuo account AnthonChat oggi."
+    },
+    "channels": {
+      "title": "Gestione Canali",
+      "description": "Gestisci i tuoi canali di comunicazione collegati"
+    },
+    "channelsAdd": {
+      "title": "Aggiungi Canale",
+      "description": "Collega un nuovo canale per iniziare a ricevere messaggi",
+      "chooseTitle": "Scegli la tua piattaforma di comunicazione",
+      "chooseDescription": "Seleziona tra i canali supportati per iniziare a coinvolgere il tuo pubblico",
+      "helpPrefix": "Hai bisogno di aiuto per configurare il canale?",
+      "viewDocs": "Vedi documentazione",
+      "head": {
+        "title": "Scegli il tipo di canale",
+        "subtitle": "Seleziona il tipo di canale di comunicazione che vuoi aggiungere"
+      },
+      "status": {
+        "connected": "Connesso",
+        "pending": "In attesa",
+        "expired": "Scaduto",
+        "error": "Errore"
+      },
+      "descriptions": {
+        "whatsapp": "Collega il tuo account WhatsApp Business",
+        "telegram": "Collega il tuo bot Telegram",
+        "default": "Collega il tuo canale di comunicazione"
+      },
+      "connectedAs": "Connesso come:",
+      "sessionResumed": "Ripreso dalla sessione precedente",
+      "commandPrompt": "Clicca sul link qui sotto o invia questo comando:",
+      "openChannel": "Apri {name}",
+      "waiting": "Attendi la verifica... Potrebbe richiedere alcuni istanti.",
+      "connect": "Collega {name}",
+      "retry": "Riprova",
+      "startFresh": "Ricomincia",
+      "viewAll": "Vedi tutti i canali",
+      "empty": "Al momento non ci sono canali disponibili da collegare."
+    },
+    "quickActions": {
+      "title": "Azioni rapide",
+      "description": "Attività e impostazioni comuni",
+      "manage": {
+        "title": "Gestisci abbonamento",
+        "description": "Aggiorna piano e fatturazione"
+      },
+      "add": {
+        "title": "Aggiungi canali",
+        "description": "Collega nuove piattaforme"
+      },
+      "comingSoon": "In arrivo",
+      "needHelp": "Hai bisogno di aiuto?",
+      "supportBadge": "Supporto 24/7"
+    },
+    "channelsOverview": {
+      "title": "Canali collegati",
+      "description": "Gestisci i tuoi canali di comunicazione",
+      "addNew": "Aggiungi nuovo canale",
+      "manageAll": "Gestisci tutti i canali",
+      "badges": {
+        "verified": "Verificato",
+        "unverified": "Non verificato"
+      },
+      "emptyTitle": "Nessun canale collegato",
+      "emptyDescription": "Collega il tuo primo canale di comunicazione per iniziare",
+      "emptyCta": "Aggiungi il tuo primo canale"
+    },
+    "subscription": {
+      "title": "Gestione Abbonamento",
+      "description": "Gestisci il tuo abbonamento e le impostazioni di fatturazione",
+      "bannerTitle": "Fatturazione & Abbonamento 💳",
+      "bannerDescription": "Gestisci piano, dati di fatturazione e metodi di pagamento.",
+      "statusTitle": "Stato abbonamento",
+      "noActive": "Nessun abbonamento attivo",
+      "upgradeButton": "Aggiorna abbonamento",
+      "manageButton": "Gestisci abbonamento",
+      "refreshButton": "Aggiorna dati"
+    },
+    "subscriptionMgmt": {
+      "current": {
+        "title": "Abbonamento attuale",
+        "description": "Il tuo piano corrente e le informazioni di fatturazione"
+      },
+      "common": {
+        "refresh": "Aggiorna",
+        "freeTrial": "Prova gratuita",
+        "daysLeft": "giorni rimanenti"
+      },
+      "trial": {
+        "period": "Periodo di prova",
+        "progressLabel": "Avanzamento prova",
+        "started": "Iniziata da {days} giorni",
+        "remaining": "{days} giorni rimanenti"
+      },
+      "billingCycle": "Ciclo di fatturazione",
+      "currentPeriod": "Periodo corrente",
+      "nextBilling": "Prossima fatturazione",
+      "planFeatures": "Funzionalità del piano",
+      "features": {
+        "essentialAi": "Funzionalità AI essenziali",
+        "basicChat": "Chat di base",
+        "standardResponse": "Tempi di risposta standard",
+        "emailSupport": "Supporto via email",
+        "advancedAi": "Funzionalità AI avanzate",
+        "priorityChat": "Chat prioritaria",
+        "fasterResponse": "Tempi di risposta più rapidi",
+        "emailChatSupport": "Supporto email e chat",
+        "advancedAnalytics": "Analytics avanzate",
+        "premiumAi": "Funzionalità AI premium",
+        "prioritySupport": "Supporto prioritario",
+        "fastestResponse": "Tempi di risposta più veloci",
+        "support247": "Supporto 24/7",
+        "customIntegrations": "Integrazioni personalizzate",
+        "allIncluded": "Tutte le funzionalità incluse",
+        "premiumSupport": "Supporto premium",
+        "advancedCapabilities": "Capacità avanzate"
+      },
+      "available": {
+        "title": "Piani disponibili",
+        "description": "Scegli il piano più adatto alle tue esigenze",
+        "monthly": "Mensile",
+        "yearly": "Annuale",
+        "loading": "Caricamento piani...",
+        "currentPlan": "Piano attuale",
+        "freeTrialBadge": "{days} giorni di prova gratuita",
+        "popular": "Popolare",
+        "savePercent": "Risparmia {percent}%",
+        "billedYearlySuffix": "/mese fatturato annualmente",
+        "startTrial": "Inizia la prova gratuita",
+        "upgrade": "Passa al piano",
+        "notAvailable": "Non disponibile per fatturazione {interval}"
+      },
+      "history": {
+        "title": "Storico fatturazione",
+        "description": "Visualizza le tue fatture e i pagamenti passati",
+        "emptyTitle": "Nessuno storico fatturazione disponibile",
+        "emptyDescription": "Lo storico apparirà qui quando avrai un abbonamento attivo"
+      }
+    },
+    "channelMgmt": {
+      "addNew": {
+        "title": "Aggiungi nuovo canale",
+        "description": "Collega un nuovo canale di comunicazione per espandere la tua portata",
+        "button": "Aggiungi canale",
+        "connectFirstPlatform": "Collega la tua prima piattaforma di comunicazione"
+      },
+      "connected": {
+        "title": "Canali collegati",
+        "description": "Hai {count} canali collegati.",
+        "verified": "Verificato",
+        "pendingVerification": "Verifica in corso",
+        "test": "Test"
+      },
+      "empty": {
+        "title": "Nessun canale collegato",
+        "description": "Collega il tuo primo canale per iniziare a usare AnthonChat",
+        "cta": "Aggiungi il tuo primo canale"
+      }
     }
   },
   "legal": {
@@ -265,6 +443,24 @@
           "title": "Contatti",
           "p1": "Per esercitare i diritti o per richieste privacy, utilizza i canali in app oppure scrivi a info@valenteantonio.it."
         }
+      }
+    },
+    "errors": {
+      "notFound": {
+        "goHome": "Vai alla Home",
+        "checkingRoute": "Verifica del percorso in corso...",
+        "redirecting": "Reindirizzamento alla versione in inglese...",
+        "title": "404 - Pagina non trovata",
+        "description": "La pagina che stai cercando non esiste.",
+        "requestedPath": "Percorso richiesto:",
+        "causesTitle": "Può succedere se:",
+        "causes": {
+          "1": "La pagina è stata spostata o eliminata",
+          "2": "Hai digitato l'URL in modo errato",
+          "3": "Il link che hai seguito è rotto"
+        },
+        "goBack": "Torna indietro",
+        "supportPrompt": "Hai bisogno di aiuto? Contatta l'assistenza a"
       }
     }
   }

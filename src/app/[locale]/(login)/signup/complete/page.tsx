@@ -2,7 +2,7 @@ import { createClient } from "@/lib/db/server";
 import SignupCompleteForm from "@/components/features/auth/SignupCompleteForm";
 import DeeplinkOnMount from "@/components/features/auth/DeeplinkOnMount";
 import { localeRedirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
 export default async function SignupCompletePage({
@@ -18,6 +18,7 @@ export default async function SignupCompletePage({
 }) {
   const supabase = await createClient();
   const locale = await getLocale();
+  const tAuth = await getTranslations('auth');
   // `searchParams` may be a Promise-like object in Next.js server routes.
   // Await it to get a resolved params object before reading properties.
   // This prevents "searchParams should be awaited" runtime errors.
@@ -103,10 +104,10 @@ export default async function SignupCompletePage({
     <div className="max-w-2xl w-full space-y-8">
       <div className="text-center">
         <h2 className="mt-6 text-3xl font-extrabold text-foreground">
-          Complete Your Profile
+          {tAuth('signupComplete.title')}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Just a few more details to get you started with AnthonChat
+          {tAuth('signupComplete.subtitle')}
         </p>
       </div>
 

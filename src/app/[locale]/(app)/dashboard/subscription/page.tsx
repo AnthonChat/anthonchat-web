@@ -3,12 +3,13 @@ import { SubscriptionPageClient } from "@/components/features/subscription/Subsc
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { CreditCard } from "lucide-react";
 import { localeRedirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
 
 export default async function SubscriptionPage() {
   const supabase = await createClient();
   const locale = await getLocale();
+  const tDash = await getTranslations('dashboard');
 
   const { data: claims } = await supabase.auth.getClaims();
 
@@ -19,8 +20,8 @@ export default async function SubscriptionPage() {
   return (
     <div>
       <DashboardHeader
-        title="Subscription Management"
-        description="Manage your subscription and billing settings"
+        title={tDash('subscription.title')}
+        description={tDash('subscription.description')}
         backHref="/dashboard"
         variant="enhanced"
       />
@@ -32,10 +33,10 @@ export default async function SubscriptionPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-3 text-foreground">
-                Billing & Subscription 💳
+                {tDash('subscription.bannerTitle')}
               </h2>
               <p className="text-muted-foreground text-lg font-medium">
-                Manage your plan, billing details, and payment methods.
+                {tDash('subscription.bannerDescription')}
               </p>
             </div>
             <div className="hidden md:block">

@@ -20,6 +20,7 @@ import {
 import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface QuickActionsProps {
   onAction?: (action: string) => void;
@@ -27,6 +28,7 @@ interface QuickActionsProps {
 
 export function QuickActions({ onAction }: QuickActionsProps) {
   const router = useLocaleRouter();
+  const t = useTranslations('dashboard');
   const [prefetchedRoutes, setPrefetchedRoutes] = useState<Set<string>>(
     new Set()
   );
@@ -35,8 +37,8 @@ export function QuickActions({ onAction }: QuickActionsProps) {
   const actions = [
     {
       id: "manage-subscription",
-      title: "Manage Subscription",
-      description: "Update billing and plan",
+      title: t("quickActions.manage.title"),
+      description: t("quickActions.manage.description"),
       icon: CreditCard,
       variant: "default" as const,
       route: "/dashboard/subscription",
@@ -44,8 +46,8 @@ export function QuickActions({ onAction }: QuickActionsProps) {
     },
     {
       id: "add-channels",
-      title: "Add Channels",
-      description: "Connect new platforms",
+      title: t("quickActions.add.title"),
+      description: t("quickActions.add.description"),
       icon: MessageSquare,
       variant: "outline" as const,
       route: "/dashboard/channels",
@@ -54,7 +56,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
     {
       id: "account-settings",
       title: "Account Settings",
-      description: "Coming Soon",
+      description: t("quickActions.comingSoon"),
       icon: Settings,
       variant: "outline" as const,
       route: null, // Remove route to prevent prefetching
@@ -63,7 +65,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
     {
       id: "notifications",
       title: "Notifications",
-      description: "Coming Soon",
+      description: t("quickActions.comingSoon"),
       icon: Bell,
       variant: "outline" as const,
       route: null, // Remove route to prevent prefetching
@@ -72,7 +74,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
     {
       id: "export-data",
       title: "Export Data",
-      description: "Coming Soon",
+      description: t("quickActions.comingSoon"),
       icon: Download,
       variant: "outline" as const,
       route: null,
@@ -167,11 +169,11 @@ export function QuickActions({ onAction }: QuickActionsProps) {
             <Users className="h-6 w-6 text-muted-foreground" />
           </div>
           <span className="text-xl font-bold text-foreground">
-            Quick Actions
+            {t("quickActions.title")}
           </span>
         </CardTitle>
         <CardDescription className="text-base font-semibold text-muted-foreground mt-2">
-          Common tasks and settings
+          {t("quickActions.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="relative">
@@ -250,7 +252,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                       {action.title}
                       {isComingSoon && (
                         <span className="text-xs bg-muted px-2 py-1 rounded-full font-medium">
-                          Coming Soon
+                          {t("quickActions.comingSoon")}
                         </span>
                       )}
                     </div>
@@ -282,9 +284,9 @@ export function QuickActions({ onAction }: QuickActionsProps) {
             onClick={() => handleAction("help")}
           >
             <HelpCircle className="h-5 w-5 mr-3 group-hover:animate-bounce" />
-            Need Help?
+            {t("quickActions.needHelp")}
             <span className="ml-auto text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-              24/7 Support
+              {t("quickActions.supportBadge")}
             </span>
           </Button>
         </div>

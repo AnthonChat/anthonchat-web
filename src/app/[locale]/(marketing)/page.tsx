@@ -328,7 +328,7 @@ export default function Home() {
       </section>
 
       {/* Claim finale */}
-      <section className="container mx-auto px-4">
+      <section className="container mx-auto px-4 my-20 ">
         <div className="my-10 text-center text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-primary">
           {t("footer.title")}
         </div>
@@ -337,7 +337,21 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="h-6" />
+      <footer className="border-t border-border bg-card/40">
+        <div className="container mx-auto px-4 py-8 md:py-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} SINCRO GROUP SRL. All rights reserved.
+          </div>
+          <nav className="flex items-center gap-6 text-sm">
+            <LocaleLink
+              href="/privacy"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy
+            </LocaleLink>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

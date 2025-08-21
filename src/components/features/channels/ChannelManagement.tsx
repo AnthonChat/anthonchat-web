@@ -20,6 +20,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useLocaleRouter } from "@/hooks/use-locale-router";
+import { useTranslations } from "next-intl";
 
 interface Channel {
   id: string;
@@ -39,6 +40,7 @@ interface ChannelManagementProps {
 export function ChannelManagement({ channels }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useLocaleRouter();
+  const t = useTranslations('dashboard');
 
   const getChannelIcon = (channelId: string) => {
     switch (channelId.toLowerCase()) {
@@ -147,11 +149,11 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
               <Plus className="h-6 w-6 text-muted-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">
-              Add New Channel
+              {t('channelMgmt.addNew.title')}
             </span>
           </CardTitle>
           <CardDescription className="text-base font-semibold text-muted-foreground">
-            Connect a new communication channel to expand your reach
+            {t('channelMgmt.addNew.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="relative">
@@ -165,10 +167,10 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
               </div>
               <div className="flex-1 text-left">
                 <div className="font-bold text-lg text-foreground">
-                  Add Channel
+                  {t('channelMgmt.addNew.button')}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Connect your first communication platform
+                  {t('channelMgmt.addNew.connectFirstPlatform')}
                 </div>
               </div>
             </div>
@@ -187,11 +189,11 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
               <MessageCircle className="h-6 w-6 text-muted-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">
-              Connected Channels
+              {t('channelMgmt.connected.title')}
             </span>
           </CardTitle>
           <CardDescription className="text-base font-semibold text-muted-foreground">
-            You have {channels.length} connected channels.
+            {t('channelMgmt.connected.description', {count: channels.length})}
           </CardDescription>
         </CardHeader>
         <CardContent className="relative">
@@ -236,13 +238,13 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                           {userChannel.verified_at ? (
                             <>
                               <CheckCircle className="h-5 w-5 text-success" />
-                              <Badge variant="success">Verified</Badge>
+                              <Badge variant="success">{t('channelMgmt.connected.verified')}</Badge>
                             </>
                           ) : (
                             <>
                               <AlertCircle className="h-5 w-5 text-warning" />
                               <Badge variant="warning">
-                                Pending verification
+                                {t('channelMgmt.connected.pendingVerification')}
                               </Badge>
                             </>
                           )}
@@ -258,7 +260,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                         disabled={true}
                         className="transition-all duration-300 hover:scale-105"
                       >
-                        Test
+                        {t('channelMgmt.connected.test')}
                       </Button>
 
                       <Button
@@ -286,17 +288,17 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                 <MessageCircle className="h-16 w-16 text-muted-foreground opacity-50" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-foreground">
-                No channels connected
+                {t('channelMgmt.empty.title')}
               </h3>
               <p className="text-muted-foreground mb-6 text-base">
-                Connect your first channel to start using AnthonChat
+                {t('channelMgmt.empty.description')}
               </p>
               <Button
                 onClick={() => router.push("/dashboard/channels/add")}
                 className="transition-all duration-300 hover:scale-105"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Your First Channel
+                {t('channelMgmt.empty.cta')}
               </Button>
             </div>
           )}

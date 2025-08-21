@@ -31,10 +31,9 @@ export function DashboardHeader({
   const isEnhanced = variant === "enhanced";
   const t = useTranslations("dashboard");
 
-  const resolvedBackLabel = backLabel ?? "Back to Dashboard";
+  const resolvedBackLabel = backLabel ?? t("header.backToDashboard");
   const resolvedTitle = title ?? t("header.greeting");
-  const resolvedDescription =
-    description ?? t("header.subtitle");
+  const resolvedDescription = description ?? t("header.subtitle");
 
   return (
     <header
@@ -59,7 +58,8 @@ export function DashboardHeader({
                   <ArrowLeft
                     className={cn(
                       "h-4 w-4 mr-2",
-                      isEnhanced && "group-hover:-translate-x-1 transition-transform"
+                      isEnhanced &&
+                        "group-hover:-translate-x-1 transition-transform"
                     )}
                   />
                   {resolvedBackLabel}
@@ -99,7 +99,12 @@ export function DashboardHeader({
           </div>
 
           {actions && (
-            <div className={cn("flex items-center gap-4", isEnhanced && "animate-fade-in")}>
+            <div
+              className={cn(
+                "flex items-center gap-4",
+                isEnhanced && "animate-fade-in"
+              )}
+            >
               {actions}
             </div>
           )}
