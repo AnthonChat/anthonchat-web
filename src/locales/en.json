@@ -137,9 +137,40 @@
       "signUpPrompt": "Don't have an account? Sign Up"
     },
     "signup": {
-      "title": "Join Anthon",
-      "subtitle": "Start your free trial now",
-      "signInPrompt": "Already have an account? Sign In"
+      "title": "Create an Account",
+      "subtitle": "Sign up for a new AnthonChat account",
+      "signInPrompt": "Already have an account? Sign In",
+      "nonce": {
+        "validating": "Validating link...",
+        "valid": "Valid link - Your channel {channel} will be connected automatically",
+        "invalid": "Invalid or expired link - You can connect the channel after registration",
+        "error": "Error validating link"
+      },
+      "loading": {
+        "auth": "Creating your account...",
+        "stripe": "Setting up billing & payment processing...",
+        "complete": "Almost done! Finalizing your account...",
+        "processing": "Processing...",
+        "steps": {
+          "creating": "Creating your account",
+          "configuring": "Configuring billing & payments",
+          "preparing": "Preparing your dashboard"
+        },
+        "description": "We're setting up your account with secure payment processing. This ensures you can manage subscriptions and billing seamlessly."
+      },
+      "actions": {
+        "signUp": "Sign Up",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
+      },
+      "notifications": {
+        "validationError": "Validation Error",
+        "validationErrorDescription": "The form contains errors: {errors}",
+        "registrationError": "Registration Error",
+        "success": "Registration completed!",
+        "successDescription": "Your account has been created successfully. You will be redirected to the dashboard.",
+        "externalError": "Error"
+      }
     },
     "signupComplete": {
       "title": "Complete Your Profile",

@@ -19,6 +19,7 @@ import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
+import { useTranslations } from "next-intl";
 
 
 interface SignupFormProps {
@@ -38,6 +39,10 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
   const [loadingStep, setLoadingStep] = useState<
     "auth" | "stripe" | "complete"
   >("auth");
+
+  // Translation hooks
+  const t = useTranslations("auth.signup");
+  const tFields = useTranslations("auth.fields");
 
   // Stato per validazione nonce
   const [nonceValidation, setNonceValidation] = useState<{
@@ -61,13 +66,13 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
   const getLoadingMessage = () => {
     switch (loadingStep) {
       case "auth":
-        return "Creating your account...";
+        return t("loading.auth");
       case "stripe":
-        return "Setting up billing & payment processing...";
+        return t("loading.stripe");
       case "complete":
-        return "Almost done! Finalizing your account...";
+        return t("loading.complete");
       default:
-        return "Processing...";
+        return t("loading.processing");
     }
   };
 
@@ -88,13 +93,13 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       setNonceValidation({
         isValidating: false,
         isValid: result.isValid,
-        error: result.isValid ? undefined : "Link non valido o scaduto",
+        error: result.isValid ? undefined : t("nonce.invalid"),
       });
     } catch {
       setNonceValidation({
         isValidating: false,
         isValid: false,
-        error: "Errore durante la validazione del link",
+        error: t("nonce.error"),
       });
     }
   }, [link, channel]);
@@ -127,8 +132,8 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         .join(". ");
       if (prev?.type !== 'validation' || prev.value !== detailedErrorMessage) {
         showError(
-          "Errore di validazione",
-          `Il form contiene errori: ${detailedErrorMessage}`,
+          t("notifications.validationError"),
+          t("notifications.validationErrorDescription", { errors: detailedErrorMessage }),
           {
             errorType: NotificationErrorType.VALIDATION_ERROR,
             context: "signup_form_validation",
@@ -146,7 +151,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     if (formState.message && !formState.success) {
       if (prev?.type !== 'message' || prev.value !== formState.message) {
         showError(
-          "Errore durante la registrazione",
+          t("notifications.registrationError"),
           formState.message,
           {
             errorType: NotificationErrorType.API_ERROR,
@@ -166,8 +171,8 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       const successValue = formState.userId || 'success';
       if (prev?.type !== 'success' || prev.value !== successValue) {
         showSuccess(
-          'Registrazione completata!',
-          'Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.'
+          t("notifications.success"),
+          t("notifications.successDescription")
         );
         lastShownErrorRef.current = { type: 'success', value: successValue };
       }
@@ -180,7 +185,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     const prev = lastShownErrorRef.current;
     if (prev?.type !== 'external' || prev.value !== message) {
       showError(
-        'Errore',
+        t("notifications.externalError"),
         message,
         {
           errorType: NotificationErrorType.API_ERROR,
@@ -198,9 +203,9 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Card className="shadow-lg">
         <CardHeader className="text-center space-y-3 pb-6">
-          <CardTitle className="text-2xl">Create an Account</CardTitle>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription className="text-base">
-            Sign up for a new AnthonChat account
+            {t("subtitle")}
           </CardDescription>
         </CardHeader>
 
@@ -210,21 +215,21 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
             {nonceValidation.isValidating && (
               <div className="flex items-center gap-2 text-sm text-blue-600">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Validazione link in corso...
+                {t("nonce.validating")}
               </div>
             )}
             
             {nonceValidation.isValid === true && (
               <div className="flex items-center gap-2 text-sm text-green-600">
                 <CheckCircle className="w-4 h-4" />
-                Link valido - Il tuo canale {channel} verrà collegato automaticamente
+                {t("nonce.valid", { channel })}
               </div>
             )}
             
             {nonceValidation.isValid === false && (
               <div className="flex items-center gap-2 text-sm text-red-600">
                 <XCircle className="w-4 h-4" />
-                {nonceValidation.error} - Potrai collegare il canale dopo la registrazione
+                {nonceValidation.error}
               </div>
             )}
           </div>
@@ -236,7 +241,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email
+                {tFields("email")}
               </Label>
               <Input
                 id="email"
@@ -266,7 +271,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
 
             <div className="space-y-3">
               <Label htmlFor="password" className="text-sm font-medium">
-                Password
+                {tFields("password")}
               </Label>
               <div className="relative">
                 <Input
@@ -291,7 +296,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                 <button
                   type="button"
                   aria-pressed={showPassword}
-                  aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                  aria-label={showPassword ? t("actions.hidePassword") : t("actions.showPassword")}
                   onClick={() => setShowPassword((s) => !s)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
                 >
@@ -304,7 +309,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                 </CardDescription>
               ) : (
                 <CardDescription aria-live="polite">
-                  Password must be at least 8 characters long and contain at least one number and one letter.
+                  {tFields("passwordHelp")}
                 </CardDescription>
               )}
             </div>
@@ -328,7 +333,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                           : "text-muted-foreground"
                       }`}
                     />
-                    <span>Creating your account</span>
+                    <span>{t("loading.steps.creating")}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -341,7 +346,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
-                    <span>Configuring billing & payments</span>
+                    <span>{t("loading.steps.configuring")}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -352,14 +357,12 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                           : "text-muted-foreground"
                       }`}
                     />
-                    <span>Preparing your dashboard</span>
+                    <span>{t("loading.steps.preparing")}</span>
                   </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground">
-                  We&apos;re setting up your account with secure payment
-                  processing. This ensures you can manage subscriptions and
-                  billing seamlessly.
+                  {t("loading.description")}
                 </p>
               </div>
             )}
@@ -373,7 +376,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                   {getLoadingMessage()}
                 </>
               ) : (
-                "Sign Up"
+                t("actions.signUp")
               )}
             </Button>
 
@@ -383,7 +386,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
               asChild
               disabled={isPending}
             >
-              <Link href="/login">Already have an account? Sign In</Link>
+              <Link href="/login">{t("signInPrompt")}</Link>
             </Button>
 
           </CardFooter>

@@ -36,7 +36,7 @@ import { AnimatedNumber } from "@/components/ui/animated-number";
 import { AnimatedProgress } from "@/components/ui/animated-progress";
 
 
-import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import {
   SubscriptionCardSkeleton,
   LoadingWrapper,

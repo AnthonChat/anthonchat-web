@@ -134,8 +134,39 @@
     },
     "signup": {
       "title": "Crea il tuo account",
-      "subtitle": "Inizia oggi la tua prova gratuita",
-      "signInPrompt": "Hai già un account? Accedi"
+      "subtitle": "Inizia oggi la tua prova gratuita con AnthonChat",
+      "signInPrompt": "Hai già un account? Accedi",
+      "nonce": {
+        "validating": "Validazione link in corso...",
+        "valid": "Link valido - Il tuo canale {channel} verrà collegato automaticamente",
+        "invalid": "Link non valido o scaduto - Potrai collegare il canale dopo la registrazione",
+        "error": "Errore durante la validazione del link"
+      },
+      "loading": {
+        "auth": "Creazione del tuo account...",
+        "stripe": "Configurazione fatturazione e pagamenti...",
+        "complete": "Quasi fatto! Finalizzazione dell'account...",
+        "processing": "Elaborazione in corso...",
+        "steps": {
+          "creating": "Creazione del tuo account",
+          "configuring": "Configurazione fatturazione e pagamenti",
+          "preparing": "Preparazione della tua dashboard"
+        },
+        "description": "Stiamo configurando il tuo account con elaborazione sicura dei pagamenti. Questo ti assicura di poter gestire abbonamenti e fatturazione senza problemi."
+      },
+      "actions": {
+        "signUp": "Registrati",
+        "showPassword": "Mostra password",
+        "hidePassword": "Nascondi password"
+      },
+      "notifications": {
+        "validationError": "Errore di validazione",
+        "validationErrorDescription": "Il form contiene errori: {errors}",
+        "registrationError": "Errore durante la registrazione",
+        "success": "Registrazione completata!",
+        "successDescription": "Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.",
+        "externalError": "Errore"
+      }
     },
     "signupComplete": {
       "title": "Completa il tuo profilo",

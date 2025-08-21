@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useChannels } from "@/hooks/use-channels";
-import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingWrapper } from "@/components/ui/loading";
 import { UserChannelWithChannel } from "@/lib/types/channels";

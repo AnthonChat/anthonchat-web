@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { loadMessages } from "@/lib/i18n/messages";
-import PrivacyContent from "./PrivacyContent";
+import PrivacyContent from "@/components/features/legal/PrivacyContent";
 import { type Locale, locales, getPathWithLocale } from "@/i18n/routing";
 
 type PageParams = {
