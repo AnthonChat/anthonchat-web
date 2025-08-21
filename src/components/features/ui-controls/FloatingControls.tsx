@@ -29,23 +29,22 @@ export default function FloatingControls({
   };
 
   return (
-    <div 
+    <div
       className={`
-        fixed ${positionClasses[position]} z-50 
-        flex flex-col gap-2 p-2 
-        bg-background/80 backdrop-blur-sm 
-        border border-border/50 rounded-lg shadow-lg
-        opacity-60 hover:opacity-100 
-        transition-all duration-300 ease-in-out
+        fixed ${positionClasses[position]} z-50
+        flex flex-col gap-2 p-3
+        bg-background border border-border rounded-lg shadow-lg
+        transition-all duration-200 ease-in-out
+        hover:shadow-xl
         ${className}
       `}
       role="group"
       aria-label="Floating language and theme controls"
     >
       <CompactLanguageSwitcher className="text-xs" />
-      <div className="h-px w-full bg-border/50" aria-hidden="true" />
-      <CompactThemeToggle 
-        variant={themeVariant} 
+      <div className="h-px w-full bg-border" aria-hidden="true" />
+      <CompactThemeToggle
+        variant={themeVariant}
         className="self-center"
       />
     </div>

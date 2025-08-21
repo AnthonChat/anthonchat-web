@@ -95,12 +95,11 @@ const CompactLanguageSwitcher = memo(function CompactLanguageSwitcher({
             }}
             className={`
               flex items-center gap-1 px-2 py-1 text-xs font-medium
-              transition-all duration-300 ease-in-out
-              hover:scale-105 active:scale-95
+              transition-colors duration-200 ease-in-out
               ${!isFirst ? "border-l border-border" : ""}
               ${isActive
-                ? "bg-primary text-primary-foreground shadow-sm transform scale-105"
-                : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
+                ? "bg-primary text-primary-foreground"
+                : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
               }
             `}
             aria-label={`Switch to ${loc === 'en' ? 'English' : 'Italian'}`}

@@ -114,7 +114,7 @@ export function DashboardHeader({
                   {actions && <div className="h-4 w-px bg-border" aria-hidden="true" />}
                   <LanguageThemeControls
                     spacing="compact"
-                    themeVariant="cycle"
+                    themeVariant="dropdown"
                   />
                 </>
               )}

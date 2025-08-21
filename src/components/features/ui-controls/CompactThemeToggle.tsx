@@ -43,7 +43,7 @@ export const CompactThemeToggle = memo(function CompactThemeToggle({
       <Button
         variant="ghost"
         size="icon"
-        className={`h-8 w-8 ${className}`}
+        className={`h-8 w-8 p-0 flex items-center justify-center ${className}`}
         disabled
       >
         <Sun className="h-4 w-4" />
@@ -71,17 +71,15 @@ export const CompactThemeToggle = memo(function CompactThemeToggle({
         variant="ghost"
         size="icon"
         onClick={cycleTheme}
-        className={`h-8 w-8 transition-all duration-300 hover:scale-105 active:scale-95 ${className}`}
+        className={`h-8 w-8 p-0 flex items-center justify-center transition-colors duration-200 ${className}`}
         aria-label={`Current theme: ${theme}. Click to cycle themes.`}
       >
-        {theme === 'light' && (
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300" />
-        )}
-        {theme === 'dark' && (
-          <Moon className="h-4 w-4 rotate-0 scale-100 transition-all duration-300" />
-        )}
-        {theme === 'system' && (
-          <Monitor className="h-4 w-4 rotate-0 scale-100 transition-all duration-300" />
+        {theme === 'system' ? (
+          <Monitor className="h-4 w-4" />
+        ) : theme === 'light' ? (
+          <Sun className="h-4 w-4" />
+        ) : (
+          <Moon className="h-4 w-4" />
         )}
         <span className="sr-only">Toggle theme</span>
       </Button>
@@ -95,17 +93,15 @@ export const CompactThemeToggle = memo(function CompactThemeToggle({
         <Button
           variant="ghost"
           size="icon"
-          className={`h-8 w-8 transition-all duration-200 ${className}`}
+          className={`h-8 w-8 p-0 flex items-center justify-center transition-colors duration-200 ${className}`}
           aria-label="Open theme selector"
         >
-          {currentTheme === 'light' && (
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all" />
-          )}
-          {currentTheme === 'dark' && (
-            <Moon className="h-4 w-4 rotate-0 scale-100 transition-all" />
-          )}
-          {theme === 'system' && (
-            <Monitor className="h-4 w-4 rotate-0 scale-100 transition-all" />
+          {theme === 'system' ? (
+            <Monitor className="h-4 w-4" />
+          ) : theme === 'light' ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
