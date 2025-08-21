@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/components/features/i18n/LanguageSwitcher";
 import { LocaleLink } from "@/components/ui/locale-link";
 
 export default function Home() {
@@ -9,10 +8,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted text-foreground">
-      {/* Language Switcher - temporary for testing */}
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSwitcher />
-      </div>
       {/* HERO con copy originale adattato */}
       <section className="relative overflow-hidden">
         <div className="relative container mx-auto px-4 py-20 text-center">

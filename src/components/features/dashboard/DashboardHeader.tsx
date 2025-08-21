@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import LanguageThemeControls from "@/components/features/ui-controls/LanguageThemeControls";
 
 interface DashboardHeaderProps {
   title?: string;
@@ -16,6 +17,7 @@ interface DashboardHeaderProps {
   actions?: React.ReactNode;
   variant?: "default" | "enhanced";
   className?: string;
+  showGlobalControls?: boolean;
 }
 
 export function DashboardHeader({
@@ -27,6 +29,7 @@ export function DashboardHeader({
   actions,
   variant = "default",
   className,
+  showGlobalControls = true,
 }: DashboardHeaderProps) {
   const isEnhanced = variant === "enhanced";
   const t = useTranslations("dashboard");
@@ -98,7 +101,7 @@ export function DashboardHeader({
             </div>
           </div>
 
-          {actions && (
+          {(actions || showGlobalControls) && (
             <div
               className={cn(
                 "flex items-center gap-4",
@@ -106,6 +109,15 @@ export function DashboardHeader({
               )}
             >
               {actions}
+              {showGlobalControls && (
+                <>
+                  {actions && <div className="h-4 w-px bg-border" aria-hidden="true" />}
+                  <LanguageThemeControls
+                    spacing="compact"
+                    themeVariant="cycle"
+                  />
+                </>
+              )}
             </div>
           )}
         </div>

@@ -8,7 +8,6 @@ import { SubscriptionCard } from "@/components/features/subscription/Subscriptio
 import { ChannelsOverview } from "@/components/features/channels/ChannelsOverview";
 import { QuickActions } from "@/components/features/dashboard/QuickActions";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/features/dashboard/ThemeToggle";
 import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader";
 import { localeRedirect } from "@/lib/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -65,20 +64,17 @@ export default async function DashboardPage() {
         description={tDash('header.welcomeBack', { email: userEmail })}
         variant="enhanced"
         actions={
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <form action="/api/auth/signout" method="post">
-              <Button
-                type="submit"
-                variant="outline"
-                size="sm"
-                className="hover-lift group"
-              >
-                <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
-                {tCommon('actions.signOut')}
-              </Button>
-            </form>
-          </div>
+          <form action="/api/auth/signout" method="post">
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="hover-lift group"
+            >
+              <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
+              {tCommon('actions.signOut')}
+            </Button>
+          </form>
         }
       />
 
