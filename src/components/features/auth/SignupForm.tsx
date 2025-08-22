@@ -220,11 +220,17 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
   }, [isPending]);
 
-  // Unified notification handler with improved deduplication
+  // unified notification handler with improved deduplication
+  // extract derived values to stable variables so the effect dependency array is static
+  const errorsString = formState.errors && formState.errors.length > 0
+    ? formState.errors.map((err) => err.message).join(". ")
+    : undefined;
+  const userId = formState.userId;
+
   useEffect(() => {
     const prev = lastShownErrorRef.current;
 
-    // Handle external message prop first (highest priority)
+    // handle external message prop first (highest priority)
     if (message) {
       if (prev?.type !== 'external' || prev.value !== message) {
         showError(
@@ -240,14 +246,10 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         );
         lastShownErrorRef.current = { type: 'external', value: message };
       }
-      return; // Don't show other notifications when external message is present
+      return; // don't show other notifications when external message is present
     }
 
-    // Show validation errors only once per unique message
-    const errorsString = formState.errors && formState.errors.length > 0
-      ? formState.errors.map((err) => err.message).join(". ")
-      : undefined;
-
+    // show validation errors only once per unique message
     if (errorsString) {
       if (prev?.type !== 'validation' || prev.value !== errorsString) {
         // set dedupe marker before showing the toast to prevent races
@@ -267,7 +269,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       return;
     }
 
-    // Show general API error only if changed
+    // show general api error only if changed
     if (formState.message && !formState.success) {
       if (prev?.type !== 'message' || prev.value !== formState.message) {
         // set marker first to avoid duplicates during re-renders caused by toast state updates
@@ -287,9 +289,9 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       return;
     }
 
-    // Show success toast once
+    // show success toast once
     if (formState.success) {
-      const successValue = formState.userId || 'success';
+      const successValue = userId || 'success';
       if (prev?.type !== 'success' || prev.value !== successValue) {
         // set marker first to avoid duplicate notifications
         lastShownErrorRef.current = { type: 'success', value: successValue };
@@ -304,7 +306,8 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     message,
     formState.message,
     formState.success,
-    formState.errors ? formState.errors.map((e) => e.message).join("|") : undefined,
+    errorsString,
+    userId,
     showError,
     showSuccess,
     t
