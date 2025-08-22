@@ -121,9 +121,28 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
   }, [isPending]);
 
-  // Handle form state changes for toast notifications (guarded to avoid duplicate loops)
+  // Unified notification handler with improved deduplication
   useEffect(() => {
     const prev = lastShownErrorRef.current;
+
+    // Handle external message prop first (highest priority)
+    if (message) {
+      if (prev?.type !== 'external' || prev.value !== message) {
+        showError(
+          t("notifications.externalError"),
+          message,
+          {
+            errorType: NotificationErrorType.API_ERROR,
+            context: 'signup_external_message',
+            config: {
+              duration: 6000
+            }
+          }
+        );
+        lastShownErrorRef.current = { type: 'external', value: message };
+      }
+      return; // Don't show other notifications when external message is present
+    }
 
     // Show validation errors only once per unique message
     if (formState.errors && formState.errors.length > 0) {
@@ -177,27 +196,7 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         lastShownErrorRef.current = { type: 'success', value: successValue };
       }
     }
-  }, [formState, showError, showSuccess, t]);
-
-  // Handle external message prop (guarded)
-  useEffect(() => {
-    if (!message) return;
-    const prev = lastShownErrorRef.current;
-    if (prev?.type !== 'external' || prev.value !== message) {
-      showError(
-        t("notifications.externalError"),
-        message,
-        {
-          errorType: NotificationErrorType.API_ERROR,
-          context: 'signup_external_message',
-          config: {
-            duration: 6000
-          }
-        }
-      );
-      lastShownErrorRef.current = { type: 'external', value: message };
-    }
-  }, [message, showError, t]);
+  }, [formState, message, showError, showSuccess, t]);
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
@@ -251,10 +250,6 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  // Resetta il guard per validation toast quando l'utente modifica il campo
-                  if (lastShownErrorRef.current?.type === 'validation') {
-                    lastShownErrorRef.current = null;
-                  }
                 }}
                 required
                 disabled={isPending}
@@ -282,10 +277,6 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    // Resetta il guard per validation toast quando l'utente modifica il campo
-                    if (lastShownErrorRef.current?.type === 'validation') {
-                      lastShownErrorRef.current = null;
-                    }
                   }}
                   required
                   disabled={isPending}

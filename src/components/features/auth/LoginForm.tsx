@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,48 +74,65 @@ export default function LoginForm({ message }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const { showError, showSuccess } = useNotifications();
 
-  // Handle form state changes for toast notifications
+  // Unified notification handler with deduplication
+  const lastShownNotificationRef = useRef<{
+    type: 'form_error' | 'form_success' | 'external_error';
+    value: string;
+  } | null>(null);
+
   useEffect(() => {
-    // Show error toast for form state messages
-    if (formState.message && !formState.success) {
-      showError(
-        'Errore durante il login',
-        formState.message,
-        {
-          errorType: NotificationErrorType.AUTH_UNAUTHORIZED,
-          context: 'login_form_action',
-          config: {
-            duration: 8000
+    const prev = lastShownNotificationRef.current;
+
+    // Handle external message prop first (highest priority)
+    if (message) {
+      if (prev?.type !== 'external_error' || prev.value !== message) {
+        showError(
+          'Errore di autenticazione',
+          message,
+          {
+            errorType: NotificationErrorType.AUTH_UNAUTHORIZED,
+            context: 'login_external_message',
+            config: {
+              duration: 6000
+            }
           }
-        }
-      );
+        );
+        lastShownNotificationRef.current = { type: 'external_error', value: message };
+      }
+      return; // Don't show other notifications when external message is present
+    }
+
+    // Handle form state changes
+    if (formState.message && !formState.success) {
+      if (prev?.type !== 'form_error' || prev.value !== formState.message) {
+        showError(
+          'Errore durante il login',
+          formState.message,
+          {
+            errorType: NotificationErrorType.AUTH_UNAUTHORIZED,
+            context: 'login_form_action',
+            config: {
+              duration: 8000
+            }
+          }
+        );
+        lastShownNotificationRef.current = { type: 'form_error', value: formState.message };
+      }
+      return;
     }
 
     // Show success toast if login is successful
     if (formState.success) {
-      showSuccess(
-        'Login completato!',
-        'Accesso effettuato con successo. Verrai reindirizzato al dashboard.'
-      );
+      const successValue = 'login_success';
+      if (prev?.type !== 'form_success' || prev.value !== successValue) {
+        showSuccess(
+          'Login completato!',
+          'Accesso effettuato con successo. Verrai reindirizzato al dashboard.'
+        );
+        lastShownNotificationRef.current = { type: 'form_success', value: successValue };
+      }
     }
-  }, [formState, showError, showSuccess]);
-
-  // Handle external message prop
-  useEffect(() => {
-    if (message) {
-      showError(
-        'Errore di autenticazione',
-        message,
-        {
-          errorType: NotificationErrorType.AUTH_UNAUTHORIZED,
-          context: 'login_external_message',
-          config: {
-            duration: 6000
-          }
-        }
-      );
-    }
-  }, [message, showError]);
+  }, [formState, message, showError, showSuccess]);
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
