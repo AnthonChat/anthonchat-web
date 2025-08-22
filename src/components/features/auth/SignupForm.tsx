@@ -10,10 +10,10 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader,
+  CardHeader, 
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, CreditCard, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
@@ -56,9 +56,13 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { showError, showSuccess } = useNotifications();
+  const { showError, showSuccess, showVerificationToast, dismissToast } = useNotifications();
   // Ref per evitare toast duplicati in loop: memorizza ultimo toast mostrato (type + value)
-  const lastShownErrorRef = useRef<{ type: 'validation' | 'message' | 'external' | 'success' | null; value?: string } | null>(null);
+  const lastShownErrorRef = useRef<{ type: 'validation' | 'message' | 'external' | 'success' | 'nonce' | 'nonce_pending' | null; value?: string | null } | null>(null);
+  // Ref per tenere traccia del toast di verifica in corso (così possiamo chiuderlo quando finisce)
+  const pendingVerificationToastRef = useRef<string | null>(null);
+  // Ref per gestire un timeout di sicurezza che chiude il toast di verifica se resta in stato "in corso" troppo a lungo
+  const verificationTimeoutRef = useRef<number | null>(null);
   // Field-level errors derivati dallo stato del server (se presenti)
   const emailError = formState.errors?.find((e) => e.field === "email")?.message;
   const passwordError = formState.errors?.find((e) => e.field === "password")?.message;
@@ -111,6 +115,101 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
   }, [link, channel, validateNonceOnMount]);
 
+  // Show nonce validation result via toasts instead of inline UI
+  useEffect(() => {
+    // Avoid firing if we don't have channel/link context yet
+    if (!channel && !link) return;
+
+    // If validation is in progress, show a verification/loading toast (once per nonce)
+    if (nonceValidation.isValidating) {
+      if (lastShownErrorRef.current?.type !== 'nonce_pending' || lastShownErrorRef.current?.value !== link) {
+        try {
+          // mark as shown before calling the toast to avoid race-driven duplicates
+          lastShownErrorRef.current = { type: 'nonce_pending', value: link };
+          const toastId = showVerificationToast(channel || "Channel", link || "");
+          // store the verification toast id so we can dismiss it when validation completes
+          pendingVerificationToastRef.current = toastId;
+
+          // Clear any existing timeout and set a safety timeout to avoid infinite loading toast
+          if (verificationTimeoutRef.current) {
+            window.clearTimeout(verificationTimeoutRef.current);
+          }
+          verificationTimeoutRef.current = window.setTimeout(() => {
+            if (pendingVerificationToastRef.current) {
+              try {
+                dismissToast(pendingVerificationToastRef.current);
+                // Show a friendly error if validation never completed
+                showError(
+                  t("notifications.verificationError"),
+                  t("nonce.invalid")
+                );
+              } catch (e) {
+                console.error("AUTO_DISMISS_VERIFICATION_TOAST_FAILED", { error: e });
+              } finally {
+                pendingVerificationToastRef.current = null;
+                verificationTimeoutRef.current = null;
+              }
+            }
+          }, 12000); // 12s safety timeout
+        } catch (e) {
+          // best-effort - don't break the signup form if toast fails
+          console.error("SHOW_VERIFICATION_TOAST_FAILED", { error: e });
+        }
+        lastShownErrorRef.current = { type: 'nonce_pending', value: link };
+      }
+      return;
+    }
+
+    // If there was a pending verification toast, dismiss it now (validation finished)
+    if (pendingVerificationToastRef.current) {
+      try {
+        dismissToast(pendingVerificationToastRef.current);
+      } catch (e) {
+        console.error("DISMISS_VERIFICATION_TOAST_FAILED", { error: e });
+      } finally {
+        pendingVerificationToastRef.current = null;
+      }
+    }
+
+    // Clear the safety timeout if validation finished
+    if (verificationTimeoutRef.current) {
+      window.clearTimeout(verificationTimeoutRef.current);
+      verificationTimeoutRef.current = null;
+    }
+
+    // Handle success
+    if (nonceValidation.isValid === true) {
+      if (lastShownErrorRef.current?.type !== 'nonce' || lastShownErrorRef.current?.value !== link) {
+        showSuccess(
+          t("notifications.linkVerified"),
+          t("nonce.valid", { channel })
+        );
+        lastShownErrorRef.current = { type: 'nonce', value: link };
+      }
+      return;
+    }
+
+    // Handle failure
+    if (nonceValidation.isValid === false) {
+      const errMsg = nonceValidation.error || t("nonce.invalid");
+      if (lastShownErrorRef.current?.type !== 'nonce' || lastShownErrorRef.current?.value !== errMsg) {
+        showError(
+          t("notifications.verificationError"),
+          errMsg,
+          {
+            errorType: NotificationErrorType.VERIFICATION_POLLING_ERROR,
+            context: 'nonce_validation_signup',
+            config: {
+              duration: 8000
+            }
+          }
+        );
+        lastShownErrorRef.current = { type: 'nonce', value: errMsg };
+      }
+      return;
+    }
+  }, [nonceValidation.isValidating, nonceValidation.isValid, nonceValidation.error, showVerificationToast, showSuccess, showError, dismissToast, t, channel, link]);
+ 
   // Handle form state changes and loading progression
   useEffect(() => {
     if (isPending) {
@@ -145,14 +244,17 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     }
 
     // Show validation errors only once per unique message
-    if (formState.errors && formState.errors.length > 0) {
-      const detailedErrorMessage = formState.errors
-        .map((err) => err.message)
-        .join(". ");
-      if (prev?.type !== 'validation' || prev.value !== detailedErrorMessage) {
+    const errorsString = formState.errors && formState.errors.length > 0
+      ? formState.errors.map((err) => err.message).join(". ")
+      : undefined;
+
+    if (errorsString) {
+      if (prev?.type !== 'validation' || prev.value !== errorsString) {
+        // set dedupe marker before showing the toast to prevent races
+        lastShownErrorRef.current = { type: 'validation', value: errorsString };
         showError(
           t("notifications.validationError"),
-          t("notifications.validationErrorDescription", { errors: detailedErrorMessage }),
+          t("notifications.validationErrorDescription", { errors: errorsString }),
           {
             errorType: NotificationErrorType.VALIDATION_ERROR,
             context: "signup_form_validation",
@@ -161,7 +263,6 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
             },
           }
         );
-        lastShownErrorRef.current = { type: 'validation', value: detailedErrorMessage };
       }
       return;
     }
@@ -169,6 +270,8 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     // Show general API error only if changed
     if (formState.message && !formState.success) {
       if (prev?.type !== 'message' || prev.value !== formState.message) {
+        // set marker first to avoid duplicates during re-renders caused by toast state updates
+        lastShownErrorRef.current = { type: 'message', value: formState.message };
         showError(
           t("notifications.registrationError"),
           formState.message,
@@ -180,7 +283,6 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
             }
           }
         );
-        lastShownErrorRef.current = { type: 'message', value: formState.message };
       }
       return;
     }
@@ -189,14 +291,24 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
     if (formState.success) {
       const successValue = formState.userId || 'success';
       if (prev?.type !== 'success' || prev.value !== successValue) {
+        // set marker first to avoid duplicate notifications
+        lastShownErrorRef.current = { type: 'success', value: successValue };
         showSuccess(
           t("notifications.success"),
           t("notifications.successDescription")
         );
-        lastShownErrorRef.current = { type: 'success', value: successValue };
       }
     }
-  }, [formState, message, showError, showSuccess, t]);
+  }, [
+    // granular dependencies to avoid effect retriggering from object identity changes
+    message,
+    formState.message,
+    formState.success,
+    formState.errors ? formState.errors.map((e) => e.message).join("|") : undefined,
+    showError,
+    showSuccess,
+    t
+  ]);
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
@@ -208,31 +320,6 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
           </CardDescription>
         </CardHeader>
 
-        {/* Indicatore validazione nonce */}
-        {(link && channel) && (
-          <div className="px-6 pb-2">
-            {nonceValidation.isValidating && (
-              <div className="flex items-center gap-2 text-sm text-blue-600">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {t("nonce.validating")}
-              </div>
-            )}
-            
-            {nonceValidation.isValid === true && (
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle className="w-4 h-4" />
-                {t("nonce.valid", { channel })}
-              </div>
-            )}
-            
-            {nonceValidation.isValid === false && (
-              <div className="flex items-center gap-2 text-sm text-red-600">
-                <XCircle className="w-4 h-4" />
-                {nonceValidation.error}
-              </div>
-            )}
-          </div>
-        )}
 
         <form action={formAction}>
           {channel && <input type="hidden" name="channel" value={channel} />}

@@ -165,7 +165,9 @@
         "registrationError": "Errore durante la registrazione",
         "success": "Registrazione completata!",
         "successDescription": "Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.",
-        "externalError": "Errore"
+        "externalError": "Errore",
+        "linkVerified": "Link verificato",
+        "verificationError": "Errore durante la verifica del link"
       }
     },
     "signupComplete": {

@@ -169,7 +169,9 @@
         "registrationError": "Registration Error",
         "success": "Registration completed!",
         "successDescription": "Your account has been created successfully. You will be redirected to the dashboard.",
-        "externalError": "Error"
+        "externalError": "Error",
+        "linkVerified": "Link verified",
+        "verificationError": "Error verifying link"
       }
     },
     "signupComplete": {
