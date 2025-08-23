@@ -12,6 +12,7 @@ import {
 } from "@/i18n/routing";
 import { loadMessages } from "@/lib/i18n/messages";
 import HtmlLang from "@/components/features/i18n/HtmlLang";
+import { AccessibilityFloatingMenu } from "@/components/features/accessibility";
 
 export const dynamicParams = false;
 
@@ -105,6 +106,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       {/* Keep <html lang> synchronized with active locale on the client */}
       <HtmlLang />
       {children}
+      <AccessibilityFloatingMenu />
     </NextIntlClientProvider>
   );
 }

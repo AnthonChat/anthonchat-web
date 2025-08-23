@@ -30,7 +30,7 @@ export const CompactThemeToggle = memo(function CompactThemeToggle({
   className = "",
   variant = 'dropdown'
 }: CompactThemeToggleProps) {
-  const { setTheme, theme, systemTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   // Avoid hydration mismatch
@@ -51,8 +51,6 @@ export const CompactThemeToggle = memo(function CompactThemeToggle({
       </Button>
     )
   }
-
-  const currentTheme = theme === 'system' ? systemTheme : theme
   
   if (variant === 'cycle') {
     // Simple cycle through light -> dark -> system
