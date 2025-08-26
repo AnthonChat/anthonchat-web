@@ -89,6 +89,11 @@ export default function RootLayout({
             richColors={true}
             closeButton={true}
             duration={5000}
+            toastOptions={{
+              style: {
+                zIndex: 9999,
+              },
+            }}
           />
         </ThemeProvider>
       </body>

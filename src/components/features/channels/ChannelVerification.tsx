@@ -17,7 +17,6 @@ import {
   Clock,
   AlertCircle,
   ExternalLink,
-  Copy,
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -181,10 +180,24 @@ export default function ChannelVerification({
         hasCommand: !!data.command,
       });
 
+      // Auto-open deep link to skip manual "Open ..." click
+      if (data.deepLink) {
+        try {
+          window.location.href = data.deepLink;
+          console.info("DEEPLINK_AUTO_OPEN_ATTEMPT", {
+            channelId: channel.id,
+            channelName: channel.name,
+          });
+        } catch (e) {
+          console.warn("DEEPLINK_AUTO_OPEN_FAILED", { e, channelId: channel.id });
+        }
+      }
+
       // Show verification toast
       const toastId = showVerificationToast(
         channel.name,
         data.nonce,
+        data.command,
         data.deepLink
       );
 
@@ -310,18 +323,6 @@ export default function ChannelVerification({
     setPollingIntervals((prev) => ({ ...prev, [channelId]: interval }));
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard!");
-    } catch (error) {
-      console.error("CLIPBOARD_COPY_ERROR", {
-        error,
-        textLength: text.length,
-      });
-      toast.error("Failed to copy to clipboard");
-    }
-  };
 
   const retryVerification = (channel: Channel) => {
     const channelId = channel.id;
@@ -414,60 +415,29 @@ export default function ChannelVerification({
                     onClick={() => startVerification(channel)}
                     className="w-full"
                   >
-                    Generate Nonce and Start Verification
+                    Connect {channel.name}
                   </Button>
                 </div>
               )}
 
-              {state.status === "pending" &&
-                state.command &&
-                state.deepLink && (
-                  <div className="space-y-3">
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        <strong>Verification in progress...</strong>
-                        <br />
-                        Please complete the verification by following one of the
-                        options below:
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">
-                        Option 1: Send this command
-                      </p>
-                      <div className="flex items-center space-x-2 p-2 bg-muted rounded">
-                        <code className="flex-1 text-sm">{state.command}</code>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyToClipboard(state.command!)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">
-                        Option 2: Click to open {channel.name}
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => window.open(state.deepLink, "_blank")}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Open {channel.name}
-                      </Button>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground">
-                      Waiting for verification... This may take a few moments.
-                    </p>
+              {state.status === "pending" && state.deepLink && (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => window.open(state.deepLink, "_blank")}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open {channel.name}
+                    </Button>
                   </div>
-                )}
+
+                  <p className="text-xs text-muted-foreground">
+                    Waiting for verification... This may take a few moments.
+                  </p>
+                </div>
+              )}
 
               {state.status === "done" && (
                 <Alert>

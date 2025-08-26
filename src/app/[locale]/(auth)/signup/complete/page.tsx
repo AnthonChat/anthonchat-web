@@ -14,7 +14,14 @@ export default async function SignupCompletePage({
   // the request includes a registration `channel=telegram` and `link` nonce,
   // we avoid a server-side redirect to /dashboard so the client-side code
   // can run and trigger the Telegram deeplink.
-  searchParams?: Promise<{ message?: string; link?: string; channel?: string }>;
+  searchParams?: Promise<{ 
+    message?: string; 
+    link?: string; 
+    channel?: string;
+    skip_onboarding?: string;
+    channel_error?: string;
+    show_fallback?: string;
+  }>;
 }) {
   const supabase = await createClient();
   const locale = await getLocale();
@@ -31,6 +38,35 @@ export default async function SignupCompletePage({
   }
 
   const userId = claims.claims.sub;
+
+  // Check for skipOnboarding parameter - if present, redirect to dashboard immediately
+  const shouldSkipOnboarding = resolvedSearchParams?.skip_onboarding === 'true';
+  
+  if (shouldSkipOnboarding) {
+    // Build dashboard redirect URL with channel linking context
+    const dashboardParams: Record<string, string> = {};
+    
+    if (resolvedSearchParams?.channel) {
+      dashboardParams.channel_linked = 'true';
+      dashboardParams.channel = resolvedSearchParams.channel;
+    }
+    
+    if (resolvedSearchParams?.channel_error === 'true') {
+      dashboardParams.channel_error = 'true';
+    }
+    
+    if (resolvedSearchParams?.message) {
+      dashboardParams.message = resolvedSearchParams.message;
+    }
+
+    // Create dashboard URL with parameters
+    const dashboardUrl = new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    Object.entries(dashboardParams).forEach(([key, value]) => {
+      dashboardUrl.searchParams.set(key, value);
+    });
+
+    localeRedirect(dashboardUrl.pathname + dashboardUrl.search, locale as Locale);
+  }
 
   // 1. Check if user is already onboarded using the function
   const { data: isOnboarded, error: rpcError } = await supabase.rpc(
@@ -58,8 +94,30 @@ export default async function SignupCompletePage({
   const shouldPreserveForClient =
     !!incomingChannel && !!incomingLink && incomingChannel.toLowerCase() === "telegram";
 
-  if (isOnboarded === true && !shouldPreserveForClient) {
+  // If user is already onboarded and we don't need to preserve for client, redirect to dashboard
+  if (isOnboarded === true && !shouldPreserveForClient && !shouldSkipOnboarding) {
     localeRedirect("/dashboard", locale as Locale);
+  }
+
+  // If user is already onboarded but we have skipOnboarding parameter, redirect with context
+  if (isOnboarded === true && shouldSkipOnboarding) {
+    const dashboardParams: Record<string, string> = {};
+    
+    if (resolvedSearchParams?.channel) {
+      dashboardParams.channel_linked = 'true';
+      dashboardParams.channel = resolvedSearchParams.channel;
+    }
+    
+    if (resolvedSearchParams?.message) {
+      dashboardParams.message = resolvedSearchParams.message;
+    }
+
+    const dashboardUrl = new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    Object.entries(dashboardParams).forEach(([key, value]) => {
+      dashboardUrl.searchParams.set(key, value);
+    });
+
+    localeRedirect(dashboardUrl.pathname + dashboardUrl.search, locale as Locale);
   }
 
   // 3. If the user is NOT onboarded, we continue and fetch their profile details
@@ -100,6 +158,11 @@ export default async function SignupCompletePage({
     );
   }
 
+  // Check for channel linking context
+  const hasChannelError = resolvedSearchParams?.channel_error === 'true';
+  const showFallback = resolvedSearchParams?.show_fallback === 'true';
+  const channelLinkingMessage = resolvedSearchParams?.message;
+
   return (
     <div className="max-w-2xl w-full space-y-8">
       <div className="text-center">
@@ -111,6 +174,20 @@ export default async function SignupCompletePage({
         </p>
       </div>
 
+      {/* Show channel linking feedback if present */}
+      {channelLinkingMessage && (
+        <div className={`p-4 rounded-md ${hasChannelError ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
+          <p className={`text-sm ${hasChannelError ? 'text-red-700' : 'text-green-700'}`}>
+            {channelLinkingMessage}
+          </p>
+          {hasChannelError && showFallback && (
+            <p className="text-xs text-red-600 mt-2">
+              {tAuth('channelLinking.fallbackMessage')}
+            </p>
+          )}
+        </div>
+      )}
+
       <SignupCompleteForm
         user={{ id: userId }}
         userProfile={userProfile}
@@ -121,6 +198,11 @@ export default async function SignupCompletePage({
           name: channel.id,
         }))}
         existingChannels={userChannels || []} // No mapping needed, pass it directly
+        channelLinkingContext={{
+          hasError: hasChannelError,
+          showFallback: showFallback,
+          channel: resolvedSearchParams?.channel,
+        }}
       />
     </div>
   );

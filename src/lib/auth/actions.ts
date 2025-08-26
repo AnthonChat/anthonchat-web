@@ -10,13 +10,127 @@ import {
   createSubscriptionWithTrial,
 } from "@/lib/stripe";
 import { updateUserData, linkChannelToUserSecure, validateChannelLinkNonce } from "@/lib/queries/user";
+import { checkUserExists } from "@/lib/queries/user-existence";
+import { ChannelLinkingService } from "@/lib/services/channel-linking";
+import { buildLoginRedirectUrl, buildSignupCompleteRedirectUrl } from "@/lib/utils/redirect-helpers";
 import {
   type FormState,
-  type SignupFormData,
-  validateSignupFormData,
+  type EnhancedSignupFormData,
+  validateEnhancedSignupFormData,
   createErrorFormState,
   SIGNUP_CONFIG,
 } from "./types";
+
+/**
+ * Prevents duplicate account creation by checking if user already exists
+ * @param email - Email to check for existing account
+ * @returns Promise<boolean> - True if account creation should be prevented
+ */
+async function preventDuplicateAccount(email: string): Promise<boolean> {
+  try {
+    const userExists = await checkUserExists(email);
+    
+    if (userExists) {
+      console.warn("DUPLICATE_ACCOUNT_ATTEMPT:", {
+        email: email.substring(0, 3) + "***", // Privacy-safe logging
+        timestamp: new Date().toISOString(),
+      });
+      
+      return true; // Prevent account creation
+    }
+    
+    return false; // Allow account creation
+  } catch (error) {
+    console.error("PREVENT_DUPLICATE_ACCOUNT_ERROR:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      email: email.substring(0, 3) + "***", // Privacy-safe logging
+    });
+    
+    // On error, allow account creation to avoid blocking legitimate users
+    return false;
+  }
+}
+
+/**
+ * Handles existing user signup attempt by redirecting to login with preserved parameters
+ * @param formData - Original form data with channel parameters
+ * @param email - Email of existing user
+ * @returns Never (redirects)
+ */
+async function handleExistingUserSignup(formData: FormData, email: string): Promise<never> {
+  console.info("EXISTING_USER_SIGNUP_REDIRECT:", {
+    email: email.substring(0, 3) + "***", // Privacy-safe logging
+    timestamp: new Date().toISOString(),
+  });
+
+  // Extract channel parameters to preserve them
+  const channel = formData.get("channel")?.toString();
+  const link = formData.get("link")?.toString();
+  
+  // Extract locale from form data or use default
+  const locale = formData.get("locale")?.toString() || "en";
+  
+  // Build login redirect URL with preserved parameters and user message
+  const redirectUrl = buildLoginRedirectUrl({
+    channel,
+    link,
+    message: "account_exists", // Message to show on login page
+  }, locale);
+
+  console.info("Redirecting existing user to login", {
+    hasChannelParams: Boolean(channel && link),
+    locale,
+  });
+
+  // Use redirect - this will throw a special exception that Next.js handles
+  // Don't wrap in try-catch as it will interfere with the redirect mechanism
+  redirect(redirectUrl);
+}
+
+/**
+ * Determines the post-signup flow based on channel linking results
+ * @param hasChannelParams - Whether channel parameters were provided
+ * @param channelLinkingResult - Result of channel linking attempt
+ * @param userId - ID of newly created user
+ * @returns Object with redirect path and onboarding decision
+ */
+function determinePostSignupFlow(
+  hasChannelParams: boolean,
+  channelLinkingResult: { success: boolean; error?: string } | null,
+  userId: string
+): { redirectPath: string; skipOnboarding: boolean; preserveParams: boolean } {
+  const channelLinkingService = ChannelLinkingService.getInstance();
+  
+  // Use the service to determine the optimal strategy
+  const strategy = channelLinkingService.determineLinkingStrategy(
+    'new_user',
+    hasChannelParams,
+    channelLinkingResult ? {
+      success: channelLinkingResult.success,
+      error: channelLinkingResult.error,
+      isAlreadyLinked: false,
+      requiresManualSetup: !channelLinkingResult.success,
+    } : undefined
+  );
+
+  console.info("POST_SIGNUP_FLOW_DETERMINED:", {
+    userId,
+    hasChannelParams,
+    channelLinkingSuccess: channelLinkingResult?.success,
+    strategy: {
+      skipOnboarding: strategy.skipOnboarding,
+      redirectPath: strategy.redirectPath,
+    },
+  });
+
+  return {
+    redirectPath: strategy.redirectPath,
+    skipOnboarding: strategy.skipOnboarding,
+    preserveParams: true, // Always preserve params for error handling
+  };
+}
+
+
 
 /**
  * Server Action consolidata per il processo di signup utente
@@ -38,15 +152,15 @@ export async function signUp(
   formData: FormData
 ): Promise<FormState> {
   try {
-    // Step 1: Validazione FormData con tipi TypeScript
-    console.info("Starting signup process", {
+    // Step 1: Enhanced validation with channel linking parameters
+    console.info("Starting enhanced signup process", {
       timestamp: new Date().toISOString(),
     });
 
-    const validation = validateSignupFormData(formData);
+    const validation = validateEnhancedSignupFormData(formData);
     
     if (!validation.isValid) {
-      console.warn("Signup validation failed", {
+      console.warn("Enhanced signup validation failed", {
         errors: validation.errors,
       });
       
@@ -56,7 +170,19 @@ export async function signUp(
       );
     }
 
-    const { email, password }: SignupFormData = validation.data!;
+    const { email, password, channel, link, userExistsOverride }: EnhancedSignupFormData = validation.data!;
+
+    // Step 2: Check for existing user (unless override is set)
+    if (!userExistsOverride) {
+      const shouldPreventDuplicate = await preventDuplicateAccount(email);
+      
+      if (shouldPreventDuplicate) {
+        // Redirect to login with preserved parameters instead of returning error
+        await handleExistingUserSignup(formData, email);
+        // This function never returns (redirects), but TypeScript needs this
+        return createErrorFormState("Redirecting to login...");
+      }
+    }
 
     console.info("Form validation passed", {
       email,
@@ -213,68 +339,98 @@ export async function signUp(
       );
     }
  
-    // Step 8: Collegamento canale sicuro (solo se nonce valido)
-    const channel = formData.get("channel");
-    const nonce = formData.get("link"); // Questo è il nonce, non il link
-    if (channel && nonce) {
+    // Step 8: Enhanced channel linking with post-signup flow determination
+    let channelLinkingResult: { success: boolean; error?: string } | null = null;
+    const hasChannelParams = !!(channel && link);
+    
+    if (hasChannelParams) {
       try {
-        // Validazione preliminare
-        const { isValid } = await validateChannelLinkNonce(nonce.toString(), channel.toString());
+        // Validate channel link nonce
+        const { isValid } = await validateChannelLinkNonce(link, channel);
         
         if (!isValid) {
           console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {
             userId: user.id,
-            channel: channel.toString(),
-            nonce: nonce.toString().substring(0, 8) + "...",
+            channel: channel.substring(0, 8) + "...",
+            nonce: link.substring(0, 8) + "...",
           });
           
-          // Non bloccare la registrazione, ma non collegare il canale
-          console.info("Signup completed without channel linking due to invalid nonce");
+          channelLinkingResult = {
+            success: false,
+            error: "Invalid or expired channel link"
+          };
         } else {
-          // Per le registrazioni, linkChannelToUserSecure gestisce già la logica corretta
-          // (registrazioni hanno verification.user_id = null, che è valido)
-          await linkChannelToUserSecure(user.id, channel.toString(), nonce.toString());
-          console.info("Channel linked successfully during signup");
+          // Attempt secure channel linking
+          await linkChannelToUserSecure(user.id, channel, link);
+          console.info("Channel linked successfully during signup", {
+            userId: user.id,
+            channel: channel.substring(0, 8) + "...",
+          });
+          
+          channelLinkingResult = { success: true };
         }
       } catch (error) {
         console.error("CHANNEL_LINK_ERROR_DURING_SIGNUP:", {
           error: error instanceof Error ? error.message : error,
           userId: user.id,
-          channel: channel.toString(),
+          channel: channel?.substring(0, 8) + "...",
         });
         
-        // Non far fallire l'intera registrazione per un errore di collegamento canale
-        // L'utente potrà collegare il canale successivamente
+        channelLinkingResult = {
+          success: false,
+          error: error instanceof Error ? error.message : "Channel linking failed"
+        };
       }
     }
 
-    // Step 9: Su success finale, chiamare redirect('/signup/complete')
-    console.info("Signup process completed successfully", {
+    // Step 9: Determine post-signup flow based on channel linking results
+    const postSignupFlow = determinePostSignupFlow(hasChannelParams, channelLinkingResult, user.id);
+    
+    console.info("Enhanced signup process completed successfully", {
       userId: user.id,
       email,
+      hasChannelParams,
+      channelLinkingSuccess: channelLinkingResult?.success,
+      skipOnboarding: postSignupFlow.skipOnboarding,
+      redirectPath: postSignupFlow.redirectPath,
       timestamp: new Date().toISOString(),
     });
 
-    // Build redirect URL and preserve channel/link query params if provided
-    const channelParam = formData.get("channel");
-    const linkParam = formData.get("link");
-    let redirectPath: string = String(SIGNUP_CONFIG.COMPLETION_REDIRECT);
-
-    try {
-      const params = new URLSearchParams();
-      if (channelParam) params.set("channel", String(channelParam));
-      if (linkParam) params.set("link", String(linkParam));
-      const qs = params.toString();
-      if (qs) {
-        redirectPath = `${redirectPath}${redirectPath.includes("?") ? "&" : "?"}${qs}`;
-      }
-    } catch (err) {
-      console.warn("SIGNUP_REDIRECT_QS_BUILD_FAILED", { err });
-      // non-fatal; fall back to base redirectPath
+    // Build appropriate redirect URL based on flow determination
+    let finalRedirectUrl: string;
+    
+    if (postSignupFlow.redirectPath === '/dashboard') {
+      // Skip onboarding - redirect to dashboard with success message
+      finalRedirectUrl = buildSignupCompleteRedirectUrl({
+        channel,
+        link,
+        skipOnboarding: 'true',
+        channelLinked: channelLinkingResult?.success ? 'true' : 'false',
+      }, {
+        skipOnboarding: true,
+        channelLinkingError: !channelLinkingResult?.success,
+        fallbackOptions: !!channelLinkingResult?.error,
+      });
+    } else {
+      // Normal onboarding flow - redirect to signup complete
+      finalRedirectUrl = buildSignupCompleteRedirectUrl({
+        channel,
+        link,
+        channelLinked: channelLinkingResult?.success ? 'true' : 'false',
+      }, {
+        skipOnboarding: false,
+        channelLinkingError: !channelLinkingResult?.success,
+        fallbackOptions: !!channelLinkingResult?.error,
+      });
     }
 
-    // Redirect to completion page - this will throw and prevent return
-    redirect(redirectPath);
+    console.info("Redirecting to post-signup flow", {
+      userId: user.id,
+      redirectUrl: finalRedirectUrl.replace(/[?&](link|channel)=[^&]*/g, '[PARAM_HIDDEN]'), // Hide sensitive params in logs
+    });
+
+    // Redirect to determined path - this will throw and prevent return
+    redirect(finalRedirectUrl);
 
   } catch (error) {
     // Step 9: Gestione errori robusta che ritorna FormState (non throws)

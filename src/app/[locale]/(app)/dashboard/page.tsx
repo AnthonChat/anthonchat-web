@@ -12,8 +12,23 @@ import { DashboardHeader } from "@/components/features/dashboard/DashboardHeader
 import { localeRedirect } from "@/lib/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { type Locale } from "@/i18n/routing";
+import { ChannelLinkingService } from "@/lib/services/channel-linking";
+import { validateChannelLinkingParams } from "@/lib/utils/url-params";
+import { ChannelLinkingToast } from "@/components/features/dashboard/ChannelLinkingToast";
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams?: Promise<{
+    link?: string;
+    channel?: string;
+    message?: string;
+    success?: string;
+    error?: string;
+  }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  // Await searchParams as required by Next.js 15
+  const resolvedSearchParams = await searchParams;
   const supabase = await createClient();
   const locale = await getLocale();
 
@@ -49,6 +64,127 @@ export default async function DashboardPage() {
     localeRedirect("/signup/complete", locale as Locale);
   }
 
+  // Handle channel linking for logged-in users
+  let channelLinkingResult: {
+    success: boolean;
+    message: string;
+    attempted: boolean;
+  } = {
+    success: false,
+    message: '',
+    attempted: false,
+  };
+
+  // Check if we have channel linking parameters
+  const hasChannelParams = Boolean(resolvedSearchParams?.link && resolvedSearchParams?.channel);
+  
+  if (hasChannelParams) {
+    console.info('Dashboard: Channel linking parameters detected for logged-in user', {
+      userId,
+      channel: resolvedSearchParams?.channel,
+      hasLink: Boolean(resolvedSearchParams?.link),
+    });
+
+    try {
+      // Validate channel parameters
+      const validation = validateChannelLinkingParams({
+        link: resolvedSearchParams?.link,
+        channel: resolvedSearchParams?.channel,
+      });
+
+      if (validation.isValid) {
+        // Attempt channel linking
+        const channelLinkingService = ChannelLinkingService.getInstance();
+        const result = await channelLinkingService.validateAndLinkChannel(
+          userId,
+          validation.validParams.link!,
+          validation.validParams.channel!,
+          userEmail
+        );
+
+        channelLinkingResult = {
+          attempted: true,
+          success: result.success,
+          message: result.success 
+            ? `Successfully connected your ${resolvedSearchParams?.channel} channel!`
+            : result.error || 'Failed to connect channel',
+        };
+
+        console.info('Dashboard: Channel linking completed', {
+          userId,
+          channel: resolvedSearchParams?.channel,
+          success: result.success,
+          error: result.error,
+        });
+
+        // If successful, redirect to clean dashboard URL to prevent re-execution
+        if (result.success) {
+          const redirectUrl = `/dashboard?success=${encodeURIComponent(channelLinkingResult.message)}`;
+          console.info('Dashboard: Redirecting to clean URL after successful channel linking');
+          
+          // The redirect will throw a NEXT_REDIRECT error, which is expected behavior
+          localeRedirect(redirectUrl, locale as Locale);
+        }
+      } else {
+        channelLinkingResult = {
+          attempted: true,
+          success: false,
+          message: 'Invalid channel linking parameters',
+        };
+
+        console.warn('Dashboard: Invalid channel linking parameters', {
+          userId,
+          errors: validation.errors,
+        });
+      }
+    } catch (error) {
+      // Don't log NEXT_REDIRECT errors as they are expected behavior for redirects
+      if (error instanceof Error && error.message !== 'NEXT_REDIRECT') {
+        console.error('Dashboard: Channel linking error', {
+          userId,
+          channel: resolvedSearchParams?.channel,
+          error: error.message,
+        });
+
+        channelLinkingResult = {
+          attempted: true,
+          success: false,
+          message: 'An error occurred while connecting your channel',
+        };
+      } else if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        // Re-throw redirect errors to let Next.js handle them
+        throw error;
+      } else {
+        console.error('Dashboard: Unknown channel linking error', {
+          userId,
+          channel: resolvedSearchParams?.channel,
+          error: 'Unknown error type',
+        });
+
+        channelLinkingResult = {
+          attempted: true,
+          success: false,
+          message: 'An error occurred while connecting your channel',
+        };
+      }
+    }
+  }
+
+  // Check for explicit success/error messages from URL params
+  if (resolvedSearchParams?.success) {
+    channelLinkingResult = {
+      attempted: true,
+      success: true,
+      message: resolvedSearchParams.success,
+    };
+  } else if (resolvedSearchParams?.error) {
+    channelLinkingResult = {
+      attempted: true,
+      success: false,
+      message: resolvedSearchParams.error,
+    };
+  }
+
   // --- Step 4: Fetch all necessary data in parallel ---
   // This is efficient and leverages our refactored query functions.
   // The `subscription` and `usage` objects now have a new, more detailed structure.
@@ -80,6 +216,13 @@ export default async function DashboardPage() {
 
       {/* Enhanced Main Content */}
       <main className="container mx-auto px-6 py-8">
+        {/* Channel Linking Toast Notifications */}
+        <ChannelLinkingToast 
+          success={channelLinkingResult.attempted && channelLinkingResult.success ? channelLinkingResult.message : undefined}
+          error={channelLinkingResult.attempted && !channelLinkingResult.success ? channelLinkingResult.message : undefined}
+          channelLinked={channelLinkingResult.attempted && channelLinkingResult.success}
+        />
+
         {/* Welcome Banner */}
         <div className="mb-8 p-8 bg-primary/5 rounded-2xl shadow-xl animate-slide-up border-2 border-primary/20">
           <div className="flex items-center justify-between">

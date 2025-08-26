@@ -14,18 +14,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
+
 import { signUp } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/types";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useAuthState } from "@/components/features/auth/AuthProvider";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
+import { z } from "zod";
 
+
+interface UserExistenceState {
+  isChecking: boolean;
+  userExists: boolean | null;
+  checkedEmail: string | null;
+  error: string | null;
+}
 
 interface SignupFormProps {
   message?: string | null;
   link?: string | null;
   channel?: string | null;
+  userExistenceState?: UserExistenceState;
+  onRedirectToLogin?: () => void;
 }
 
 const initialState: FormState = {
@@ -34,15 +46,39 @@ const initialState: FormState = {
   success: false,
 };
 
-export default function SignupForm({ message, link, channel }: SignupFormProps) {
+// Zod schema for client-side signup validation
+const SignupSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "L'email è obbligatoria")
+    .email("Formato email non valido"),
+  password: z
+    .string()
+    .min(8, "La password deve contenere almeno 8 caratteri"),
+});
+type SignupFields = z.infer<typeof SignupSchema>;
+
+export default function SignupForm({ 
+  message, 
+  link, 
+  channel, 
+  userExistenceState,
+  onRedirectToLogin
+}: SignupFormProps) {
   const [formState, formAction, isPending] = useActionState(signUp, initialState);
   const [loadingStep, setLoadingStep] = useState<
     "auth" | "stripe" | "complete"
   >("auth");
+  
+  // Add authentication state and router
+  const { isAuthenticated, isLoading: authLoading } = useAuthState();
+  const router = useLocaleRouter();
 
   // Translation hooks
   const t = useTranslations("auth.signup");
   const tFields = useTranslations("auth.fields");
+  const locale = useLocale();
 
   // Stato per validazione nonce
   const [nonceValidation, setNonceValidation] = useState<{
@@ -56,7 +92,102 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Client-side validation state and helpers (Zod)
+  const [errors, setErrors] = useState<Partial<Record<keyof SignupFields, string>>>({});
+
+  const validateField = (field: keyof SignupFields, value: string) => {
+    const parsed = SignupSchema.pick({ [field]: true } as Record<keyof SignupFields, true>).safeParse(
+      { [field]: value } as Partial<SignupFields>
+    );
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message || "Valore non valido";
+      setErrors((prev) => ({ ...prev, [field]: msg }));
+      return false;
+    }
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+    return true;
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const res = SignupSchema.safeParse({ email, password });
+    if (!res.success) {
+      e.preventDefault();
+      const fieldErrors: Partial<Record<keyof SignupFields, string>> = {};
+      const messages: string[] = [];
+      for (const issue of res.error.issues) {
+        const path = issue.path[0] as keyof SignupFields;
+        if (path) fieldErrors[path] = issue.message;
+        messages.push(issue.message);
+      }
+      setErrors((prev) => ({ ...prev, ...fieldErrors }));
+      try {
+        // Reuse the toast system already in place
+        showError(
+          "Errore di validazione",
+          messages.join(" • "),
+          {
+            errorType: NotificationErrorType.VALIDATION_ERROR,
+            context: "signup_client_validation",
+            config: { duration: 6000 }
+          }
+        );
+      } catch {
+        // noop
+      }
+    }
+  };
+  
+  // Debounced email change handler for user existence checking
+  const emailChangeTimeoutRef = useRef<number | null>(null);
+  
+  const handleEmailChange = useCallback((newEmail: string) => {
+    setEmail(newEmail);
+    // Removed user existence checking to avoid interfering with autocomplete
+    // Authentication check will happen only when signup button is clicked
+  }, []);
+  
   const { showError, showSuccess, showVerificationToast, dismissToast } = useNotifications();
+  
+  /**
+   * Handle signup button click with authentication check
+   * If user is already authenticated, redirect to dashboard with channel linking
+   */
+  const handleSignupClick = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Check if user is already authenticated before submitting
+    if (isAuthenticated && !authLoading) {
+      event.preventDefault();
+      
+      console.log('SignupForm: User already authenticated on signup click, redirecting to dashboard with channel params', {
+        hasChannelParams: Boolean(link && channel),
+        link: link?.substring(0, 8) + '...',
+        channel,
+      });
+      
+      // Build dashboard URL with preserved channel parameters
+      const params = new URLSearchParams();
+      if (link) params.set('link', link);
+      if (channel) params.set('channel', channel);
+      if (message) params.set('message', message);
+      
+      const dashboardUrl = params.toString() 
+        ? `/dashboard?${params.toString()}`
+        : '/dashboard';
+      
+      // Show a quick success message
+      showSuccess(
+        "Already Signed In",
+        channel ? `Connecting your ${channel} channel...` : "Redirecting to dashboard..."
+      );
+      
+      // Redirect to dashboard
+      router.push(dashboardUrl);
+      return;
+    }
+    
+    // If not authenticated, let the form submit normally
+    // Don't prevent default - let the form action handle it
+  }, [isAuthenticated, authLoading, link, channel, message, router, showSuccess]);
   // Ref per evitare toast duplicati in loop: memorizza ultimo toast mostrato (type + value)
   const lastShownErrorRef = useRef<{ type: 'validation' | 'message' | 'external' | 'success' | 'nonce' | 'nonce_pending' | null; value?: string | null } | null>(null);
   // Ref per tenere traccia del toast di verifica in corso (così possiamo chiuderlo quando finisce)
@@ -114,6 +245,16 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
       validateNonceOnMount();
     }
   }, [link, channel, validateNonceOnMount]);
+
+  // Cleanup email change timeout on unmount
+  useEffect(() => {
+    const timeoutRef = emailChangeTimeoutRef.current;
+    return () => {
+      if (timeoutRef) {
+        window.clearTimeout(timeoutRef);
+      }
+    };
+  }, []);
 
   // Show nonce validation result via toasts instead of inline UI
   useEffect(() => {
@@ -324,32 +465,42 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
         </CardHeader>
 
 
-        <form action={formAction}>
+        <form action={formAction} onSubmit={onSubmit} noValidate>
           {channel && <input type="hidden" name="channel" value={channel} />}
           {link && <input type="hidden" name="link" value={link} />}
+          <input type="hidden" name="locale" value={locale} />
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
                 {tFields("email")}
               </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                required
-                disabled={isPending}
-                aria-invalid={!!emailError}
-                aria-describedby={emailError ? "email-error" : undefined}
-                className="h-11"
-              />
-              {emailError && (
+              <div className="relative">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleEmailChange(v);
+                    validateField('email', v);
+                  }}
+                  required
+                  disabled={isPending}
+                  aria-invalid={!!(errors.email || emailError)}
+                  aria-describedby={(errors.email || emailError) ? "email-error" : undefined}
+                  className="h-11"
+                />
+                {userExistenceState?.isChecking && (
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              {(errors.email || emailError) && (
                 <p id="email-error" className="mt-1 text-xs text-destructive">
-                  {emailError}
+                  {errors.email ?? emailError}
                 </p>
               )}
             </div>
@@ -366,12 +517,14 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value);
+                    const v = e.target.value;
+                    setPassword(v);
+                    validateField('password', v);
                   }}
                   required
                   disabled={isPending}
-                  aria-invalid={!!passwordError}
-                  aria-describedby={passwordError ? "password-error" : undefined}
+                  aria-invalid={!!(errors.password || passwordError)}
+                  aria-describedby={(errors.password || passwordError) ? "password-error" : undefined}
                   className="h-11 pr-10"
                 />
                 <button
@@ -384,8 +537,12 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {passwordError ? (
-                <CardDescription className="text-destructive" aria-live="polite">
+              {errors.password ? (
+                <CardDescription id="password-error" className="text-destructive" aria-live="polite">
+                  {errors.password}
+                </CardDescription>
+              ) : passwordError ? (
+                <CardDescription id="password-error" className="text-destructive" aria-live="polite">
                   {passwordError}
                 </CardDescription>
               ) : (
@@ -450,11 +607,26 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
           </CardContent>
 
           <CardFooter className="flex flex-col w-full gap-4 pt-6 px-6">
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isPending || authLoading || !!errors.email || !!errors.password || !email || !password}
+              onClick={handleSignupClick}
+            >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {getLoadingMessage()}
+                </>
+              ) : authLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking authentication...
+                </>
+              ) : isAuthenticated ? (
+                <>
+                  Continue to Dashboard
+                  {channel && ` & Connect ${channel}`}
                 </>
               ) : (
                 t("actions.signUp")
@@ -464,10 +636,10 @@ export default function SignupForm({ message, link, channel }: SignupFormProps) 
             <Button
               variant="outline"
               className="w-full"
-              asChild
+              onClick={onRedirectToLogin || (() => window.location.href = '/login')}
               disabled={isPending}
             >
-              <Link href="/login">{t("signInPrompt")}</Link>
+              {t("signInPrompt")}
             </Button>
 
           </CardFooter>

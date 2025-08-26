@@ -178,6 +178,9 @@
       "title": "Complete Your Profile",
       "subtitle": "Just a few more details to get you started with AnthonChat"
     },
+    "channelLinking": {
+      "fallbackMessage": "You can set up the channel manually using the verification process below."
+    },
     "fields": {
       "email": "Email",
       "password": "Password",

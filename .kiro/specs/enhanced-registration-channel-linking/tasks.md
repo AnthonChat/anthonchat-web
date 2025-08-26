@@ -1,0 +1,161 @@
+# Implementation Plan
+
+- [x] 1. Create basic utility functions
+  - [x] 1.1 Create URL parameter utilities
+    - Implement extractUrlParams function to parse query parameters
+    - Add validateUrlParam function for basic parameter validation
+    - Create buildUrlWithParams function for constructing URLs with parameters
+    - _Requirements: 4.1, 4.2, 4.4_
+  - [x] 1.2 Add string sanitization utilities
+    - Implement sanitizeChannelId function for channel ID cleaning
+    - Add sanitizeNonce function for nonce validation and cleaning
+    - Create escapeHtml function for safe string output
+    - _Requirements: 4.4, 5.4_
+  - [x] 1.3 Create redirect helpers
+    - Implement buildRedirectUrl function with parameter preservation
+    - Add preserveParams function to maintain query parameters across redirects
+    - Create getRedirectPath function for locale-aware redirects
+    - _Requirements: 4.1, 4.2_
+
+- [x] 2. Implement user existence detection
+  - [x] 2.1 Create database query functions
+    - Implement checkUserExists function to query users table by email
+    - Add getUserByEmail function for full user lookup
+    - Create getUserAuthState function to check authentication status
+    - _Requirements: 2.1, 3.1_
+  - [x] 2.2 Add user state utilities
+    - Implement isUserLoggedIn function for session checking
+    - Add getUserProfile function for user data retrieval
+    - Create hasUserCompletedOnboarding function for onboarding status
+    - _Requirements: 2.1, 3.1_
+
+- [x] 3. Create channel validation utilities
+  - [x] 3.1 Implement nonce validation
+    - Create validateNonceFormat function for format checking
+    - Add isNonceExpired function for expiration validation
+    - Implement generateNonce function for creating secure nonces
+    - _Requirements: 4.3, 4.4, 6.2_
+  - [x] 3.2 Add channel validation
+    - Implement validateChannelId function for channel ID validation
+    - Add isSupportedChannel function to check channel support
+    - Create getChannelConfig function for channel-specific settings
+    - _Requirements: 4.4, 5.4_
+
+- [x] 4. Implement core channel linking database operations
+  - [x] 4.1 Create channel linking functions
+    - Implement linkChannelToUser function for database operations
+    - Add createChannelVerification function for verification records
+    - Create updateChannelLinkStatus function for status updates
+    - _Requirements: 1.2, 2.2, 3.4, 5.4_
+  - [x] 4.2 Add verification handling
+    - Implement markChannelAsVerified function
+    - Add removeChannelLink function for cleanup operations
+    - Create getChannelLinkStatus function for status checking
+    - _Requirements: 1.2, 2.2, 3.4, 5.4_
+
+- [x] 5. Build AuthStateDetector component
+  - [x] 5.1 Create component structure
+    - Implement AuthStateDetector React component
+    - Add props interface for component configuration
+    - Create component state management for auth detection
+    - _Requirements: 2.1, 3.1_
+  - [x] 5.2 Add routing logic
+    - Implement detectUserState function for state determination
+    - Add routeBasedOnState function for navigation decisions
+    - Create handleAuthStateChange function for state updates
+    - _Requirements: 1.1, 2.1, 3.1_
+
+- [x] 6. Enhance SignupPageWrapper with user detection
+  - [x] 6.1 Add user existence checking
+    - Modify SignupPageWrapper to check user existence on mount
+    - Implement handleExistingUser function for existing user flow
+    - Add showExistingUserMessage function for user feedback
+    - _Requirements: 3.1, 3.2_
+  - [x] 6.2 Implement redirect logic
+    - Create redirectToLogin function with parameter preservation
+    - Add preserveChannelParams function for maintaining link data
+    - Implement handleRedirectWithParams function for seamless navigation
+    - _Requirements: 3.3, 4.1, 4.2_
+
+- [x] 7. Create ChannelLinkingService
+  - [x] 7.1 Build service class
+    - Create ChannelLinkingService class with core methods
+    - Implement validateAndLinkChannel method for complete linking flow
+    - Add handleLinkingError method for error management
+    - _Requirements: 1.2, 2.2, 3.4, 6.1_
+  - [x] 7.2 Add business logic
+    - Implement detergOperankingStrategy function for different user states
+    - Add retryLinkingOperation function for failed attempts
+    - Create generateFallbackOptions function for alternative linking methods
+    - _Requirements: 1.3, 2.4, 6.1, 6.3, 6.5_
+
+- [x] 8. Enhance signup auth action
+  - [x] 8.1 Modify signUp action
+    - Add user existence check before account creation
+    - Implement preventDuplicateAccount function
+    - Create handleExistingUserSignup function for redirects
+    - _Requirements: 3.1, 3.2, 5.3_
+  - [x] 8.2 Add channel linking integration
+    - Integrate channel linking after successful user creation
+    - Implement determinePostSignupFlow function for routing decisions
+    - Add skipOnboardingIfLinked function for smart onboarding
+    - _Requirements: 1.2, 1.4_
+
+- [x] 9. Enhance login auth action
+  - [x] 9.1 Modify signInWithState action
+    - Add channel parameter detection in login flow
+    - Implement handleChannelParamsInLogin function
+    - Create preserveParamsAcrossLogin function
+    - _Requirements: 3.4, 4.1, 4.2_
+  - [x] 9.2 Add post-login channel linking
+    - Integrate automatic channel linking after successful login
+    - Implement linkChannelAfterLogin function
+    - Add handlePostLoginRedirect function for smart routing
+    - _Requirements: 3.4, 3.5_
+
+- [x] 10. Enhance LoginForm component
+  - [x] 10.1 Add channel linking props
+    - Modify LoginForm to accept channel and link parameters from URL search params
+    - Add hidden form fields to pass channel parameters to server action
+    - Update component interface to handle channel linking context
+    - _Requirements: 3.4, 6.4_
+  - [x] 10.2 Add channel linking feedback
+    - Display channel linking status messages when redirected from signup
+    - Show appropriate success/error messages for channel linking attempts
+    - Handle expired link scenarios with user-friendly messaging
+    - _Requirements: 3.4, 3.5, 6.1, 6.4_
+
+- [x] 11. Implement onboarding skip logic
+  - [x] 11.1 Add middleware for onboarding skip detection
+    - Modify signup complete page to check for skipOnboarding parameter
+    - Implement automatic redirect to dashboard when onboarding should be skipped
+    - Add proper parameter handling for channel linking success/failure context
+    - _Requirements: 1.4_
+  - [x] 11.2 Enhance signup complete page routing
+    - Update signup complete page to handle channel linking success scenarios
+    - Add conditional rendering based on skipOnboarding parameter
+    - Implement proper redirect logic for successful channel linking during signup
+    - _Requirements: 1.4, 3.5_
+
+- [x] 12. Add comprehensive error handling
+  - [x] 12.1 Implement error recovery
+    - Create handleChannelLinkingError function with retry logic
+    - Add generateErrorRecoveryOptions function
+    - Implement showUserFriendlyError function with actionable guidance
+    - _Requirements: 1.3, 2.4, 6.1, 6.4_
+  - [x] 12.2 Add fallback mechanisms
+    - Create handleExpiredLink function with alternative options
+    - Implement handleNetworkError function with retry mechanisms
+    - Add provideManualLinkingOptions function for failed automatic linking
+    - _Requirements: 6.1, 6.2, 6.3, 6.5_
+
+- [x] 13. Add security and logging
+  - [x] 13.1 Implement security measures
+    - Add input validation for all channel and nonce parameters
+    - Create rate limiting for channel linking attempts
+    - _Requirements: 4.4, 5.4_
+  - [x] 13.2 Add logging and monitoring
+    - Implement structured logging for all channel operations
+    - Add error tracking with context for debugging
+    - Create audit trails for security monitoring
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_

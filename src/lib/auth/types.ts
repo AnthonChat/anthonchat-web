@@ -30,6 +30,21 @@ export interface SignupFormData {
 }
 
 /**
+ * Enhanced signup form data with channel linking parameters
+ * Extends basic signup data with channel linking capabilities
+ */
+export interface EnhancedSignupFormData extends SignupFormData {
+  /** Channel ID for automatic linking */
+  channel?: string;
+  /** Link nonce for channel verification */
+  link?: string;
+  /** Override flag for handling existing users */
+  userExistsOverride?: boolean;
+  /** Flag to skip onboarding when channel is auto-linked */
+  skipOnboarding?: boolean;
+}
+
+/**
  * Errore di validazione per campo specifico
  * Utilizzato per mostrare errori specifici sui campi del form
  */
@@ -40,18 +55,7 @@ export interface ValidationError {
   message: string;
 }
 
-/**
- * Risultato della validazione dei dati del form
- * Contiene i dati validati o gli errori di validazione
- */
-export interface ValidationResult {
-  /** Indica se la validazione è passata */
-  isValid: boolean;
-  /** Dati validati (solo se isValid = true) */
-  data?: SignupFormData;
-  /** Errori di validazione (solo se isValid = false) */
-  errors?: ValidationError[];
-}
+
 
 /**
  * Schema di validazione per l'email
@@ -185,19 +189,33 @@ export const SIGNUP_CONFIG = {
   COMPLETION_REDIRECT: '/signup/complete',
 } as const;
 
+
+
 /**
- * Funzione di utilità per validare FormData di signup
- * @param formData - FormData da validare
- * @returns Risultato della validazione con dati o errori
+ * Enhanced validation result for signup with channel linking
  */
-export function validateSignupFormData(formData: FormData): ValidationResult {
+export interface EnhancedValidationResult {
+  /** Indicates if validation passed */
+  isValid: boolean;
+  /** Validated data (only if isValid = true) */
+  data?: EnhancedSignupFormData;
+  /** Validation errors (only if isValid = false) */
+  errors?: ValidationError[];
+}
+
+/**
+ * Enhanced validation function for signup with channel linking parameters
+ * @param formData - FormData to validate
+ * @returns Enhanced validation result with channel parameters
+ */
+export function validateEnhancedSignupFormData(formData: FormData): EnhancedValidationResult {
   const errors: ValidationError[] = [];
   
-  // Estrazione e pulizia dati
+  // Extract and clean basic data
   const email = formData.get("email")?.toString()?.trim();
   const password = formData.get("password")?.toString();
 
-  // Validazione email
+  // Validate email
   if (!email) {
     errors.push({
       field: "email",
@@ -210,7 +228,7 @@ export function validateSignupFormData(formData: FormData): ValidationResult {
     });
   }
 
-  // Validazione password
+  // Validate password
   if (!password) {
     errors.push({
       field: "password",
@@ -223,7 +241,7 @@ export function validateSignupFormData(formData: FormData): ValidationResult {
     });
   }
 
-  // Ritorna risultato
+  // Return early if basic validation fails
   if (errors.length > 0) {
     return {
       isValid: false,
@@ -231,11 +249,21 @@ export function validateSignupFormData(formData: FormData): ValidationResult {
     };
   }
 
+  // Extract additional channel linking parameters
+  const channel = formData.get("channel")?.toString()?.trim();
+  const link = formData.get("link")?.toString()?.trim();
+  const userExistsOverride = formData.get("userExistsOverride")?.toString() === 'true';
+  const skipOnboarding = formData.get("skipOnboarding")?.toString() === 'true';
+
   return {
     isValid: true,
     data: {
       email: email!,
       password: password!,
+      channel: channel || undefined,
+      link: link || undefined,
+      userExistsOverride,
+      skipOnboarding,
     },
   };
 }
