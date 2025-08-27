@@ -614,7 +614,7 @@ function SubscriptionManagementContent({
                           <div className="space-y-1">
                             <div className="text-3xl font-bold">
                               {selectedPrice?.unit_amount
-                                ? `$${(selectedPrice.unit_amount / 100).toFixed(
+                                ? `${t('subscriptionMgmt.currency.symbol')}${(selectedPrice.unit_amount / 100).toFixed(
                                     2
                                   )}`
                                 : "Contact us"}
@@ -626,7 +626,7 @@ function SubscriptionManagementContent({
                               selectedPrice?.unit_amount &&
                               monthlyPrice?.unit_amount && (
                                 <div className="text-xs text-muted-foreground">
-                                  $
+                                  {t('subscriptionMgmt.currency.symbol')}
                                   {(
                                     selectedPrice.unit_amount /
                                     100 /

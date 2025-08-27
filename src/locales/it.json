@@ -276,6 +276,9 @@
         "title": "Abbonamento attuale",
         "description": "Il tuo piano corrente e le informazioni di fatturazione"
       },
+      "currency": {
+        "symbol": "€"
+      },
       "common": {
         "refresh": "Aggiorna",
         "freeTrial": "Prova gratuita",

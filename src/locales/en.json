@@ -280,6 +280,9 @@
         "title": "Current Subscription",
         "description": "Your current plan and billing information"
       },
+      "currency": {
+        "symbol": "€"
+      },
       "common": {
         "refresh": "Refresh",
         "freeTrial": "Free Trial",
