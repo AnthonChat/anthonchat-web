@@ -61,7 +61,7 @@ const ChannelItem = React.memo(
       <Button
         key={userChannel.id}
         variant="outline"
-        className="w-full justify-start h-auto p-5 transition-all duration-300 group border-2 bg-card hover:bg-accent border-border hover:border-accent text-foreground"
+        className="w-full justify-start h-auto p-4 sm:p-5 transition-all duration-300 group border-2 bg-card hover:bg-accent border-border hover:border-accent text-foreground"
         onClick={() => onChannelClick(userChannel)}
         style={{
           animationDelay: `${index * 0.1}s`,
@@ -76,12 +76,12 @@ const ChannelItem = React.memo(
                 ) as React.ReactElement<React.SVGProps<SVGSVGElement>>,
                 {
                   className:
-                    "h-6 w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300",
+                    "h-5 w-5 sm:h-6 sm:w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300",
                 }
               )}
             </div>
             <div className="flex-1 text-left">
-              <div className="font-bold text-lg capitalize transition-all duration-300 text-foreground group-hover:text-accent-foreground">
+              <div className="font-bold text-base sm:text-lg capitalize transition-all duration-300 text-foreground group-hover:text-accent-foreground">
                 {channelDetails.id}
               </div>
               <div className="text-sm font-medium text-muted-foreground mt-1">
@@ -199,7 +199,7 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10 pointer-events-none" />
 
       <CardHeader className="relative">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:gap-0 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-3">
             <div className="p-3 bg-muted rounded-lg shadow-lg">
               <MessageCircle className="h-6 w-6 text-muted-foreground" />
@@ -272,7 +272,7 @@ function ChannelsOverviewContent({ userId }: ChannelsOverviewProps) {
         </LoadingWrapper>
 
         <div className="mt-8 pt-6 border-t border-border/50">
-          <div className="flex gap-4 w-full">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
             <Button
               variant="outline"
               className="flex-1 bg-card hover:bg-accent border-2 border-border hover:border-accent text-foreground font-semibold transition-all duration-300 hover:shadow-lg py-3 rounded-xl"

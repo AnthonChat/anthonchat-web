@@ -27,11 +27,12 @@ export default async function ChannelsPage() {
         title={tDash('channels.title')}
         description={tDash('channels.description')}
         backHref="/dashboard"
-        icon={<MessageSquare className="h-5 w-5" />}
+        variant="enhanced"
+        icon={<MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />}
       />
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-3 sm:px-6 py-6 sm:py-8">
         <ChannelManagement channels={channels} />
       </main>
     </div>

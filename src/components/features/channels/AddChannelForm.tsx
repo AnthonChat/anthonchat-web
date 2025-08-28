@@ -319,12 +319,12 @@ export function AddChannelForm({
   const getChannelIcon = (channelId: string) => {
     switch (channelId.toLowerCase()) {
       case "whatsapp":
-        return <Phone className="h-12 w-12 mx-auto mb-4 text-success" />;
+        return <Phone className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 text-success" />;
       case "telegram":
-        return <MessageCircle className="h-12 w-12 mx-auto mb-4 text-info" />;
+        return <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 text-info" />;
       default:
         return (
-          <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 text-muted-foreground" />
         );
     }
   };
@@ -513,7 +513,7 @@ export function AddChannelForm({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold text-foreground">
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
           {t('channelsAdd.head.title')}
         </h2>
         <p className="text-muted-foreground">
@@ -521,7 +521,7 @@ export function AddChannelForm({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {availableChannels.map((channel) => {
           const state = channelStates[channel.id] || { status: "idle" };
           const isConnected = state.status === "done";
@@ -546,7 +546,7 @@ export function AddChannelForm({
 
           return (
             <Card key={channel.id} className={cardClassName}>
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-4 sm:p-6 text-center">
                 {getChannelIcon(channel.id)}
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <h3 className="font-semibold">
@@ -562,7 +562,7 @@ export function AddChannelForm({
                   <div className="mb-4 p-3 bg-success/10 rounded-lg">
                     <p className="text-sm text-success">
                       {t('channelsAdd.connectedAs')}{" "}
-                      <span className="font-mono">{state.link}</span>
+                      <span className="font-mono break-all">{state.link}</span>
                     </p>
                   </div>
                 )}
@@ -582,7 +582,7 @@ export function AddChannelForm({
                         {t('channelsAdd.commandPrompt')}
                       </p>
                       <div className="flex items-center gap-2 mb-2">
-                        <code className="flex-1 px-2 py-1 bg-white rounded text-xs font-mono">
+                        <code className="flex-1 px-2 py-1 bg-background rounded text-xs font-mono overflow-x-auto break-all">
                           {state.command}
                         </code>
                         <Button

@@ -27,21 +27,21 @@ export default async function SubscriptionPage() {
       />
 
       {/* Enhanced Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Welcome Banner */}
-        <div className="mb-8 p-8 bg-primary/5 rounded-2xl shadow-xl animate-slide-up border-2 border-primary/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">
+        <div className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-primary/5 rounded-xl sm:rounded-2xl shadow-xl animate-slide-up border-2 border-primary/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 sm:justify-between">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-foreground leading-tight">
                 {tDash('subscription.bannerTitle')}
               </h2>
-              <p className="text-muted-foreground text-lg font-medium">
+              <p className="text-muted-foreground text-base sm:text-lg font-medium leading-relaxed">
                 {tDash('subscription.bannerDescription')}
               </p>
             </div>
-            <div className="hidden md:block">
-              <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                <CreditCard className="h-10 w-10 text-primary-foreground" />
+            <div className="flex-shrink-0 self-center sm:self-auto">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-primary-foreground" />
               </div>
             </div>
           </div>

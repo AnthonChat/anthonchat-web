@@ -166,13 +166,13 @@ export function QuickActions({ onAction }: QuickActionsProps) {
       <CardHeader className="relative">
         <CardTitle className="flex items-center gap-3">
           <div className="p-3 bg-muted rounded-lg shadow-lg">
-            <Users className="h-6 w-6 text-muted-foreground" />
+            <Users className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">
+          <span className="text-lg sm:text-xl font-bold text-foreground">
             {t("quickActions.title")}
           </span>
         </CardTitle>
-        <CardDescription className="text-base font-semibold text-muted-foreground mt-2">
+        <CardDescription className="text-sm sm:text-base font-semibold text-muted-foreground mt-2">
           {t("quickActions.description")}
         </CardDescription>
       </CardHeader>
@@ -189,7 +189,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                 }
                 disabled={isComingSoon}
                 className={`
-                  w-full justify-start h-auto p-5 transition-all duration-300 group border-2
+                  w-full justify-start h-auto p-4 sm:p-5 transition-all duration-300 group border-2
                   ${
                     action.id === "manage-subscription"
                       ? "bg-primary hover:bg-primary/90 text-primary-foreground border-primary"
@@ -225,7 +225,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                   >
                     <IconComponent
                       className={`
-                      h-6 w-6 transition-all duration-300
+                      h-5 w-5 sm:h-6 sm:w-6 transition-all duration-300
                       ${
                         action.id === "manage-subscription"
                           ? "text-primary-foreground"
@@ -239,7 +239,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
                   <div className="flex-1 text-left">
                     <div
                       className={`
-                      font-bold text-lg transition-all duration-300 flex items-center gap-2
+                      font-bold text-base sm:text-lg transition-all duration-300 flex items-center gap-2
                       ${
                         action.id === "manage-subscription"
                           ? "text-primary-foreground"
@@ -280,7 +280,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         <div className="mt-8 pt-6 border-t border-border/50">
           <Button
             variant="ghost"
-            className="w-full h-12 text-base font-semibold hover-lift group bg-muted/30 hover:bg-muted/50"
+            className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold hover-lift group bg-muted/30 hover:bg-muted/50"
             onClick={() => handleAction("help")}
           >
             <HelpCircle className="h-5 w-5 mr-3 group-hover:animate-bounce" />

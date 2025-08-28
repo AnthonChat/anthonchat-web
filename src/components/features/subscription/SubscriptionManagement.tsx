@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { calculateTrialInfo } from "@/utils/trial-calculations";
 import {
-  formatTrialTimeRemaining,
   formatNextBilling,
   formatUsagePeriod,
   formatCurrentBillingPeriod,
@@ -241,13 +240,13 @@ function SubscriptionManagementContent({
       {/* Current Subscription Status */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                {t('subscriptionMgmt.current.title')}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <CreditCard className="h-5 w-5 flex-shrink-0" />
+                <span className="truncate">{t('subscriptionMgmt.current.title')}</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base mt-1">
                 {t('subscriptionMgmt.current.description')}
               </CardDescription>
             </div>
@@ -256,19 +255,20 @@ function SubscriptionManagementContent({
                 variant="outline"
                 size="sm"
                 onClick={onRefresh}
-                className="h-8 px-3"
+                className="h-8 px-3 text-xs sm:text-sm whitespace-nowrap"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {t('subscriptionMgmt.common.refresh')}
+                <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">{t('subscriptionMgmt.common.refresh')}</span>
+                <span className="xs:hidden">Refresh</span>
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2">
+                <h3 className="font-semibold text-base sm:text-lg leading-tight">
                   {subscription?.status === "trialing"
                     ? `${subscription?.product?.name || t('subscriptionMgmt.common.freeTrial')}`
                     : subscription
@@ -278,45 +278,37 @@ function SubscriptionManagementContent({
                 {subscription?.status === "trialing" && (
                   <Badge
                     variant="secondary"
-                    className="bg-primary/10 text-primary border-primary/30 shadow-sm"
+                    className="bg-primary/10 text-primary border-primary/30 shadow-sm text-xs"
                   >
                     <Gift className="h-3 w-3 mr-1" />
-                    {t('subscriptionMgmt.common.freeTrial')}
+                    <span className="hidden xs:inline">{t('subscriptionMgmt.common.freeTrial')}</span>
+                    <span className="xs:hidden">Trial</span>
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 {subscription?.status === "trialing"
                   ? trialInfo?.isExpired
-                    ? "Trial has expired"
-                    : formatTrialTimeRemaining(
-                        subscription.trial_end
-                          ? new Date(
-                              (subscription.trial_end as number) * 1000
-                            ).toISOString()
-                          : null
-                      )
+                    ? t('subscriptionMgmt.status.trialExpired')
+                    : t('subscriptionMgmt.status.trialActive')
                   : subscription
-                  ? "Subscription Plan"
-                  : "No active subscription"}
+                  ? t('subscriptionMgmt.status.subscriptionPlan')
+                  : t('subscriptionMgmt.status.noActiveSubscription')}
               </p>
             </div>
             {subscription?.status === "trialing" &&
               trialInfo &&
               !trialInfo.isExpired && (
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-primary">
-                    {trialInfo.daysRemaining}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-medium">
-                    {t('subscriptionMgmt.common.daysLeft')}
+                <div className="text-center sm:text-right">
+                  <div className="text-lg sm:text-xl font-bold text-primary">
+                    {trialInfo.daysRemaining} {t('subscriptionMgmt.common.daysLeft')}
                   </div>
                 </div>
               )}
           </div>
 
           {subscription && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -385,7 +377,7 @@ function SubscriptionManagementContent({
                 ) : (
                   <div className="space-y-3">
                     <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                           {t('subscriptionMgmt.billingCycle')}
                         </span>
@@ -397,7 +389,7 @@ function SubscriptionManagementContent({
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                           {t('subscriptionMgmt.currentPeriod')}
                         </span>
@@ -410,7 +402,7 @@ function SubscriptionManagementContent({
                       </div>
 
                       {nextBillingDate && (
-                        <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                        <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-border/50">
                           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                             {t('subscriptionMgmt.nextBilling')}
                           </span>
@@ -438,12 +430,12 @@ function SubscriptionManagementContent({
 
           {subscription?.features && (
             <div>
-              <h4 className="font-medium mb-2">{t('subscriptionMgmt.planFeatures')}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <h4 className="font-medium mb-3 text-sm sm:text-base">{t('subscriptionMgmt.planFeatures')}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {activePlan.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-success" />
-                    <span className="text-sm">{feature}</span>
+                  <div key={index} className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-sm leading-relaxed">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -456,20 +448,20 @@ function SubscriptionManagementContent({
       {(!subscription || subscription.status === "trialing") && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{t('subscriptionMgmt.available.title')}</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-lg sm:text-xl">{t('subscriptionMgmt.available.title')}</CardTitle>
+                <CardDescription className="text-sm sm:text-base mt-1">
                   {t('subscriptionMgmt.available.description')}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center space-x-2 bg-muted/50 rounded-lg p-1">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center bg-muted/50 rounded-lg p-1 w-full sm:w-auto">
                   <Button
                     variant={!isYearly ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setIsYearly(false)}
-                    className="h-8 px-3 text-xs"
+                    className="h-8 px-3 text-xs flex-1 sm:flex-initial"
                   >
                     {t('subscriptionMgmt.available.monthly')}
                   </Button>
@@ -477,7 +469,7 @@ function SubscriptionManagementContent({
                     variant={isYearly ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setIsYearly(true)}
-                    className="h-8 px-3 text-xs"
+                    className="h-8 px-3 text-xs flex-1 sm:flex-initial"
                   >
                     {t('subscriptionMgmt.available.yearly')}
                   </Button>
@@ -486,7 +478,7 @@ function SubscriptionManagementContent({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {plansLoading ? (
                 <div className="text-center text-muted-foreground">
                   {t('subscriptionMgmt.available.loading')}
@@ -611,8 +603,8 @@ function SubscriptionManagementContent({
                           <CardTitle className="text-xl font-bold">
                             {plan.name}
                           </CardTitle>
-                          <div className="space-y-1">
-                            <div className="text-3xl font-bold">
+                          <div className="space-y-2">
+                            <div className="text-2xl sm:text-3xl font-bold leading-tight">
                               {selectedPrice?.unit_amount
                                 ? `${t('subscriptionMgmt.currency.symbol')}${(selectedPrice.unit_amount / 100).toFixed(
                                     2
@@ -638,7 +630,7 @@ function SubscriptionManagementContent({
                             {isYearly && savings > 0 && (
                               <Badge
                                 variant="secondary"
-                                className="bg-green-100 text-green-800 border-green-200"
+                                className="bg-green-100 text-green-800 border-green-200 text-xs"
                               >
                                 {t('subscriptionMgmt.available.savePercent', { percent: savings.toFixed(0) })}
                               </Badge>
@@ -654,16 +646,16 @@ function SubscriptionManagementContent({
                             </Badge>
                           )}
                         </CardHeader>
-                        <CardContent className="space-y-4 flex-1 flex flex-col">
+                        <CardContent className="space-y-4 flex-1 flex flex-col p-4 sm:p-6">
                           {/* Enhanced feature list based on plan */}
                           <div className="space-y-3 flex-1">
                             {plan.description && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
                                 {plan.description}
                               </p>
                             )}
 
-                            <ul className="space-y-2">
+                            <ul className="space-y-2 sm:space-y-3">
                               {(() => {
                                 const planName = plan.name?.toLowerCase() || "";
                                 const features = [];
@@ -709,10 +701,10 @@ function SubscriptionManagementContent({
                                 return features.map((feature, index) => (
                                   <li
                                     key={index}
-                                    className="flex items-center gap-2 text-sm"
+                                    className="flex items-start gap-2 text-sm"
                                   >
-                                    <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                                    <span>{feature}</span>
+                                    <CheckCircle className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                                    <span className="leading-relaxed">{feature}</span>
                                   </li>
                                 ));
                               })()}
@@ -721,7 +713,7 @@ function SubscriptionManagementContent({
 
                           {/* Trial Information */}
                           {isEligibleForTrial && !isCurrentPlan && (
-                            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-2">
+                            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4 space-y-3">
                               <div className="flex items-center gap-2">
                                 <div className="p-1 bg-primary/20 rounded-full">
                                   <Gift className="h-4 w-4 text-primary" />
@@ -730,11 +722,11 @@ function SubscriptionManagementContent({
                                   Start with {trialDays}-day free trial
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground leading-relaxed">
+                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                                 No payment required to start. Cancel anytime
                                 during trial period.
                               </p>
-                              <div className="flex items-center gap-2 pt-1">
+                              <div className="flex flex-wrap items-center gap-3 pt-1">
                                 <div className="flex items-center gap-1 text-xs text-success">
                                   <CheckCircle className="h-3 w-3" />
                                   <span className="font-medium">

@@ -11,13 +11,13 @@ export default function Home() {
       {/* HERO con copy originale adattato */}
       <section className="relative overflow-hidden">
         <div className="relative container mx-auto px-4 py-20 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
             {t("hero.title")}
           </h1>
-          <div className="mt-2 text-xl md:text-2xl font-semibold text-primary">
+          <div className="mt-2 text-lg sm:text-xl md:text-2xl font-semibold text-primary">
             {t("hero.subtitle")}
           </div>
-          <p className="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground">
+          <p className="mt-6 max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-muted-foreground">
             {t("hero.description")}
           </p>
 
@@ -25,7 +25,7 @@ export default function Home() {
           <div className="mt-10">
             <LocaleLink
               href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-base md:text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+              className="inline-flex items-center justify-center rounded-xl bg-primary px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
             >
               {t("cta.button")}
             </LocaleLink>
@@ -35,8 +35,8 @@ export default function Home() {
 
       {/* CHAT DEMO + CTA demo (aderente al tono originale, ma omnicanale) */}
       <section className="container mx-auto px-4 py-12">
-        <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
-          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
             {/* Mockup chat: focus visivo + responsive */}
             <div className="rounded-2xl border border-border bg-background shadow-sm max-w-2xl mx-auto">
               <div className="rounded-t-2xl bg-primary text-primary-foreground font-semibold px-4 py-3 flex items-center gap-2">
@@ -86,14 +86,14 @@ export default function Home() {
 
       {/* BIG CLAIM */}
       <section className="container mx-auto px-4">
-        <div className="my-10 text-center text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
+        <div className="my-10 text-center text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
           {t("claims.1")}
         </div>
       </section>
 
       {/* SEZIONE: Unico coach AI clone ... (adattata a piattaforma) */}
       <section className="container mx-auto px-4">
-        <div className="relative rounded-2xl border border-border bg-card p-6 md:p-8">
+        <div className="relative rounded-2xl border border-border bg-card p-5 sm:p-6 md:p-8">
           <h2 className="text-primary font-extrabold uppercase text-2xl">
             🔥 {t("features.title")}
           </h2>
@@ -122,14 +122,14 @@ export default function Home() {
 
       {/* BIG CLAIM 2 */}
       <section className="container mx-auto px-4">
-        <div className="my-12 text-center text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
+        <div className="my-12 text-center text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
           {t("claims.2")}
         </div>
       </section>
 
       {/* AUTOSABOTAGGIO -> adattato a contesto aziendale/squadre */}
       <section className="container mx-auto px-4">
-        <div className="relative rounded-2xl border border-border bg-card p-6 md:p-8">
+        <div className="relative rounded-2xl border border-border bg-card p-5 sm:p-6 md:p-8">
           <h2 className="text-primary font-extrabold uppercase text-2xl">
             ❌ {t("autosabotage.title")}
           </h2>
@@ -147,14 +147,14 @@ export default function Home() {
 
       {/* BIG CLAIM 3 */}
       <section className="container mx-auto px-4">
-        <div className="my-12 text-center text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
+        <div className="my-12 text-center text-3xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
           {t("claims.3")}
         </div>
       </section>
 
       {/* SEZIONE RISPOSTE IN TEMPO REALE */}
       <section className="container mx-auto px-4">
-        <div className="relative rounded-2xl border border-border bg-card p-6 md:p-8 text-center">
+        <div className="relative rounded-2xl border border-border bg-card p-5 sm:p-6 md:p-8 text-center">
           <h2 className="text-primary font-extrabold uppercase text-2xl">
             🚀 {t("realtime.title")}
           </h2>
@@ -172,7 +172,7 @@ export default function Home() {
 
       {/* CTA MIDDLE: identico tono “provalo gratis” */}
       <section className="container mx-auto px-4">
-        <div className="my-10 rounded-2xl border border-border bg-accent/30 p-10 text-center">
+        <div className="my-10 rounded-2xl border border-border bg-accent/30 p-8 sm:p-10 text-center">
           <h2 className="text-3xl font-extrabold uppercase">
             {t("cta.subtitle")}
           </h2>
@@ -182,7 +182,7 @@ export default function Home() {
           <div className="mt-6">
             <LocaleLink
               href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-primary px-10 py-4 text-base md:text-lg font-semibold text-primary-foreground shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="inline-flex items-center justify-center rounded-xl bg-primary px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-primary-foreground shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
             >
               🚀 {t("cta.button")}
             </LocaleLink>
@@ -192,7 +192,7 @@ export default function Home() {
 
       {/* È PER TE SE (adattato) */}
       <section className="container mx-auto px-4 my-12 md:my-20">
-        <div className="relative rounded-2xl border border-border bg-card p-8 md:p-12">
+        <div className="relative rounded-2xl border border-border bg-card p-6 sm:p-8 md:p-12">
           <h2 className="text-primary font-extrabold uppercase text-2xl tracking-tight">
             ⚽ {t("target.title")}
           </h2>
@@ -219,7 +219,7 @@ export default function Home() {
 
       {/* COME FUNZIONA (aderente ai 4 passi) */}
       <section className="container mx-auto px-4 my-12 md:my-20">
-        <div className="relative rounded-2xl border border-border bg-card p-8 md:p-12">
+        <div className="relative rounded-2xl border border-border bg-card p-6 sm:p-8 md:p-12">
           <h2 className="text-primary font-extrabold uppercase text-2xl tracking-tight">
             📲 {t("how.title")}
           </h2>
@@ -234,7 +234,7 @@ export default function Home() {
 
       {/* PERCHE FUNZIONA COSI BENE */}
       <section className="container mx-auto px-4 my-12 md:my-20">
-        <div className="relative rounded-2xl border border-border bg-card p-8 md:p-12">
+        <div className="relative rounded-2xl border border-border bg-card p-6 sm:p-8 md:p-12">
           <h2 className="text-primary font-extrabold uppercase text-2xl tracking-tight">
             🧠 {t("why.title")}
           </h2>
@@ -255,7 +255,7 @@ export default function Home() {
               <span>{t("why.bullets.3")}</span>
             </li>
           </ul>
-          <div className="mt-8 rounded-lg bg-primary/10 p-5 md:p-6 text-foreground leading-relaxed md:leading-7">
+          <div className="mt-8 rounded-lg bg-primary/10 p-4 sm:p-5 md:p-6 text-foreground leading-relaxed md:leading-7">
             <strong>{t("why.conclusion")}</strong>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function Home() {
 
       {/* TESTIMONIALS (aderenti al tono) */}
       <section className="container mx-auto px-4 py-6">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-2xl border-l-4 border-primary bg-card p-5">
             <div className="italic text-card-foreground">
               {t("testimonials.1.text")}
@@ -285,7 +285,7 @@ export default function Home() {
 
       {/* QUANTO COSTA */}
       <section className="container mx-auto px-4">
-        <div className="relative rounded-2xl border border-border bg-card p-6 md:p-8 text-center">
+        <div className="relative rounded-2xl border border-border bg-card p-5 sm:p-6 md:p-8 text-center">
           <h2 className="text-primary font-extrabold uppercase text-2xl">
             💰 {t("cost.title")}
           </h2>
@@ -304,7 +304,7 @@ export default function Home() {
 
       {/* CTA BOTTOM con tono originale */}
       <section className="container mx-auto px-4">
-        <div className="my-8 rounded-2xl border border-border bg-accent/30 p-10 text-center">
+        <div className="my-8 rounded-2xl border border-border bg-accent/30 p-8 sm:p-10 text-center">
           <h2 className="text-3xl font-extrabold uppercase">
             {t("cta.title")}
           </h2>
@@ -314,7 +314,7 @@ export default function Home() {
           <div className="mt-6">
             <LocaleLink
               href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-primary px-10 py-4 text-base md:text-lg font-semibold text-primary-foreground shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="inline-flex items-center justify-center rounded-xl bg-primary px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-base md:text-lg font-semibold text-primary-foreground shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
             >
               🚀 {t("cta.button")}
             </LocaleLink>
@@ -337,7 +337,7 @@ export default function Home() {
           <div className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} SINCRO GROUP SRL. All rights reserved.
           </div>
-          <nav className="flex items-center gap-6 text-sm">
+          <nav className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
             <LocaleLink
               href="/privacy"
               className="text-muted-foreground hover:text-foreground transition-colors"

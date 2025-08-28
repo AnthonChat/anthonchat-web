@@ -341,6 +341,12 @@
         "description": "View your past invoices and payments",
         "emptyTitle": "No billing history available",
         "emptyDescription": "Billing history will appear here once you have an active subscription"
+      },
+      "status": {
+        "trialExpired": "Trial has expired",
+        "trialActive": "Free trial period active",
+        "subscriptionPlan": "Subscription Plan",
+        "noActiveSubscription": "No active subscription"
       }
     },
     "channelMgmt": {

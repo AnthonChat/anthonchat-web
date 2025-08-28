@@ -333,6 +333,12 @@
         "description": "Visualizza le tue fatture e i pagamenti passati",
         "emptyTitle": "Nessuno storico fatturazione disponibile",
         "emptyDescription": "Lo storico apparirà qui quando avrai un abbonamento attivo"
+      },
+      "status": {
+        "trialExpired": "Prova scaduta",
+        "trialActive": "Periodo di prova gratuita attivo",
+        "subscriptionPlan": "Piano di abbonamento",
+        "noActiveSubscription": "Nessun abbonamento attivo"
       }
     },
     "channelMgmt": {

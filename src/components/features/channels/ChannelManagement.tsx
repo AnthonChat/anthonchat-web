@@ -58,7 +58,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
       case "whatsapp":
         return link; // Phone number
       case "telegram":
-        return `@${link}`; // Username with @
+        return link; // Username with @
       default:
         return link;
     }
@@ -117,27 +117,21 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
       setIsLoading(false);
     }
   };
-
+ 
   const handleTestChannel = async (channelId: string) => {
     setIsLoading(true);
     try {
-      // TODO: Implement channel testing
-      console.info("CHANNEL_TEST_ATTEMPT", {
-        channelId,
-      });
+      console.info("CHANNEL_TEST_ATTEMPT", { channelId });
       alert("Channel testing functionality will be implemented soon");
     } catch (error) {
-      console.error("CHANNEL_TEST_ERROR", {
-        error,
-        channelId,
-      });
+      console.error("CHANNEL_TEST_ERROR", { error, channelId });
     } finally {
       setIsLoading(false);
     }
   };
-
+ 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Add New Channel Button */}
       <Card className="hover-lift overflow-hidden relative border-2">
         {/* Background Pattern */}
@@ -146,30 +140,30 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-3">
             <div className="p-3 bg-muted rounded-lg shadow-lg">
-              <Plus className="h-6 w-6 text-muted-foreground" />
+              <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">
+            <span className="text-lg sm:text-xl font-bold text-foreground leading-tight break-words">
               {t('channelMgmt.addNew.title')}
             </span>
           </CardTitle>
-          <CardDescription className="text-base font-semibold text-muted-foreground">
+          <CardDescription className="text-sm sm:text-base font-semibold text-muted-foreground leading-snug break-words">
             {t('channelMgmt.addNew.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="relative">
           <Button
             onClick={() => router.push("/dashboard/channels/add")}
-            className="w-full h-auto p-5 transition-all duration-300 group border-2 bg-card hover:bg-accent border-border hover:border-accent text-foreground"
+            className="w-full h-auto p-4 sm:p-5 transition-all duration-300 group border-2 bg-card hover:bg-accent border-border hover:border-accent text-foreground whitespace-normal text-left"
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0 w-full">
               <div className="p-3 bg-accent group-hover:bg-accent rounded-lg transition-all duration-300">
-                <Plus className="h-6 w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300" />
+                <Plus className="h-5 w-5 sm:h-6 sm:w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300" />
               </div>
-              <div className="flex-1 text-left">
-                <div className="font-bold text-lg text-foreground">
+              <div className="flex-1 min-w-0 text-left">
+                <div className="font-bold text-base sm:text-lg text-foreground leading-tight whitespace-normal break-words">
                   {t('channelMgmt.addNew.button')}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground whitespace-normal break-all sm:break-words hyphens-auto leading-snug max-w-full overflow-hidden">
                   {t('channelMgmt.addNew.connectFirstPlatform')}
                 </div>
               </div>
@@ -186,13 +180,13 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-3">
             <div className="p-3 bg-muted rounded-lg shadow-lg">
-              <MessageCircle className="h-6 w-6 text-muted-foreground" />
+              <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">
+            <span className="text-lg sm:text-xl font-bold text-foreground">
               {t('channelMgmt.connected.title')}
             </span>
           </CardTitle>
-          <CardDescription className="text-base font-semibold text-muted-foreground">
+          <CardDescription className="text-sm sm:text-base font-semibold text-muted-foreground">
             {t('channelMgmt.connected.description', {count: channels.length})}
           </CardDescription>
         </CardHeader>
@@ -202,13 +196,13 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
               {channels.map((userChannel, index) => (
                 <div
                   key={userChannel.id}
-                  className="group p-5 rounded-xl bg-card border-2 border-border hover:border-accent transition-all duration-300 hover:shadow-lg animate-fade-in hover-scale"
+                  className="group p-4 sm:p-5 rounded-xl bg-card border-2 border-border hover:border-accent transition-all duration-300 hover:shadow-lg animate-fade-in hover-scale"
                   style={{
                     animationDelay: `${index * 0.1}s`,
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                       <div className="p-3 bg-accent group-hover:bg-accent/90 rounded-lg transition-all duration-300">
                         {React.cloneElement(
                           getChannelIcon(
@@ -218,17 +212,17 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                           >,
                           {
                             className:
-                              "h-6 w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300",
+                              "h-5 w-5 sm:h-6 sm:w-6 text-accent-foreground group-hover:scale-110 transition-all duration-300",
                           }
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg capitalize text-foreground group-hover:text-accent transition-colors">
+                          <h3 className="font-bold text-base sm:text-lg capitalize text-foreground group-hover:text-accent transition-colors truncate max-w-[75vw] sm:max-w-none">
                             {userChannel.channels.id}
                           </h3>
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground">
+                        <p className="text-sm font-medium text-muted-foreground whitespace-nowrap truncate sm:whitespace-normal break-words">
                           {formatChannelId(
                             userChannel.channels.id,
                             userChannel.link
@@ -252,7 +246,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="w-full sm:w-auto flex items-center gap-2 flex-wrap justify-end sm:justify-start">
                       <Button
                         variant="outline"
                         size="sm"
