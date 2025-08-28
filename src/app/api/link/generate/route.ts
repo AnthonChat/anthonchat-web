@@ -12,8 +12,8 @@ export async function OPTIONS() {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
-      "Access-Control-Max-Age": "86400"
-    }
+      "Access-Control-Max-Age": "86400",
+    },
   });
 }
 
@@ -70,10 +70,26 @@ export async function POST(request: NextRequest) {
   let deeplink: string;
   switch (channel_id) {
     case "telegram":
-      deeplink = `https://t.me/AnthonChat_bot?text=%2Flink+${nonce}`;
+      const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
+      if (!botUsername) {
+        console.error("TELEGRAM_BOT_USERNAME_NOT_SET");
+        return NextResponse.json(
+          { error: "Telegram bot is not configured." },
+          { status: 500 }
+        );
+      }
+      deeplink = `https://t.me/${botUsername}?text=%2Flink+${nonce}`;
       break;
     case "whatsapp":
-      deeplink = `https://wa.me/15556475202?text=${encodeURIComponent(
+      const whatsAppNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+      if (!whatsAppNumber) {
+        console.error("WHATSAPP_NUMBER_NOT_SET");
+        return NextResponse.json(
+          { error: "WhatsApp number is not configured." },
+          { status: 500 }
+        );
+      }
+      deeplink = `https://wa.me/${whatsAppNumber}?text=${encodeURIComponent(
         command
       )}`;
       break;
