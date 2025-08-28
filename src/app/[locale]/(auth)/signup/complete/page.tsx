@@ -92,7 +92,9 @@ export default async function SignupCompletePage({
   const incomingChannel = resolvedSearchParams?.channel;
   const incomingLink = resolvedSearchParams?.link;
   const shouldPreserveForClient =
-    !!incomingChannel && !!incomingLink && incomingChannel.toLowerCase() === "telegram";
+    !!incomingChannel &&
+    !!incomingLink &&
+    ["telegram", "whatsapp"].includes(incomingChannel.toLowerCase());
 
   // If user is already onboarded and we don't need to preserve for client, redirect to dashboard
   if (isOnboarded === true && !shouldPreserveForClient && !shouldSkipOnboarding) {
