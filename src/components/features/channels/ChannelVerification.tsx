@@ -387,8 +387,8 @@ export default function ChannelVerification({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Connect Your Accounts</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-2xl sm:text-3xl">Connect Your Accounts</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
           We need to verify your accounts to send and receive messages on your
           behalf. Follow the instructions for each channel below.
         </CardDescription>

@@ -294,8 +294,8 @@ export default function LoginForm({ message, link, channel }: LoginFormProps) {
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Card className="shadow-lg">
         <CardHeader className="text-center space-y-3 pb-6">
-          <CardTitle className="text-2xl">Bentornato!</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-xl sm:text-2xl">Bentornato!</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {(channel || link) ? (
               <>
                 Accedi per collegare il tuo canale {channel && `${channel.charAt(0).toUpperCase() + channel.slice(1)}`}

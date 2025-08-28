@@ -195,7 +195,7 @@ const UsageDisplay = React.memo(
                 <Icon className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <SheetTitle className="text-xl font-bold leading-tight mb-1">
+                <SheetTitle className="text-lg font-bold leading-tight mb-1 sm:text-xl">
                   {title} Usage Details
                 </SheetTitle>
                 <SheetDescription className="text-sm text-muted-foreground">
@@ -512,14 +512,14 @@ function SubscriptionCardContent({
               <div className="p-3 bg-primary rounded-lg shadow-lg">
                 <Zap className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">
+              <span className="text-lg font-bold text-foreground sm:text-xl">
                 {t('subscription.statusTitle')}
               </span>
             </div>
           </CardTitle>
           {/* Realtime status indicators removed */}
         </div>
-        <CardDescription className="text-base font-semibold mt-2 text-muted-foreground">
+        <CardDescription className="text-sm font-semibold mt-2 text-muted-foreground sm:text-base">
           {subscription?.product?.name || t('subscription.noActive')}
         </CardDescription>
       </CardHeader>

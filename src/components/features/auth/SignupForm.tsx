@@ -458,8 +458,8 @@ export default function SignupForm({
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Card className="shadow-lg">
         <CardHeader className="text-center space-y-3 pb-6">
-          <CardTitle className="text-2xl">{t("title")}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-xl sm:text-2xl">{t("title")}</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {t("subtitle")}
           </CardDescription>
         </CardHeader>

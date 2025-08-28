@@ -40,8 +40,8 @@ export function ComingSoon({
           <div className="mx-auto mb-4 p-3 bg-muted rounded-full w-fit">
             <Clock className="h-8 w-8 text-muted-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-xl font-bold sm:text-2xl">{title}</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {description}
           </CardDescription>
         </CardHeader>

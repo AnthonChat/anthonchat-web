@@ -282,7 +282,6 @@ function SubscriptionManagementContent({
                   >
                     <Gift className="h-3 w-3 mr-1" />
                     <span className="hidden xs:inline">{t('subscriptionMgmt.common.freeTrial')}</span>
-                    <span className="xs:hidden">Trial</span>
                   </Badge>
                 )}
               </div>
