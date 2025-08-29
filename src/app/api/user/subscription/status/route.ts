@@ -32,8 +32,7 @@ type NormalizedStatus =
   | "past_due";
 
 function normalizeStatus(
-  stripeStatus: string | null | undefined,
-  cancelAtPeriodEnd: boolean | null | undefined
+  stripeStatus: string | null | undefined
 ): NormalizedStatus {
   switch (stripeStatus) {
     case "trialing":
@@ -159,7 +158,7 @@ async function buildStatusPayload(userId: string) {
   const cancelAtPeriodEnd =
     (subscription.cancel_at_period_end as boolean | null) ?? null;
 
-  const normalized = normalizeStatus(stripeStatus, cancelAtPeriodEnd);
+  const normalized = normalizeStatus(stripeStatus);
 
   // active or trialing are considered active
   const hasActive =
