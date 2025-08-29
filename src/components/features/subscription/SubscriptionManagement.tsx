@@ -19,7 +19,6 @@ import {
   CheckCircle,
   Crown,
   Zap,
-  Shield,
   Gift,
   Clock,
   Star,
@@ -234,7 +233,9 @@ function SubscriptionManagementContent({
       setIsActionLoading(false);
     }
   };
-
+ 
+  const planCount = availablePlans.length;
+ 
   return (
     <div className="space-y-6">
       {/* Current Subscription Status */}
@@ -477,7 +478,16 @@ function SubscriptionManagementContent({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div
+              className={cn(
+                "grid gap-4 sm:gap-6",
+                planCount === 1
+                  ? "grid-cols-1 place-items-center"
+                  : planCount === 2
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              )}
+            >
               {plansLoading ? (
                 <div className="text-center text-muted-foreground">
                   {t('subscriptionMgmt.available.loading')}
@@ -533,10 +543,6 @@ function SubscriptionManagementContent({
                       | string
                       | undefined;
                     const isCurrentPlan = productSlug === plan.metadata?.slug;
-                    const trialDays = getTrialDaysForPlan(plan);
-                    const isEligibleForTrial =
-                      (!subscription || subscription.status !== "active") &&
-                      trialDays > 0;
 
                     // Get the price for the selected billing interval
                     const selectedInterval = isYearly ? "year" : "month";
@@ -569,6 +575,7 @@ function SubscriptionManagementContent({
                         key={plan.id}
                         className={cn(
                           "relative overflow-hidden transition-all duration-200 hover:shadow-lg flex flex-col h-full",
+                          planCount === 1 && "w-full sm:max-w-md mx-auto",
                           isCurrentPlan
                             ? "ring-2 ring-primary shadow-lg"
                             : "hover:shadow-md border-border/50"
@@ -580,13 +587,6 @@ function SubscriptionManagementContent({
                           </div>
                         )}
 
-                        {/* Trial Badge for eligible users */}
-                        {isEligibleForTrial && !isCurrentPlan && (
-                          <div className="absolute top-0 left-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-br-lg shadow-md">
-                            <Gift className="h-3 w-3 inline mr-1" />
-                            {t('subscriptionMgmt.available.freeTrialBadge', { days: trialDays })}
-                          </div>
-                        )}
 
                         <CardHeader className="text-center">
                           <div
@@ -710,37 +710,6 @@ function SubscriptionManagementContent({
                             </ul>
                           </div>
 
-                          {/* Trial Information */}
-                          {isEligibleForTrial && !isCurrentPlan && (
-                            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 sm:p-4 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <div className="p-1 bg-primary/20 rounded-full">
-                                  <Gift className="h-4 w-4 text-primary" />
-                                </div>
-                                <span className="text-sm font-semibold text-foreground">
-                                  Start with {trialDays}-day free trial
-                                </span>
-                              </div>
-                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                No payment required to start. Cancel anytime
-                                during trial period.
-                              </p>
-                              <div className="flex flex-wrap items-center gap-3 pt-1">
-                                <div className="flex items-center gap-1 text-xs text-success">
-                                  <CheckCircle className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    Full access
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 text-xs text-info">
-                                  <Shield className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    No commitment
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
 
                           {/* Action Button - Always at bottom */}
                           <div className="mt-auto pt-4">
@@ -750,22 +719,10 @@ function SubscriptionManagementContent({
                                   handleUpgrade(plan.metadata?.slug)
                                 }
                                 disabled={isActionLoading}
-                                className={cn(
-                                  "w-full transition-all duration-200",
-                                  isEligibleForTrial
-                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl"
-                                    : ""
-                                )}
+                                className={cn("w-full transition-all duration-200")}
                                 size="lg"
                               >
-                                {isEligibleForTrial ? (
-                                  <>
-                                    <Gift className="h-4 w-4 mr-2" />
-                                    {t('subscriptionMgmt.available.startTrial')}
-                                  </>
-                                ) : (
-                                  t('subscriptionMgmt.available.upgrade')
-                                )}
+                                {t('subscriptionMgmt.available.upgrade')}
                               </Button>
                             )}
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/db/server";
+import { createClient, createServiceRoleClient } from "@/lib/db/server";
 import { createCheckoutSession, getStripeCustomerByEmail } from "@/lib/stripe";
 import { getTierByPriceId } from "@/lib/queries/tiers";
 
@@ -77,6 +77,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Enforce "trial only once" on the server-side before creating a checkout session
+    const service = createServiceRoleClient();
+    const { data: priorTrials } = await service
+      .schema("stripe")
+      .from("subscriptions")
+      .select("id, trial_start, trial_end")
+      .eq("customer", customerId)
+      .not("trial_start", "is", null)
+      .limit(1);
+
+    const hasHadTrial = Array.isArray(priorTrials) && priorTrials.length > 0;
+    const requestedTrialDays =
+      typeof trial_period_days === "number"
+        ? Number(trial_period_days)
+        : undefined;
+    const effectiveTrialDays = hasHadTrial ? undefined : requestedTrialDays;
+
     // Create checkout session
     const session = await createCheckoutSession({
       customerId,
@@ -84,7 +101,7 @@ export async function POST(request: NextRequest) {
       successUrl: `${request.nextUrl.origin}/dashboard/subscription?success=true`,
       cancelUrl: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
       userId: userId,
-      trialPeriodDays: trial_period_days,
+      trialPeriodDays: effectiveTrialDays,
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
