@@ -266,6 +266,7 @@
       "bannerTitle": "Fatturazione & Abbonamento 💳",
       "bannerDescription": "Gestisci piano, dati di fatturazione e metodi di pagamento.",
       "statusTitle": "Stato abbonamento",
+      "subscriptionTitle": "Piano di abbonamento",
       "noActive": "Nessun abbonamento attivo",
       "upgradeButton": "Aggiorna abbonamento",
       "manageButton": "Gestisci abbonamento",
@@ -290,6 +291,7 @@
         "started": "Iniziata da {days} giorni",
         "remaining": "{days} giorni rimanenti"
       },
+      "billingInfo": "Informazioni di fatturazione",
       "billingCycle": "Ciclo di fatturazione",
       "currentPeriod": "Periodo corrente",
       "nextBilling": "Prossima fatturazione",

@@ -270,6 +270,7 @@
       "bannerTitle": "Billing & Subscription 💳",
       "bannerDescription": "Manage your plan, billing details, and payment methods.",
       "statusTitle": "Subscription Status",
+      "subscriptionTitle": "Subscription Plan",
       "noActive": "No active subscription",
       "upgradeButton": "Upgrade Subscription",
       "manageButton": "Manage Subscription",
@@ -294,6 +295,7 @@
         "started": "Started {days} days ago",
         "remaining": "{days} days remaining"
       },
+      "billingInfo": "Billing Information",
       "billingCycle": "Billing Cycle",
       "currentPeriod": "Current Period",
       "nextBilling": "Next Billing",

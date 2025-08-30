@@ -218,6 +218,74 @@ export const createCheckoutSession = async ({
     sessionConfig.payment_method_types = ["card"];
   }
 
+  // Apply a one-time €10 discount on first paid purchase for a specific price
+  // - Controlled via env var FIRST_PURCHASE_DISCOUNT_PRICE_ID (falls back to explicit id)
+  // - Coupon id can be provided via FIRST_PURCHASE_10_EUR_COUPON_ID; otherwise we try to find/create one
+  try {
+    const targetPriceId =
+      process.env.FIRST_PURCHASE_DISCOUNT_PRICE_ID
+
+    if (priceId === targetPriceId) {
+      // Verify price currency is EUR to safely apply an amount_off EUR coupon
+      let isEur = false;
+      try {
+        const supabase = createServiceRoleClient();
+        const { data: priceRow } = await supabase
+          .schema("stripe")
+          .from("prices")
+          .select("currency")
+          .eq("id", priceId)
+          .maybeSingle();
+        isEur = (priceRow?.currency || "").toLowerCase() === "eur";
+      } catch {
+        // If we fail to resolve currency, be conservative and skip discount to avoid Stripe errors
+        isEur = false;
+      }
+
+      if (!isEur) {
+        console.warn(
+          "[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Skipping discount: non-EUR price",
+          { priceId }
+        );
+        return await stripe.checkout.sessions.create(sessionConfig);
+      }
+      // Determine prior payment and prior redemption of this coupon
+      const supabase = createServiceRoleClient();
+      const { data: paidInvoices, error: invErr } = await supabase
+        .schema("stripe")
+        .from("invoices")
+        .select("id, status, paid, created")
+        .eq("customer", customerId)
+        .or("paid.eq.true,status.eq.paid")
+        .order("created", { ascending: false })
+        .limit(1);
+
+      const hasPaidBefore = !!invErr
+        ? false
+        : Array.isArray(paidInvoices) && paidInvoices.length > 0;
+
+      const couponId = await getOrCreateFirstPurchaseCouponEUR10();
+      const hasRedeemedBefore = await hasCustomerRedeemedCoupon(customerId, couponId);
+
+      if (!hasPaidBefore && !hasRedeemedBefore) {
+        // Eligible for first-purchase discount (ensure enforced per-customer)
+        const discounts: Stripe.Checkout.SessionCreateParams["discounts"] = [
+          {
+            coupon: couponId,
+          },
+        ];
+        sessionConfig.discounts = discounts;
+      }
+    }
+  } catch (err) {
+    console.error("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Skipping discount due to error", {
+      error: err instanceof Error ? err.message : String(err),
+      customerId,
+      priceId,
+    });
+    // Continue without discount
+  }
+
   return await stripe.checkout.sessions.create(sessionConfig);
 };
 
@@ -283,3 +351,118 @@ export const createBillingPortalSession = async ({
     return_url: returnUrl,
   });
 };
+
+/**
+ * Returns a coupon id that represents a one-time €10 off discount.
+ * Priority:
+ * 1) Use env var FIRST_PURCHASE_10_EUR_COUPON_ID if provided
+ * 2) Look up an existing coupon with metadata.auto_key === 'first_purchase_eur_10'
+ * 3) Create a new coupon (amount_off=1000, currency=eur, duration=once)
+ */
+async function getOrCreateFirstPurchaseCouponEUR10(): Promise<string> {
+  const envCoupon = process.env.FIRST_PURCHASE_10_EUR_COUPON_ID?.trim();
+  if (envCoupon) return envCoupon;
+
+  // Try to find existing coupon tagged by our metadata key
+  try {
+    const existing = await stripe.coupons.list({ limit: 100 });
+    const match = existing.data.find((c) => {
+      const md = (c.metadata || {}) as Record<string, unknown>;
+      return md["auto_key"] === "first_purchase_eur_10" && c.valid !== false;
+    });
+    if (match) return match.id;
+  } catch (e) {
+    console.warn("[FIRST_PURCHASE_COUPON] Failed to list coupons:", e);
+  }
+
+  // Create a new one if not found
+  const created = await stripe.coupons.create({
+    amount_off: 1000,
+    currency: "eur",
+    duration: "once",
+    name: "First purchase €10 off",
+    metadata: { auto_key: "first_purchase_eur_10" },
+  });
+  return created.id;
+}
+
+/**
+ * Checks if the given customer already redeemed the first purchase coupon
+ * by inspecting paid invoices for the presence of our coupon ID.
+ */
+async function hasCustomerRedeemedCoupon(
+  customerId: string,
+  couponId: string
+): Promise<boolean> {
+  try {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase
+      .schema("stripe")
+      .from("invoices")
+      .select("id, status, paid, discount, discounts, total_discount_amounts")
+      .eq("customer", customerId)
+      .or("paid.eq.true,status.eq.paid")
+      .order("created", { ascending: false })
+      .limit(50);
+
+    if (error || !data || !Array.isArray(data) || data.length === 0) {
+      return false;
+    }
+
+    const used = data.some((inv: { discount?: unknown; discounts?: unknown }) => {
+      const extractCouponId = (obj: unknown): string | null => {
+        if (!obj || typeof obj !== "object") return null;
+        const o = obj as Record<string, unknown>;
+
+        // coupon may be a string
+        if (typeof o.coupon === "string") return o.coupon;
+
+        // coupon may be an object with an id field
+        if (o.coupon && typeof o.coupon === "object") {
+          const c = o.coupon as Record<string, unknown>;
+          if (typeof c.id === "string") return c.id;
+        }
+
+        // fallback fields
+        if (typeof o.coupon_id === "string") return o.coupon_id;
+        if (typeof o.id === "string") return o.id;
+
+        return null;
+      };
+
+      // Check explicit coupon references
+      try {
+        // discount can be object with coupon info
+        const d = inv.discount;
+        if (d) {
+          const dc = typeof d === "string" ? null : d;
+          const dcCouponId = extractCouponId(dc);
+          if (dcCouponId === couponId) return true;
+        }
+
+        // discounts may be array
+        const discountsArr = Array.isArray(inv.discounts)
+          ? (inv.discounts as unknown[])
+          : typeof inv.discounts === "string"
+            ? (JSON.parse(inv.discounts as string) as unknown[])
+            : [];
+        if (Array.isArray(discountsArr)) {
+          for (const di of discountsArr) {
+            const diCouponId = extractCouponId(di);
+            if (diCouponId === couponId) return true;
+          }
+        }
+      } catch {
+        // ignore parse errors
+      }
+
+      // Fallback: if invoice shows discount amounts but we cannot attribute,
+      // treat as not our coupon to avoid false positives
+      return false;
+    });
+
+    return used;
+  } catch {
+    return false;
+  }
+}
