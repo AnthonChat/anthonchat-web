@@ -10,7 +10,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   typescript: true,
 });
 
-export const getStripeCustomerByEmail = async (email: string) => {
+export const getStripeCustomerByEmail = async (email: string): Promise<Stripe.Customer | null> => {
   const customers = await stripe.customers.list({
     email,
     limit: 1,
@@ -18,7 +18,7 @@ export const getStripeCustomerByEmail = async (email: string) => {
   return customers.data[0] || null;
 };
 
-export const createStripeCustomer = async (email: string, name?: string) => {
+export const createStripeCustomer = async (email: string, name?: string): Promise<Stripe.Customer> => {
   return await stripe.customers.create({
     email,
     name,
@@ -138,7 +138,7 @@ export const linkCustomerToUser = async (
  * @param customerId - The Stripe customer ID to check
  * @returns Promise<object | null> - Customer data if found, null otherwise
  */
-export const debugCheckCustomerExists = async (customerId: string) => {
+export const debugCheckCustomerExists = async (customerId: string): Promise<Record<string, unknown> | null> => {
   try {
     const supabase = createServiceRoleClient(); // Use service role for stripe schema access
     const { data, error } = await supabase
@@ -188,7 +188,7 @@ export const createCheckoutSession = async ({
   cancelUrl: string;
   userId: string;
   trialPeriodDays?: number;
-}) => {
+}): Promise<Stripe.Checkout.Session> => {
   try {
     console.log("[CHECKOUT_INIT] createCheckoutSession input", {
       customerId,
@@ -196,7 +196,9 @@ export const createCheckoutSession = async ({
       userId,
       trialPeriodDays,
     });
-  } catch {}
+  } catch {
+    // logging failure is non-critical; ignore to avoid blocking checkout flow.
+  }
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
@@ -222,7 +224,9 @@ export const createCheckoutSession = async ({
   // For free trials, we don't require payment method collection upfront
   if (trialPeriodDays && trialPeriodDays > 0) {
     sessionConfig.payment_method_collection = "if_required";
-    sessionConfig.subscription_data!.trial_period_days = trialPeriodDays;
+    // Typings for stripe's subscription_data may not include trial_period_days in some versions.
+    // Set the runtime property via a safe unknown cast to avoid `any`.
+    (sessionConfig.subscription_data as unknown as Record<string, unknown>).trial_period_days = trialPeriodDays;
   } else {
     sessionConfig.payment_method_types = ["card"];
   }
@@ -255,6 +259,11 @@ export const createCheckoutSession = async ({
           currency: priceObj?.currency,
         });
       } catch (apiErr) {
+        // log the api error so the variable is used and we can debug failures
+        console.warn("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Failed to retrieve price from Stripe API", {
+          priceId,
+          error: apiErr instanceof Error ? apiErr.message : String(apiErr),
+        });
         try {
           const supabase = createServiceRoleClient();
           const { data: priceRow } = await supabase
@@ -367,7 +376,7 @@ export const createCheckoutSession = async ({
       } else {
         console.log(
           "[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Not eligible for discount",
-          { customerId, priceId, hasRedeemedBefore, invoiceScope, invoiceScopeEligible, priorInvoiceReason }
+          { customerId, priceId, hasRedeemedBefore, invoiceScope: scope || null, invoiceScopeEligible, priorInvoiceReason }
         );
       }
     } else if (targetPriceId) {
@@ -422,7 +431,7 @@ export const createSubscriptionWithTrial = async ({
   userId: string;
   trialPeriodDays?: number;
   idempotencyKey?: string;
-}) => {
+}): Promise<Stripe.Subscription> => {
   try {
     const params: Stripe.SubscriptionCreateParams = {
       customer: customerId,
@@ -440,14 +449,13 @@ export const createSubscriptionWithTrial = async ({
     if (trialPeriodDays && trialPeriodDays > 0) {
       // Stripe expects `trial_period_days` at top-level for subscriptions
       // when creating a subscription directly.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - stripe typings sometimes differ across versions
-      params.trial_period_days = trialPeriodDays;
+      // Set at runtime via a safe unknown cast to avoid `any` usage.
+      (params as unknown as Record<string, unknown>).trial_period_days = trialPeriodDays;
     }
-
+    
     // If no trial is provided, ensure card is collected later via payment settings,
     // but for trial flows we generally don't require a payment method upfront.
-    const options = idempotencyKey ? { idempotencyKey } : undefined;
+    const options: Stripe.RequestOptions | undefined = idempotencyKey ? { idempotencyKey } : undefined;
     const subscription = await stripe.subscriptions.create(params, options);
     return subscription;
   } catch (error) {
@@ -466,7 +474,7 @@ export const createBillingPortalSession = async ({
 }: {
   customerId: string;
   returnUrl: string;
-}) => {
+}): Promise<Stripe.BillingPortal.Session> => {
   return await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -523,20 +531,22 @@ export async function customerHasInvoiceForPrice(
     return (value as T) || null;
   };
 
-  const extractPriceIdsFromLine = (line: any): string[] => {
+  const extractPriceIdsFromLine = (line: unknown): string[] => {
     const ids: string[] = [];
     try {
       if (!line || typeof line !== "object") return ids;
+      const l = line as Record<string, unknown>;
       // Stripe API shape: line.price.id
-      if (line.price && typeof line.price === "object" && typeof line.price.id === "string") {
-        ids.push(line.price.id);
+      const priceObj = l.price;
+      if (priceObj && typeof priceObj === "object" && typeof (priceObj as Record<string, unknown>).id === "string") {
+        ids.push((priceObj as Record<string, unknown>).id as string);
       }
       // Supabase-sync shape: line.pricing.price_details.price
-      const pricing = (line.pricing as any) || {};
-      const pd = pricing.price_details || {};
-      if (typeof pd.price === "string") ids.push(pd.price);
+      const pricing = l.pricing as Record<string, unknown> | undefined;
+      const pd = pricing?.price_details as Record<string, unknown> | undefined;
+      if (pd && typeof pd.price === "string") ids.push(pd.price);
       // Some variants may include top-level price string
-      if (typeof (line as any).price === "string") ids.push((line as any).price as string);
+      if (typeof l.price === "string") ids.push(l.price);
     } catch {}
     return ids;
   };
@@ -556,11 +566,11 @@ export async function customerHasInvoiceForPrice(
     }
 
     for (const inv of data) {
-      const lines = parseJson<any>(inv.lines);
-      const items: any[] = Array.isArray(lines)
-        ? lines
-        : lines && Array.isArray(lines.data)
-          ? (lines.data as any[])
+      const lines = parseJson<unknown>(inv.lines);
+      const items: unknown[] = Array.isArray(lines)
+        ? (lines as unknown[])
+        : lines && typeof lines === "object" && Array.isArray((lines as Record<string, unknown>).data)
+          ? ((lines as Record<string, unknown>).data as unknown[])
           : [];
       for (const li of items) {
         const ids = extractPriceIdsFromLine(li);
@@ -642,11 +652,13 @@ async function hasCustomerRedeemedCoupon(
       const cust = await stripe.customers.retrieve(customerId);
       const flag =
         typeof cust !== "string" &&
-        ((cust.metadata?.["first_purchase_coupon_redeemed"] === "true" ||
+        // @ts-expect-error Property 'metadata' does not exist on type...
+        (cust.metadata?.["first_purchase_coupon_redeemed"] === "true" ||
           // also accept boolean true if set
-          // @ts-ignore
-          cust.metadata?.["first_purchase_coupon_redeemed"] === true) ||
+          // @ts-expect-error Property 'metadata' does not exist on type...
+          cust.metadata?.["first_purchase_coupon_redeemed"] === true ||
           // Block immediate reuse while a discounted session is pending
+          // @ts-expect-error Property 'metadata' does not exist on type...
           cust.metadata?.["first_purchase_coupon_pending"] === "true");
       if (flag) {
         console.log("[FIRST_PURCHASE_COUPON] Detected redeemed flag on customer", {
@@ -764,14 +776,14 @@ async function hasCustomerRedeemedCoupon(
         }
 
         // 4) line-item discounts (common when applied at checkout)
-        const lines = parseJson<any>(inv.lines);
-        const lineItems: any[] = Array.isArray(lines)
-          ? lines
-          : lines && Array.isArray(lines.data)
-            ? (lines.data as any[])
+        const lines = parseJson<unknown>(inv.lines);
+        const lineItems: unknown[] = Array.isArray(lines)
+          ? (lines as unknown[])
+          : lines && typeof lines === "object" && Array.isArray((lines as Record<string, unknown>).data)
+            ? ((lines as Record<string, unknown>).data as unknown[])
             : [];
         for (const line of lineItems) {
-          const lineDiscounts = parseJson<unknown[]>(line?.discounts);
+          const lineDiscounts = parseJson<unknown[]>((line as Record<string, unknown>)?.discounts);
           if (Array.isArray(lineDiscounts)) {
             for (const ld of lineDiscounts) {
               const ldCouponId = extractCouponId(ld);
@@ -782,7 +794,7 @@ async function hasCustomerRedeemedCoupon(
             }
           }
         }
-      } catch (e) {
+      } catch {
         // ignore parse errors for safety
       }
 

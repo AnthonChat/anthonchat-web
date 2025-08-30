@@ -14,9 +14,10 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, stripe-signature",
-      "Access-Control-Max-Age": "86400"
-    }
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Accept, stripe-signature",
+      "Access-Control-Max-Age": "86400",
+    },
   });
 }
 
@@ -31,10 +32,7 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error(
-        "WEBHOOK_SIGNATURE_VERIFICATION_FAILED",
-        { error: err }
-      );
+      console.error("WEBHOOK_SIGNATURE_VERIFICATION_FAILED", { error: err });
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
@@ -96,10 +94,13 @@ export async function POST(request: NextRequest) {
                   first_purchase_coupon_pending: "false",
                 },
               });
-              console.log("[WEBHOOK] Marked first-purchase coupon as redeemed", {
-                customerId: invoice.customer,
-                invoiceId: invoice.id,
-              });
+              console.log(
+                "[WEBHOOK] Marked first-purchase coupon as redeemed",
+                {
+                  customerId: invoice.customer,
+                  invoiceId: invoice.id,
+                }
+              );
             }
           }
         } catch (e) {
@@ -128,26 +129,36 @@ export async function POST(request: NextRequest) {
           if (typeof session.customer === "string") {
             const customer = await stripe.customers.retrieve(session.customer);
             if (typeof customer !== "string") {
-              const pending = customer.metadata?.["first_purchase_coupon_pending"];
-              const reserved = customer.metadata?.["first_purchase_coupon_session_id"];
+              const pending =
+                // @ts-expect-error Property 'metadata' does not exist on type...
+                customer.metadata?.["first_purchase_coupon_pending"];
+              const reserved =
+                // @ts-expect-error Property 'metadata' does not exist on type...
+                customer.metadata?.["first_purchase_coupon_session_id"];
               if (pending === "true" && reserved === session.id) {
                 await stripe.customers.update(session.customer, {
                   metadata: {
                     first_purchase_coupon_pending: "false",
                   },
                 });
-                console.log("[WEBHOOK] Cleared pending coupon flag on session expiration", {
-                  customerId: session.customer,
-                  sessionId: session.id,
-                });
+                console.log(
+                  "[WEBHOOK] Cleared pending coupon flag on session expiration",
+                  {
+                    customerId: session.customer,
+                    sessionId: session.id,
+                  }
+                );
               }
             }
           }
         } catch (e) {
-          console.warn("[WEBHOOK] Failed to clear pending coupon flag on expiration", {
-            error: e instanceof Error ? e.message : String(e),
-            sessionId: session.id,
-          });
+          console.warn(
+            "[WEBHOOK] Failed to clear pending coupon flag on expiration",
+            {
+              error: e instanceof Error ? e.message : String(e),
+              sessionId: session.id,
+            }
+          );
         }
         break;
       }
@@ -268,16 +279,16 @@ async function handleSubscriptionDeleted(
       .eq("stripe_subscription_id", subscription.id);
 
     if (error) {
-      console.error(
-        "SUBSCRIPTION_DELETE_UPDATE_ERROR",
-        { error, subscriptionId: subscription.id }
-      );
+      console.error("SUBSCRIPTION_DELETE_UPDATE_ERROR", {
+        error,
+        subscriptionId: subscription.id,
+      });
     }
   } catch (err) {
-    console.error(
-      "HANDLE_SUBSCRIPTION_DELETED_ERROR",
-      { error: err, subscriptionId: subscription.id }
-    );
+    console.error("HANDLE_SUBSCRIPTION_DELETED_ERROR", {
+      error: err,
+      subscriptionId: subscription.id,
+    });
   }
 }
 
@@ -287,10 +298,13 @@ function wasFirstPurchaseCouponUsedOnInvoice(invoice: Stripe.Invoice): boolean {
   const envCouponId = process.env.FIRST_PURCHASE_10_EUR_COUPON_ID?.trim();
   const autoKey = "first_purchase_eur_10";
 
-  const matchCoupon = (coupon: Stripe.Coupon | string | null | undefined): boolean => {
+  const matchCoupon = (
+    coupon: Stripe.Coupon | string | null | undefined
+  ): boolean => {
     try {
       if (!coupon) return false;
-      if (typeof coupon === "string") return envCouponId ? coupon === envCouponId : false;
+      if (typeof coupon === "string")
+        return envCouponId ? coupon === envCouponId : false;
       if (envCouponId && coupon.id === envCouponId) return true;
       // Fallback: metadata key if present
       const md = (coupon.metadata || {}) as Record<string, unknown>;
@@ -300,25 +314,30 @@ function wasFirstPurchaseCouponUsedOnInvoice(invoice: Stripe.Invoice): boolean {
     }
   };
 
-  const anyDiscountMatches = (discounts: Stripe.Discount[] | null | undefined) => {
+  const anyDiscountMatches = (
+    discounts: Stripe.Discount[] | null | undefined
+  ) => {
     if (!Array.isArray(discounts)) return false;
     for (const d of discounts) {
-      if (matchCoupon(d.coupon as Stripe.Coupon | string | undefined)) return true;
+      if (matchCoupon(d.coupon as Stripe.Coupon | string | undefined))
+        return true;
     }
     return false;
   };
 
   try {
     // Invoice-level discount(s)
-    // @ts-ignore Stripe types may differ by version
+    // @ts-expect-error Stripe types may differ by version
     if (invoice.discount && matchCoupon(invoice.discount.coupon)) return true;
-    // @ts-ignore
+    // @ts-expect-error not assignable to parameter of type 'Discount[]'.
+
     if (anyDiscountMatches(invoice.discounts)) return true;
 
     // Line-level discounts
     const lines = invoice.lines?.data || [];
     for (const li of lines) {
-      // @ts-ignore
+      // @ts-expect-error not assignable to parameter of type 'Discount[]'.
+
       if (anyDiscountMatches(li.discounts)) return true;
     }
   } catch {
