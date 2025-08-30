@@ -136,7 +136,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         break;
       case "help":
         // Open email client to contact support
-        window.open("mailto:anthon.chat@gmail.com", "_blank");
+        window.open("mailto:info@tryanthon.com", "_blank");
         break;
       default:
         console.info("ACTION_TRIGGERED", { actionId });

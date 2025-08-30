@@ -53,10 +53,12 @@ function getProvidedApiKey(req: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[API_CHECKOUT_LINK] Incoming request");
     // 1) AuthZ: Server-to-server key
     const provided = getProvidedApiKey(request);
     const expected = process.env.N8N_INTERNAL_API_KEY || process.env.INTERNAL_API_KEY;
     if (!expected || !provided || provided !== expected) {
+      console.warn("[API_CHECKOUT_LINK] Unauthorized request");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -78,6 +80,13 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
+    console.log("[API_CHECKOUT_LINK] Parsed body", {
+      userId,
+      priceId: bodyPriceId,
+      tierSlug,
+      trial_period_days,
+      force_no_trial,
+    });
 
     // 3) Resolve user and/or Stripe customer
     const service = createServiceRoleClient();
@@ -88,6 +97,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (userErr || !userRow) {
+      console.warn("[API_CHECKOUT_LINK] User not found", { userId, error: userErr?.message });
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -97,6 +107,7 @@ export async function POST(request: NextRequest) {
     if (!customerId) {
       // Try lookup by email in Stripe
       if (!email) {
+        console.warn("[API_CHECKOUT_LINK] Missing user email for Stripe customer", { userId });
         return NextResponse.json(
           { error: "User does not have an email; cannot resolve Stripe customer." },
           { status: 400 },
@@ -117,6 +128,7 @@ export async function POST(request: NextRequest) {
         .update({ stripe_customer_id: customerId })
         .eq("id", userId);
     }
+    console.log("[API_CHECKOUT_LINK] Resolved customer", { userId, customerId, emailPresent: !!email });
 
     // 4) Determine priceId
     let priceId = bodyPriceId?.trim();
@@ -136,11 +148,13 @@ export async function POST(request: NextRequest) {
       priceId = process.env.STRIPE_DEFAULT_PRICE_ID || "";
     }
     if (!priceId) {
+      console.warn("[API_CHECKOUT_LINK] priceId could not be resolved", { userId, tierSlug });
       return NextResponse.json(
         { error: "priceId could not be resolved (provide priceId, tierSlug, or set STRIPE_DEFAULT_PRICE_ID)" },
         { status: 400 },
       );
     }
+    console.log("[API_CHECKOUT_LINK] Using priceId", { userId, priceId });
 
     // 5) Enforce "trial once" rule
     let effectiveTrialDays: number | undefined = undefined;
@@ -155,10 +169,17 @@ export async function POST(request: NextRequest) {
         .not("trial_start", "is", null)
         .limit(1);
 
-      const hasHadTrial =
-        !!trialsErr ? false : Array.isArray(priorTrials) && priorTrials.length > 0;
+    const hasHadTrial =
+      !!trialsErr ? false : Array.isArray(priorTrials) && priorTrials.length > 0;
 
-      effectiveTrialDays = hasHadTrial ? undefined : trial_period_days;
+    effectiveTrialDays = hasHadTrial ? undefined : trial_period_days;
+    console.log("[API_CHECKOUT_LINK] Trial enforcement", {
+      userId,
+      customerId,
+      hasHadTrial,
+      requestedTrialDays: trial_period_days,
+      effectiveTrialDays,
+    });
     }
 
     // 6) Create Stripe checkout session
@@ -170,6 +191,13 @@ export async function POST(request: NextRequest) {
       cancelUrl: `${origin}/dashboard/subscription?canceled=true`,
       userId,
       trialPeriodDays: effectiveTrialDays,
+    });
+    console.log("[API_CHECKOUT_LINK] Created Stripe checkout session", {
+      userId,
+      customerId,
+      priceId,
+      sessionId: session.id,
+      hasUrl: !!session.url,
     });
 
     // 7) Return checkout URL

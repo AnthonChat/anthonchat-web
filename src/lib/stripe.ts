@@ -10,7 +10,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   typescript: true,
 });
 
-export const getStripeCustomerByEmail = async (email: string) => {
+export const getStripeCustomerByEmail = async (email: string): Promise<Stripe.Customer | null> => {
   const customers = await stripe.customers.list({
     email,
     limit: 1,
@@ -18,7 +18,7 @@ export const getStripeCustomerByEmail = async (email: string) => {
   return customers.data[0] || null;
 };
 
-export const createStripeCustomer = async (email: string, name?: string) => {
+export const createStripeCustomer = async (email: string, name?: string): Promise<Stripe.Customer> => {
   return await stripe.customers.create({
     email,
     name,
@@ -138,7 +138,7 @@ export const linkCustomerToUser = async (
  * @param customerId - The Stripe customer ID to check
  * @returns Promise<object | null> - Customer data if found, null otherwise
  */
-export const debugCheckCustomerExists = async (customerId: string) => {
+export const debugCheckCustomerExists = async (customerId: string): Promise<Record<string, unknown> | null> => {
   try {
     const supabase = createServiceRoleClient(); // Use service role for stripe schema access
     const { data, error } = await supabase
@@ -188,7 +188,18 @@ export const createCheckoutSession = async ({
   cancelUrl: string;
   userId: string;
   trialPeriodDays?: number;
-}) => {
+}): Promise<Stripe.Checkout.Session> => {
+  try {
+    console.log("[CHECKOUT_INIT] createCheckoutSession input", {
+      customerId,
+      priceId,
+      userId,
+      trialPeriodDays,
+    });
+  } catch {
+    // logging failure is non-critical; ignore to avoid blocking checkout flow.
+  }
+
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
     line_items: [
@@ -213,7 +224,9 @@ export const createCheckoutSession = async ({
   // For free trials, we don't require payment method collection upfront
   if (trialPeriodDays && trialPeriodDays > 0) {
     sessionConfig.payment_method_collection = "if_required";
-    sessionConfig.subscription_data!.trial_period_days = trialPeriodDays;
+    // Typings for stripe's subscription_data may not include trial_period_days in some versions.
+    // Set the runtime property via a safe unknown cast to avoid `any`.
+    (sessionConfig.subscription_data as unknown as Record<string, unknown>).trial_period_days = trialPeriodDays;
   } else {
     sessionConfig.payment_method_types = ["card"];
   }
@@ -222,30 +235,60 @@ export const createCheckoutSession = async ({
   // - Controlled via env var FIRST_PURCHASE_DISCOUNT_PRICE_ID (falls back to explicit id)
   // - Coupon id can be provided via FIRST_PURCHASE_10_EUR_COUPON_ID; otherwise we try to find/create one
   try {
-    const targetPriceId =
-      process.env.FIRST_PURCHASE_DISCOUNT_PRICE_ID
+    const targetPriceId = process.env.FIRST_PURCHASE_DISCOUNT_PRICE_ID?.trim();
+
+    if (!targetPriceId) {
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] No target price configured");
+    }
 
     if (priceId === targetPriceId) {
-      // Verify price currency is EUR to safely apply an amount_off EUR coupon
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Target match", {
+        priceId,
+        targetPriceId,
+      });
+      // Verify price currency is EUR to safely apply an amount_off EUR coupon.
+      // Prefer live Stripe lookup; fall back to DB if needed.
       let isEur = false;
+      let currencySource: "stripe_api" | "db" | "unknown" = "unknown";
       try {
-        const supabase = createServiceRoleClient();
-        const { data: priceRow } = await supabase
-          .schema("stripe")
-          .from("prices")
-          .select("currency")
-          .eq("id", priceId)
-          .maybeSingle();
-        isEur = (priceRow?.currency || "").toLowerCase() === "eur";
-      } catch {
-        // If we fail to resolve currency, be conservative and skip discount to avoid Stripe errors
-        isEur = false;
+        const priceObj = await stripe.prices.retrieve(priceId);
+        isEur = (priceObj?.currency || "").toLowerCase() === "eur";
+        currencySource = "stripe_api";
+        console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Currency from Stripe API", {
+          priceId,
+          currency: priceObj?.currency,
+        });
+      } catch (apiErr) {
+        // log the api error so the variable is used and we can debug failures
+        console.warn("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Failed to retrieve price from Stripe API", {
+          priceId,
+          error: apiErr instanceof Error ? apiErr.message : String(apiErr),
+        });
+        try {
+          const supabase = createServiceRoleClient();
+          const { data: priceRow } = await supabase
+            .schema("stripe")
+            .from("prices")
+            .select("currency")
+            .eq("id", priceId)
+            .maybeSingle();
+          isEur = (priceRow?.currency || "").toLowerCase() === "eur";
+          currencySource = "db";
+          console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Currency from DB fallback", {
+            priceId,
+            currency: priceRow?.currency,
+          });
+        } catch {
+          // If we fail to resolve currency, be conservative and skip discount to avoid Stripe errors
+          isEur = false;
+          currencySource = "unknown";
+        }
       }
 
       if (!isEur) {
         console.warn(
           "[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Skipping discount: non-EUR price",
-          { priceId }
+          { priceId, currencySource }
         );
         return await stripe.checkout.sessions.create(sessionConfig);
       }
@@ -254,20 +297,71 @@ export const createCheckoutSession = async ({
       const { data: paidInvoices, error: invErr } = await supabase
         .schema("stripe")
         .from("invoices")
-        .select("id, status, paid, created")
+        .select("id, status, paid, created, amount_paid, currency, total")
         .eq("customer", customerId)
         .or("paid.eq.true,status.eq.paid")
+        .gt("amount_paid", 0)
         .order("created", { ascending: false })
         .limit(1);
 
       const hasPaidBefore = !!invErr
         ? false
         : Array.isArray(paidInvoices) && paidInvoices.length > 0;
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Prior payments check", {
+        customerId,
+        error: invErr?.message,
+        invoiceCount: Array.isArray(paidInvoices) ? paidInvoices.length : 0,
+        hasPaidBefore,
+        sample: Array.isArray(paidInvoices) && paidInvoices[0]
+          ? {
+              id: paidInvoices[0].id,
+              status: paidInvoices[0].status,
+              paid: paidInvoices[0].paid,
+              amount_paid: paidInvoices[0].amount_paid,
+              currency: paidInvoices[0].currency,
+              total: paidInvoices[0].total,
+            }
+          : null,
+      });
 
       const couponId = await getOrCreateFirstPurchaseCouponEUR10();
       const hasRedeemedBefore = await hasCustomerRedeemedCoupon(customerId, couponId);
 
-      if (!hasPaidBefore && !hasRedeemedBefore) {
+      // Optional invoice gating: set FIRST_PURCHASE_DISCOUNT_SCOPE to 'price' or 'any'
+      const scope = process.env.FIRST_PURCHASE_DISCOUNT_SCOPE?.trim().toLowerCase();
+      let invoiceScopeEligible = true;
+      let priorInvoiceReason: string | undefined;
+      try {
+        if (scope === "price") {
+          const hasInvForPrice = await customerHasInvoiceForPrice(customerId, priceId);
+          invoiceScopeEligible = !hasInvForPrice;
+          priorInvoiceReason = hasInvForPrice ? "prior_invoice_for_price" : undefined;
+        } else if (scope === "any") {
+          const hasAny = await customerHasAnyInvoice(customerId);
+          invoiceScopeEligible = !hasAny;
+          priorInvoiceReason = hasAny ? "prior_invoice_any" : undefined;
+        }
+      } catch (e) {
+        console.warn("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Invoice scope check failed; allowing by default", {
+          error: e instanceof Error ? e.message : String(e),
+          scope,
+        });
+        invoiceScopeEligible = true;
+      }
+
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Coupon eligibility", {
+        customerId,
+        couponId,
+        hasRedeemedBefore,
+        invoiceScope: scope || null,
+        invoiceScopeEligible,
+        priorInvoiceReason,
+        // Note: prior payments are ignored for eligibility by request
+        ignored_hasPaidBefore: hasPaidBefore,
+      });
+
+      // Apply discount if not redeemed yet and invoice scope (if configured) allows it
+      if (!hasRedeemedBefore && invoiceScopeEligible) {
         // Eligible for first-purchase discount (ensure enforced per-customer)
         const discounts: Stripe.Checkout.SessionCreateParams["discounts"] = [
           {
@@ -275,7 +369,21 @@ export const createCheckoutSession = async ({
           },
         ];
         sessionConfig.discounts = discounts;
+        console.log(
+          "[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Applying first-purchase coupon",
+          { customerId, priceId, couponId }
+        );
+      } else {
+        console.log(
+          "[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Not eligible for discount",
+          { customerId, priceId, hasRedeemedBefore, invoiceScope: scope || null, invoiceScopeEligible, priorInvoiceReason }
+        );
       }
+    } else if (targetPriceId) {
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Price does not match target — skipping", {
+        priceId,
+        targetPriceId,
+      });
     }
   } catch (err) {
     console.error("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Skipping discount due to error", {
@@ -286,7 +394,29 @@ export const createCheckoutSession = async ({
     // Continue without discount
   }
 
-  return await stripe.checkout.sessions.create(sessionConfig);
+  const session = await stripe.checkout.sessions.create(sessionConfig);
+  // Mark pending redemption to avoid rapid double-application before webhook confirms
+  try {
+    if (Array.isArray(sessionConfig.discounts) && sessionConfig.discounts.length > 0) {
+      await stripe.customers.update(customerId, {
+        metadata: {
+          first_purchase_coupon_pending: "true",
+          first_purchase_coupon_session_id: session.id,
+          first_purchase_coupon_pending_at: new Date().toISOString(),
+        },
+      });
+      console.log("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Marked coupon as pending on customer", {
+        customerId,
+        sessionId: session.id,
+      });
+    }
+  } catch (e) {
+    console.warn("[CHECKOUT_FIRST_PURCHASE_DISCOUNT] Failed to set pending flag", {
+      customerId,
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
+  return session;
 };
 
 export const createSubscriptionWithTrial = async ({
@@ -301,7 +431,7 @@ export const createSubscriptionWithTrial = async ({
   userId: string;
   trialPeriodDays?: number;
   idempotencyKey?: string;
-}) => {
+}): Promise<Stripe.Subscription> => {
   try {
     const params: Stripe.SubscriptionCreateParams = {
       customer: customerId,
@@ -319,14 +449,13 @@ export const createSubscriptionWithTrial = async ({
     if (trialPeriodDays && trialPeriodDays > 0) {
       // Stripe expects `trial_period_days` at top-level for subscriptions
       // when creating a subscription directly.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - stripe typings sometimes differ across versions
-      params.trial_period_days = trialPeriodDays;
+      // Set at runtime via a safe unknown cast to avoid `any` usage.
+      (params as unknown as Record<string, unknown>).trial_period_days = trialPeriodDays;
     }
-
+    
     // If no trial is provided, ensure card is collected later via payment settings,
     // but for trial flows we generally don't require a payment method upfront.
-    const options = idempotencyKey ? { idempotencyKey } : undefined;
+    const options: Stripe.RequestOptions | undefined = idempotencyKey ? { idempotencyKey } : undefined;
     const subscription = await stripe.subscriptions.create(params, options);
     return subscription;
   } catch (error) {
@@ -345,12 +474,128 @@ export const createBillingPortalSession = async ({
 }: {
   customerId: string;
   returnUrl: string;
-}) => {
+}): Promise<Stripe.BillingPortal.Session> => {
   return await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
   });
 };
+
+/**
+ * Returns true if the customer has any invoice stored in the `stripe.invoices` table.
+ */
+export async function customerHasAnyInvoice(customerId: string): Promise<boolean> {
+  try {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase
+      .schema("stripe")
+      .from("invoices")
+      .select("id, status, paid, amount_paid, created")
+      .eq("customer", customerId)
+      .order("created", { ascending: false })
+      .limit(1);
+    const has = !error && Array.isArray(data) && data.length > 0;
+    console.log("[INVOICES_CHECK] Any invoice for customer?", {
+      customerId,
+      has,
+      sample: has ? data?.[0]?.id : null,
+    });
+    return has;
+  } catch (e) {
+    console.warn("[INVOICES_CHECK] Failed to check invoices", {
+      customerId,
+      error: e instanceof Error ? e.message : String(e),
+    });
+    return false;
+  }
+}
+
+/**
+ * Returns true if any invoice for this customer contains a line-item for the given price.
+ * Parses both Stripe API-like shapes and Supabase-sync shapes for `lines`.
+ */
+export async function customerHasInvoiceForPrice(
+  customerId: string,
+  priceId: string
+): Promise<boolean> {
+  const supabase = createServiceRoleClient();
+  const parseJson = <T = unknown>(value: unknown): T | null => {
+    if (!value) return null;
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value) as T;
+      } catch {
+        return null;
+      }
+    }
+    return (value as T) || null;
+  };
+
+  const extractPriceIdsFromLine = (line: unknown): string[] => {
+    const ids: string[] = [];
+    try {
+      if (!line || typeof line !== "object") return ids;
+      const l = line as Record<string, unknown>;
+      // Stripe API shape: line.price.id
+      const priceObj = l.price;
+      if (priceObj && typeof priceObj === "object" && typeof (priceObj as Record<string, unknown>).id === "string") {
+        ids.push((priceObj as Record<string, unknown>).id as string);
+      }
+      // Supabase-sync shape: line.pricing.price_details.price
+      const pricing = l.pricing as Record<string, unknown> | undefined;
+      const pd = pricing?.price_details as Record<string, unknown> | undefined;
+      if (pd && typeof pd.price === "string") ids.push(pd.price);
+      // Some variants may include top-level price string
+      if (typeof l.price === "string") ids.push(l.price);
+    } catch {}
+    return ids;
+  };
+
+  try {
+    const { data, error } = await supabase
+      .schema("stripe")
+      .from("invoices")
+      .select("id, lines, created")
+      .eq("customer", customerId)
+      .order("created", { ascending: false })
+      .limit(200);
+
+    if (error || !Array.isArray(data) || data.length === 0) {
+      console.log("[INVOICES_CHECK] No invoices for price scan", { customerId, error: error?.message });
+      return false;
+    }
+
+    for (const inv of data) {
+      const lines = parseJson<unknown>(inv.lines);
+      const items: unknown[] = Array.isArray(lines)
+        ? (lines as unknown[])
+        : lines && typeof lines === "object" && Array.isArray((lines as Record<string, unknown>).data)
+          ? ((lines as Record<string, unknown>).data as unknown[])
+          : [];
+      for (const li of items) {
+        const ids = extractPriceIdsFromLine(li);
+        if (ids.includes(priceId)) {
+          console.log("[INVOICES_CHECK] Found invoice for price", {
+            customerId,
+            priceId,
+            invoiceId: inv.id,
+          });
+          return true;
+        }
+      }
+    }
+
+    console.log("[INVOICES_CHECK] No invoice lines match price", { customerId, priceId });
+    return false;
+  } catch (e) {
+    console.warn("[INVOICES_CHECK] Failed to scan invoices for price", {
+      customerId,
+      priceId,
+      error: e instanceof Error ? e.message : String(e),
+    });
+    return false;
+  }
+}
 
 /**
  * Returns a coupon id that represents a one-time €10 off discount.
@@ -361,7 +606,10 @@ export const createBillingPortalSession = async ({
  */
 async function getOrCreateFirstPurchaseCouponEUR10(): Promise<string> {
   const envCoupon = process.env.FIRST_PURCHASE_10_EUR_COUPON_ID?.trim();
-  if (envCoupon) return envCoupon;
+  if (envCoupon) {
+    console.log("[FIRST_PURCHASE_COUPON] Using env coupon id", { couponId: envCoupon });
+    return envCoupon;
+  }
 
   // Try to find existing coupon tagged by our metadata key
   try {
@@ -370,7 +618,10 @@ async function getOrCreateFirstPurchaseCouponEUR10(): Promise<string> {
       const md = (c.metadata || {}) as Record<string, unknown>;
       return md["auto_key"] === "first_purchase_eur_10" && c.valid !== false;
     });
-    if (match) return match.id;
+    if (match) {
+      console.log("[FIRST_PURCHASE_COUPON] Found existing coupon", { couponId: match.id });
+      return match.id;
+    }
   } catch (e) {
     console.warn("[FIRST_PURCHASE_COUPON] Failed to list coupons:", e);
   }
@@ -383,6 +634,7 @@ async function getOrCreateFirstPurchaseCouponEUR10(): Promise<string> {
     name: "First purchase €10 off",
     metadata: { auto_key: "first_purchase_eur_10" },
   });
+  console.log("[FIRST_PURCHASE_COUPON] Created new coupon", { couponId: created.id });
   return created.id;
 }
 
@@ -395,26 +647,71 @@ async function hasCustomerRedeemedCoupon(
   couponId: string
 ): Promise<boolean> {
   try {
+    // Fast path: check Stripe Customer metadata flag set by webhook
+    try {
+      const cust = await stripe.customers.retrieve(customerId);
+      const flag =
+        typeof cust !== "string" &&
+        // @ts-expect-error Property 'metadata' does not exist on type...
+        (cust.metadata?.["first_purchase_coupon_redeemed"] === "true" ||
+          // also accept boolean true if set
+          // @ts-expect-error Property 'metadata' does not exist on type...
+          cust.metadata?.["first_purchase_coupon_redeemed"] === true ||
+          // Block immediate reuse while a discounted session is pending
+          // @ts-expect-error Property 'metadata' does not exist on type...
+          cust.metadata?.["first_purchase_coupon_pending"] === "true");
+      if (flag) {
+        console.log("[FIRST_PURCHASE_COUPON] Detected redeemed flag on customer", {
+          customerId,
+        });
+        return true;
+      }
+    } catch (e) {
+      console.warn("[FIRST_PURCHASE_COUPON] Failed to read customer metadata", {
+        customerId,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .schema("stripe")
       .from("invoices")
-      .select("id, status, paid, discount, discounts, total_discount_amounts")
+      .select("id, status, paid, discount, discounts, total_discount_amounts, lines")
       .eq("customer", customerId)
       .or("paid.eq.true,status.eq.paid")
       .order("created", { ascending: false })
-      .limit(50);
+      .limit(100);
 
     if (error || !data || !Array.isArray(data) || data.length === 0) {
+      console.log("[FIRST_PURCHASE_COUPON] No eligible invoices to check for redemption", {
+        customerId,
+        couponId,
+        error: error?.message,
+        count: Array.isArray(data) ? data.length : 0,
+      });
       return false;
     }
 
-    const used = data.some((inv: { discount?: unknown; discounts?: unknown }) => {
+    let usedOnInvoice: string | null = null;
+    const used = data.some((inv: {
+      id?: string;
+      discount?: unknown;
+      discounts?: unknown;
+      total_discount_amounts?: unknown;
+      lines?: unknown;
+    }) => {
       const extractCouponId = (obj: unknown): string | null => {
         if (!obj || typeof obj !== "object") return null;
         const o = obj as Record<string, unknown>;
 
-        // coupon may be a string
+        // Stripe Discount obj may be under o.discount with nested coupon
+        if (o.discount && typeof o.discount === "object") {
+          const cid = extractCouponId(o.discount);
+          if (cid) return cid;
+        }
+
+        // coupon may be a string id
         if (typeof o.coupon === "string") return o.coupon;
 
         // coupon may be an object with an id field
@@ -423,43 +720,99 @@ async function hasCustomerRedeemedCoupon(
           if (typeof c.id === "string") return c.id;
         }
 
-        // fallback fields
+        // fallback fields sometimes appear
         if (typeof o.coupon_id === "string") return o.coupon_id;
-        if (typeof o.id === "string") return o.id;
+        if (typeof o.id === "string" && String(o.id).startsWith("coupon_")) return o.id;
 
         return null;
       };
 
-      // Check explicit coupon references
+      const parseJson = <T = unknown>(value: unknown): T | null => {
+        if (!value) return null;
+        if (typeof value === "string") {
+          try {
+            return JSON.parse(value) as T;
+          } catch {
+            return null;
+          }
+        }
+        return (value as T) || null;
+      };
+
       try {
-        // discount can be object with coupon info
+        // 1) invoice-level discount
         const d = inv.discount;
         if (d) {
           const dc = typeof d === "string" ? null : d;
           const dcCouponId = extractCouponId(dc);
-          if (dcCouponId === couponId) return true;
+          if (dcCouponId === couponId) {
+            usedOnInvoice = inv.id || null;
+            return true;
+          }
         }
 
-        // discounts may be array
-        const discountsArr = Array.isArray(inv.discounts)
-          ? (inv.discounts as unknown[])
-          : typeof inv.discounts === "string"
-            ? (JSON.parse(inv.discounts as string) as unknown[])
-            : [];
+        // 2) invoice-level discounts array
+        const discountsArr = parseJson<unknown[]>(inv.discounts);
         if (Array.isArray(discountsArr)) {
           for (const di of discountsArr) {
             const diCouponId = extractCouponId(di);
-            if (diCouponId === couponId) return true;
+            if (diCouponId === couponId) {
+              usedOnInvoice = inv.id || null;
+              return true;
+            }
+          }
+        }
+
+        // 3) total_discount_amounts entries include a Discount object
+        const tdas = parseJson<unknown[]>(inv.total_discount_amounts);
+        if (Array.isArray(tdas)) {
+          for (const tda of tdas) {
+            const tdaCouponId = extractCouponId(tda);
+            if (tdaCouponId === couponId) {
+              usedOnInvoice = inv.id || null;
+              return true;
+            }
+          }
+        }
+
+        // 4) line-item discounts (common when applied at checkout)
+        const lines = parseJson<unknown>(inv.lines);
+        const lineItems: unknown[] = Array.isArray(lines)
+          ? (lines as unknown[])
+          : lines && typeof lines === "object" && Array.isArray((lines as Record<string, unknown>).data)
+            ? ((lines as Record<string, unknown>).data as unknown[])
+            : [];
+        for (const line of lineItems) {
+          const lineDiscounts = parseJson<unknown[]>((line as Record<string, unknown>)?.discounts);
+          if (Array.isArray(lineDiscounts)) {
+            for (const ld of lineDiscounts) {
+              const ldCouponId = extractCouponId(ld);
+              if (ldCouponId === couponId) {
+                usedOnInvoice = inv.id || null;
+                return true;
+              }
+            }
           }
         }
       } catch {
-        // ignore parse errors
+        // ignore parse errors for safety
       }
 
-      // Fallback: if invoice shows discount amounts but we cannot attribute,
-      // treat as not our coupon to avoid false positives
       return false;
     });
+
+    if (used) {
+      console.log("[FIRST_PURCHASE_COUPON] Coupon already redeemed", {
+        customerId,
+        couponId,
+        usedOnInvoice,
+      });
+    } else {
+      console.log("[FIRST_PURCHASE_COUPON] Coupon not yet redeemed", {
+        customerId,
+        couponId,
+      });
+    }
 
     return used;
   } catch {

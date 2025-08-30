@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
     const userEmail = claims.claims.email;
 
     const { priceId, trial_period_days } = await request.json();
+    console.log("[API_CHECKOUT] Incoming checkout request", {
+      userId,
+      priceId,
+      trial_period_days,
+    });
 
     if (!priceId) {
       return NextResponse.json(
@@ -42,6 +47,7 @@ export async function POST(request: NextRequest) {
     // Validate the price ID exists in our tiers
     const tier = await getTierByPriceId(priceId);
     if (!tier) {
+      console.warn("[API_CHECKOUT] Invalid priceId (no tier)", { priceId });
       return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
     }
 
@@ -54,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     const email = userProfile?.email || userEmail;
     if (!email) {
+      console.warn("[API_CHECKOUT] Missing user email", { userId });
       return NextResponse.json(
         { error: "User email not found" },
         { status: 400 }
@@ -70,6 +77,7 @@ export async function POST(request: NextRequest) {
       if (existingCustomer) {
         customerId = existingCustomer.id;
       } else {
+        console.warn("[API_CHECKOUT] Stripe customer does not exist for email", { userId });
         return NextResponse.json(
           { error: "Customer does not exist" },
           { status: 400 }
@@ -93,6 +101,13 @@ export async function POST(request: NextRequest) {
         ? Number(trial_period_days)
         : undefined;
     const effectiveTrialDays = hasHadTrial ? undefined : requestedTrialDays;
+    console.log("[API_CHECKOUT] Trial enforcement", {
+      userId,
+      customerId,
+      hasHadTrial,
+      requestedTrialDays,
+      effectiveTrialDays,
+    });
 
     // Create checkout session
     const session = await createCheckoutSession({
@@ -102,6 +117,14 @@ export async function POST(request: NextRequest) {
       cancelUrl: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
       userId: userId,
       trialPeriodDays: effectiveTrialDays,
+    });
+
+    console.log("[API_CHECKOUT] Created Stripe checkout session", {
+      userId,
+      customerId,
+      priceId,
+      sessionId: session.id,
+      hasUrl: !!session.url,
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });

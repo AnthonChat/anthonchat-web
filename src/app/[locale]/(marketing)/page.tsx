@@ -344,6 +344,12 @@ export default function Home() {
             >
               Privacy
             </LocaleLink>
+            <a
+              href="mailto:info@tryanthon.com"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Support
+            </a>
           </nav>
         </div>
       </footer>
