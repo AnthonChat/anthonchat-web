@@ -168,10 +168,10 @@ export default function NotFound() {
             <p className="text-xs text-muted-foreground">
               {L.supportPrompt}{' '}
               <a
-                href="mailto:anthon.chat@gmail.com"
+                href="mailto:info@tryanthon.com"
                 className="text-primary hover:underline"
               >
-                anthon.chat@gmail.com
+                info@tryanthon.com
               </a>
             </p>
           </div>
