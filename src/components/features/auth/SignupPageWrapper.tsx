@@ -10,6 +10,7 @@ import { buildAuthRedirectUrl } from "@/lib/utils/redirect-helpers";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SignupForm from "./SignupForm";
+import { useTranslations } from "next-intl";
 
 interface SignupPageWrapperProps {
   message?: string | null;
@@ -42,6 +43,8 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
     router.push(loginUrl);
   }, [message, link, channel, router]);
 
+  const t = useTranslations("auth.signupWrapper");
+
   const showExistingUserMessage = useCallback(() => {
     return (
       <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
@@ -49,32 +52,32 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
           <CardContent className="flex flex-col space-y-4 py-6">
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-semibold">Account Already Exists</h2>
+              <h2 className="text-lg font-semibold">{t("accountExists.title")}</h2>
             </div>
             
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                An account with this email address already exists. Please sign in to continue.
+                {t("accountExists.description")}
                 {(link || channel) && (
                   <span className="block mt-2 text-sm text-muted-foreground">
-                    Your channel linking information will be preserved.
+                    {t("accountExists.channelPreserved")}
                   </span>
                 )}
               </AlertDescription>
             </Alert>
-
+ 
             <div className="flex flex-col space-y-2">
-              <Button 
+              <Button
                 onClick={() => redirectToLogin()}
                 className="w-full"
               >
-                Sign In Instead
+                {t("actions.signInInstead")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setUserExistenceState({
                   isChecking: false,
                   userExists: null,
@@ -83,14 +86,14 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
                 })}
                 className="w-full"
               >
-                Try Different Email
+                {t("actions.tryDifferentEmail")}
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
     );
-  }, [redirectToLogin, link, channel]);
+  }, [redirectToLogin, link, channel, t]);
 
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
@@ -113,7 +116,7 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
         <Card className="shadow-lg">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <p className="text-sm text-muted-foreground">Verifica autenticazione...</p>
+            <p className="text-sm text-muted-foreground">{t("status.checkingAuth")}</p>
           </CardContent>
         </Card>
       </div>
@@ -141,7 +144,7 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
       <Card className="shadow-lg">
         <CardContent className="flex flex-col items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-          <p className="text-sm text-muted-foreground">Reindirizzamento alla dashboard...</p>
+          <p className="text-sm text-muted-foreground">{t("status.redirectingToDashboard")}</p>
         </CardContent>
       </Card>
     </div>

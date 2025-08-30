@@ -181,6 +181,21 @@
       "email": "Email",
       "password": "Password",
       "passwordHelp": "La password deve contenere almeno 8 caratteri, inclusi almeno un numero e una lettera."
+    },
+    "signupWrapper": {
+      "accountExists": {
+        "title": "Account già esistente",
+        "description": "Esiste già un account registrato con questa email. Accedi per continuare.",
+        "channelPreserved": "Le informazioni per il collegamento del canale verranno mantenute."
+      },
+      "actions": {
+        "signInInstead": "Accedi",
+        "tryDifferentEmail": "Prova con un'altra email"
+      },
+      "status": {
+        "checkingAuth": "Verifica autenticazione...",
+        "redirectingToDashboard": "Reindirizzamento alla dashboard..."
+      }
     }
   },
   "dashboard": {
@@ -370,6 +385,7 @@
       "metaDescription": "Come TryAnthon raccoglie, utilizza e protegge i tuoi dati personali.",
       "title": "Informativa sul Trattamento dei Dati Personali",
       "lastUpdated": "Ultimo aggiornamento: 14 Agosto 2025",
+      "backToHome": "Torna alla Home",
       "sections": {
         "intro": {
           "title": "Introduzione",

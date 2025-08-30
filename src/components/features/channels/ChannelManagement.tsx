@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { useTranslations } from "next-intl";
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface Channel {
   id: string;
@@ -41,6 +42,7 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useLocaleRouter();
   const t = useTranslations('dashboard');
+  const { showError, showSuccess } = useNotifications();
 
   const getChannelIcon = (channelId: string) => {
     switch (channelId.toLowerCase()) {
@@ -108,7 +110,8 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
         channelId,
         channelName,
       });
-      alert(
+      showError(
+        "Failed to delete channel",
         `Failed to delete channel: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -122,7 +125,10 @@ export function ChannelManagement({ channels }: ChannelManagementProps) {
     setIsLoading(true);
     try {
       console.info("CHANNEL_TEST_ATTEMPT", { channelId });
-      alert("Channel testing functionality will be implemented soon");
+      showSuccess(
+        "Coming soon",
+        "Channel testing functionality will be implemented soon"
+      );
     } catch (error) {
       console.error("CHANNEL_TEST_ERROR", { error, channelId });
     } finally {

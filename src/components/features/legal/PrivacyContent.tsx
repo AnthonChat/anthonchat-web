@@ -57,7 +57,7 @@ export default function PrivacyContent() {
             href="/"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to Home
+            ← {t("backToHome")}
           </LocaleLink>
         </div>
         
