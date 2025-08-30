@@ -1,61 +1,80 @@
-// app/api/link/validate/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { apiLogger } from "@/lib/utils/loggers";
+import { createClient } from "@supabase/supabase-js";
+
+// Service role client per bypassare RLS su validazioni
+const getServiceRoleClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY!;
+  
+  if (!supabaseUrl || !supabaseSecretKey) {
+    throw new Error("Missing Supabase secret key configuration");
+  }
+  
+  return createClient(supabaseUrl, supabaseSecretKey);
+};
+
+export async function OPTIONS() {
+  // CORS preflight
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
 
 export async function POST(request: NextRequest) {
-	// ❗️ SECURITY: Protect this endpoint, as it is called by your bot, not a browser user.
-	const botSecret = request.headers.get("x-bot-secret");
-	if (botSecret !== process.env.BOT_SECRET_TOKEN) {
-		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-	}
+  try {
+    const { nonce, channelId } = await request.json();
+    
+    if (!nonce || !channelId) {
+      return NextResponse.json(
+        { isValid: false, error: "Parametri mancanti" },
+        { status: 400 }
+      );
+    }
+    
+    // Usa service role client per validazione (per leggere record con user_id=null)
+    const supabase = getServiceRoleClient();
+    
+    const { data: verification, error } = await supabase
+      .from("channel_verifications")
+      .select("*")
+      .eq("nonce", nonce)
+      .eq("channel_id", channelId)
+      .gt("expires_at", new Date().toISOString())
+      .single();
 
-	const supabase = await createClient();
+    const isValid = !error && !!verification;
+    const isRegistration = isValid ? verification.user_id === null : false;
 
-	// 1️⃣ Parse the nonce and link from the bot's request body
-	const { nonce, link } = await request.json();
-	if (!nonce || !link) {
-		return NextResponse.json(
-			{ error: "Missing verification nonce or link identifier" },
-			{ status: 400 }
-		);
-	}
-
-	// 2️⃣ Call the database function to securely finalize the link
-	const { data, error: rpcError } = await supabase.rpc(
-		"finalize_channel_link",
-		{
-			p_nonce: nonce,
-			p_link: link,
-		}
-	);
-
-	// 3️⃣ Handle errors from the remote procedure call itself
-	if (rpcError) {
-		apiLogger.error('FINALIZE_CHANNEL_LINK_RPC_ERROR', 'API_LINK', { error: rpcError, nonce, link });
-		return NextResponse.json(
-			{ error: "Server error during verification." },
-			{ status: 500 }
-		);
-	}
-
-	// 4️⃣ The function returns a specific 'error' field on logical failure
-	if (data.error) {
-		return NextResponse.json({ error: data.error }, { status: 400 });
-	}
-
-	// 5️⃣ On success, the function returns the user's ID
-	if (data.user_id) {
-		return NextResponse.json({
-			message: "Channel linked successfully.",
-			userId: data.user_id,
-		});
-	}
-
-	// 6️⃣ Fallback for any other unexpected responses
-	return NextResponse.json(
-		{ error: "An unknown error occurred during verification." },
-		{ status: 500 }
-	);
+    // Debug logging
+    console.info("NONCE_VALIDATION:", {
+      nonce: nonce.substring(0, 8) + "...",
+      channelId,
+      isValid,
+      isRegistration,
+      error: error?.message,
+      expiresAt: verification?.expires_at
+    });
+    
+    return NextResponse.json({
+      isValid,
+      isRegistration,
+      // Non esporre dati sensibili al client
+      ...(isValid && {
+        expiresAt: verification?.expires_at,
+        channelId: verification?.channel_id,
+      }),
+    });
+  } catch (error) {
+    console.error("VALIDATE_NONCE_API_ERROR:", error);
+    return NextResponse.json(
+      { isValid: false, error: "Errore interno" },
+      { status: 500 }
+    );
+  }
 }

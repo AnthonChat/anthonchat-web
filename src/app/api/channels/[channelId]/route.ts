@@ -1,83 +1,91 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
-import { deleteUserChannel } from '@/lib/queries/channels'
-import { apiLogger } from '@/lib/utils/loggers'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/db/server";
+import { deleteUserChannel } from "@/lib/queries/channels";
+
+export async function OPTIONS() {
+  // CORS preflight for DELETE
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
 
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ channelId: string }> }
 ) {
-  let userId: string | null = null
-  
+  let userId: string | null = null;
+
   try {
-    const supabase = await createClient()
-    const { channelId } = await params
+    const supabase = await createClient();
+    const { channelId } = await params;
 
     // Get authenticated user claims
-    const {
-      data: claims,
-      error: authError,
-    } = await supabase.auth.getClaims()
+    const { data: claims, error: authError } = await supabase.auth.getClaims();
 
     if (authError || !claims) {
-      apiLogger.warn("Unauthorized channel deletion attempt", "CHANNEL_DELETE_API", { channelId })
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      console.warn("Unauthorized channel deletion attempt", { channelId });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    userId = claims.claims.sub
+    userId = claims.claims.sub;
 
     if (!channelId) {
-      apiLogger.warn("Channel deletion attempted without channel ID", "CHANNEL_DELETE_API", {}, userId)
+      console.warn("Channel deletion attempted without channel ID", { userId });
       return NextResponse.json(
-        { error: 'Channel ID is required' },
+        { error: "Channel ID is required" },
         { status: 400 }
-      )
+      );
     }
 
     // Verify the channel belongs to the user before deletion
     const { data: existingChannel, error: fetchError } = await supabase
-      .from('user_channels')
-      .select('id, channel_id, channels(id)')
-      .eq('id', channelId)
-      .eq('user_id', userId)
-      .single()
-
-    if (fetchError || !existingChannel) {
-      apiLogger.warn("Channel not found or unauthorized deletion attempt", "CHANNEL_DELETE_API", { 
-        channelId, 
-        error: fetchError 
-      }, userId)
-      return NextResponse.json(
-        { error: 'Channel not found or unauthorized' },
-        { status: 404 }
-      )
-    }
+      .from("user_channels")
+      .select("id, channel_id, channels(id)")
+      .eq("id", channelId)
+      .eq("user_id", userId)
+      .single();
+ 
+     if (fetchError || !existingChannel) {
+       console.warn("Channel not found or unauthorized deletion attempt", {
+         channelId,
+         error: fetchError,
+         userId,
+       });
+       return NextResponse.json(
+         { error: "Channel not found or unauthorized" },
+         { status: 404 }
+       );
+     }
 
     // Delete the channel
-    await deleteUserChannel(channelId, userId)
+    await deleteUserChannel(channelId, userId);
 
-    apiLogger.info("Channel deleted successfully", "CHANNEL_DELETE_API", { 
+    console.info("Channel deleted successfully", {
       channelId,
-      channelType: existingChannel.channels[0]?.id
-    }, userId)
+      channelType: existingChannel.channels[0]?.id,
+      userId,
+    });
 
     return NextResponse.json(
-      { message: 'Channel deleted successfully' },
+      { message: "Channel deleted successfully" },
       { status: 200 }
-    )
-
+    );
   } catch (error) {
-    apiLogger.error("Error deleting channel", "CHANNEL_DELETE_API", { 
+    console.error("Error deleting channel", {
       error,
-      channelId: (await params).channelId 
-    }, userId || undefined)
-    
+      channelId: (await params).channelId,
+      userId: userId || undefined,
+    });
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

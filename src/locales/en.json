@@ -1,0 +1,538 @@
+{
+  "common": {
+    "appName": "TryAnthon",
+    "appDescription": "Your on-demand performance & mindset coach — available 24/7.",
+    "actions": {
+      "signIn": "Sign In",
+      "signUp": "Join Free",
+      "signOut": "Log Out"
+    }
+  },
+  "marketing": {
+    "hero": {
+      "title": "TRY ANTHON",
+      "subtitle": "The AI Clone of Antonio Valente",
+      "description": "The mental coach trusted by elite footballers and VIPs — now in your pocket, 24/7. More than WhatsApp or Telegram: connect Web Chat, Email, Instagram and more, all in minutes."
+    },
+    "chat": {
+      "demo": {
+        "username": "You",
+        "message": "I’m afraid of missing the decisive penalty tomorrow",
+        "reply": "\"Hey Marco! 💪 I know exactly what that feels like — that knot in your stomach, right?\"\n\n🎯 30 seconds before: visualize the ball hitting the top-right corner\n🫁 Box breathing: 4-4-4-4\n🗣️ Say: ‘I own the ball’\n\nRun this tomorrow — and own the moment."
+      },
+      "info": {
+        "title": "Test it on Every Channel — Free",
+        "subtitle": "NO CARD. NO TRAPS. IF IT DOESN’T MAKE YOU SAY ‘WOW’, JUST CANCEL.",
+        "bullets": {
+          "1": "• Instant, human-like AI responses",
+          "2": "• Smart routing & human backup",
+          "3": "• Setup in under 5 minutes"
+        }
+      }
+    },
+    "claims": {
+      "1": "NOT CHATGPT.\nTHIS IS ANTHON",
+      "2": "THE REAL ENEMY?\nTHAT VOICE IN YOUR HEAD",
+      "3": "ANTHON SHUTS IT DOWN\nIN REAL TIME"
+    },
+    "features": {
+      "title": "THE ONLY AI COACH TRAINED ON REAL BATTLES",
+      "description": "Fed with thousands of real cases, updated daily with winning strategies. Works everywhere: WhatsApp, Telegram, Web Chat, Email, Instagram — and via API.",
+      "features": {
+        "1": {
+          "title": "THOUSANDS OF PROVEN CASES",
+          "description": "Data pulled from years of real-world wins"
+        },
+        "2": {
+          "title": "THE SINCRO METHOD",
+          "description": "Field-tested processes, AI-enhanced"
+        },
+        "3": {
+          "title": "TRAINED BY EXPERTS",
+          "description": "Not a generic bot — a transferred mindset"
+        },
+        "4": {
+          "title": "LIVE PERFORMANCE UPDATES",
+          "description": "Gets sharper every day through feedback & analytics"
+        }
+      }
+    },
+    "autosabotage": {
+      "title": "THE SILENT KILLER: SELF-SABOTAGE",
+      "bullets": {
+        "1": "✗ Slows you down before training, friendlies, or the big match",
+        "2": "✗ Makes you quit when clarity is needed most",
+        "3": "✗ Whispers ‘you’re not enough’",
+        "4": "✗ Convinces you ‘nothing will change’"
+      },
+      "conclusion": "That’s self-sabotage — and Anthon destroys it."
+    },
+    "realtime": {
+      "title": "REAL-TIME PERFORMANCE BOOST",
+      "subtitle": "Exactly when you need it. Exactly how you need it.",
+      "bullets": {
+        "1": "Snaps you into peak state instantly",
+        "2": "Brings crystal clarity to messy thoughts",
+        "3": "Keeps you locked in when focus fades",
+        "4": "Delivers tools that work — with human takeover if needed"
+      }
+    },
+    "target": {
+      "title": "WHO IT’S FOR:",
+      "bullets": {
+        "1": "Athletes or teams who want to perform at 100% — every time",
+        "2": "Parents & coaches who want 24/7 support",
+        "3": "Leaders managing communities or clients across multiple channels",
+        "4": "Anyone who wants sharper focus and more consistent conversations"
+      }
+    },
+    "how": {
+      "title": "HOW IT WORKS",
+      "steps": {
+        "1": "Pick your channels: WhatsApp, Telegram, Web Chat, Email, Instagram, or API",
+        "2": "Share your scenario or upload your knowledge base (FAQs, docs, links)",
+        "3": "Chat and set smart rules: targeted convos, AI-led mini sessions",
+        "4": "Unblock. Refocus. Execute. With full analytics."
+      }
+    },
+    "why": {
+      "title": "WHY IT WINS WHERE OTHERS FAIL",
+      "subtitle": "No fluff. No motivational clichés. Just:",
+      "bullets": {
+        "1": "Battle-tested strategies hardcoded into AI flows",
+        "2": "Years of multi-context data in sports & performance",
+        "3": "Constant improvement via analytics"
+      },
+      "conclusion": "Plus — it learns every single day. No other AI coach does this."
+    },
+    "cost": {
+      "title": "PRICING",
+      "subtitle": "Free to try. No card required. No risk. Try it first, then decide.",
+      "offer": " EXCLUSIVE: FIRST 1,000 USERS GET IT FREE — THEN IT GOES PAID"
+    },
+    "footer": {
+      "title": "TRY IT • IT’S LIKE HAVING A COACH • 24/7",
+      "description": "Test it free. Then tell me I’m wrong."
+    },
+    "cta": {
+      "title": "READY TO EXPERIENCE ANTHON?",
+      "subtitle": "Free trial. All channels. No strings.",
+      "button": "Start Free"
+    },
+    "testimonials": {
+      "1": {
+        "text": "It’s like having Antonio in my pocket. Always says exactly what I need to hear.",
+        "author": "- Pro Midfielder, Serie B"
+      },
+      "2": {
+        "text": "My son’s loving football again — and scoring like he used to.",
+        "author": "- Father of a 16-year-old talent"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Log in to continue",
+      "signUpPrompt": "Don't have an account? Sign Up"
+    },
+    "signup": {
+      "title": "Create an Account",
+      "subtitle": "Sign up for a new AnthonChat account",
+      "signInPrompt": "Already have an account? Sign In",
+      "nonce": {
+        "validating": "Validating link...",
+        "valid": "Valid link - Your channel {channel} will be connected automatically",
+        "invalid": "Invalid or expired link - You can connect the channel after registration",
+        "error": "Error validating link"
+      },
+      "loading": {
+        "auth": "Creating your account...",
+        "stripe": "Setting up billing & payment processing...",
+        "complete": "Almost done! Finalizing your account...",
+        "processing": "Processing...",
+        "steps": {
+          "creating": "Creating your account",
+          "configuring": "Configuring billing & payments",
+          "preparing": "Preparing your dashboard"
+        },
+        "description": "We're setting up your account with secure payment processing. This ensures you can manage subscriptions and billing seamlessly."
+      },
+      "actions": {
+        "signUp": "Sign Up",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
+      },
+      "notifications": {
+        "validationError": "Validation Error",
+        "validationErrorDescription": "The form contains errors: {errors}",
+        "registrationError": "Registration Error",
+        "success": "Registration completed!",
+        "successDescription": "Your account has been created successfully. You will be redirected to the dashboard.",
+        "externalError": "Error",
+        "linkVerified": "Link verified",
+        "verificationError": "Error verifying link"
+      }
+    },
+    "signupComplete": {
+      "title": "Complete Your Profile",
+      "subtitle": "Just a few more details to get you started with AnthonChat"
+    },
+    "channelLinking": {
+      "fallbackMessage": "You can set up the channel manually using the verification process below."
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordHelp": "Password must be at least 8 characters long and contain at least one number and one letter."
+    },
+    "signupWrapper": {
+      "accountExists": {
+        "title": "Account Already Exists",
+        "description": "An account with this email address already exists. Please sign in to continue.",
+        "channelPreserved": "Your channel linking information will be preserved."
+      },
+      "actions": {
+        "signInInstead": "Sign In Instead",
+        "tryDifferentEmail": "Try Different Email"
+      },
+      "status": {
+        "checkingAuth": "Checking authentication...",
+        "redirectingToDashboard": "Redirecting to dashboard..."
+      }
+    }
+  },
+  "dashboard": {
+    "header": {
+      "greeting": "Welcome",
+      "subtitle": "Your performance command center",
+      "backToDashboard": "Back to Dashboard",
+      "welcomeBack": "Welcome back, {email}",
+      "title": "Dashboard"
+    },
+    "banner": {
+      "welcomeAgain": "Good to see you again! 👋",
+      "happening": "Here's what's happening with your AnthonChat account today."
+    },
+    "channels": {
+      "title": "Channel Management",
+      "description": "Manage your connected communication channels"
+    },
+    "channelsAdd": {
+      "title": "Add Channel",
+      "description": "Connect a new channel to start receiving messages",
+      "chooseTitle": "Choose Your Communication Platform",
+      "chooseDescription": "Select from our supported channels to start engaging with your audience",
+      "helpPrefix": "Need help setting up your channel?",
+      "viewDocs": "View Documentation",
+      "head": {
+        "title": "Choose Channel Type",
+        "subtitle": "Select the type of communication channel you want to add"
+      },
+      "status": {
+        "connected": "Connected",
+        "pending": "Pending",
+        "expired": "Expired",
+        "error": "Error"
+      },
+      "sessionResumed": "Resumed from previous session",
+      "commandPrompt": "Click the link below or send this command:",
+      "openChannel": "Open {name}",
+      "waiting": "Waiting for verification... This may take a few moments.",
+      "connect": "Connect {name}",
+      "retry": "Retry",
+      "startFresh": "Start Fresh",
+      "viewAll": "View All Channels",
+      "empty": "No channels are currently available for connection.",
+      "descriptions": {
+        "whatsapp": "Connect your WhatsApp Business account",
+        "telegram": "Connect your Telegram bot",
+        "default": "Connect your communication channel"
+      },
+      "connectedAs": "Connected as:"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "description": "Common tasks and settings",
+      "manage": {
+        "title": "Manage Subscription",
+        "description": "Update billing and plan"
+      },
+      "add": {
+        "title": "Add Channels",
+        "description": "Connect new platforms"
+      },
+      "comingSoon": "Coming Soon",
+      "needHelp": "Need Help?",
+      "supportBadge": "24/7 Support"
+    },
+    "channelsOverview": {
+      "title": "Connected Channels",
+      "description": "Manage your communication channels",
+      "addNew": "Add New Channel",
+      "manageAll": "Manage All Channels",
+      "badges": {
+        "verified": "Verified",
+        "unverified": "Unverified"
+      },
+      "emptyTitle": "No channels connected",
+      "emptyDescription": "Connect your first communication channel to get started",
+      "emptyCta": "Add Your First Channel"
+    },
+    "subscription": {
+      "title": "Subscription Management",
+      "description": "Manage your subscription and billing settings",
+      "bannerTitle": "Billing & Subscription 💳",
+      "bannerDescription": "Manage your plan, billing details, and payment methods.",
+      "statusTitle": "Subscription Status",
+      "subscriptionTitle": "Subscription Plan",
+      "noActive": "No active subscription",
+      "upgradeButton": "Upgrade Subscription",
+      "manageButton": "Manage Subscription",
+      "refreshButton": "Refresh Data"
+    },
+    "subscriptionMgmt": {
+      "current": {
+        "title": "Current Subscription",
+        "description": "Your current plan and billing information"
+      },
+      "currency": {
+        "symbol": "€"
+      },
+      "common": {
+        "refresh": "Refresh",
+        "freeTrial": "Free Trial",
+        "daysLeft": "days left"
+      },
+      "trial": {
+        "period": "Trial Period",
+        "progressLabel": "Trial Progress",
+        "started": "Started {days} days ago",
+        "remaining": "{days} days remaining"
+      },
+      "billingInfo": "Billing Information",
+      "billingCycle": "Billing Cycle",
+      "currentPeriod": "Current Period",
+      "nextBilling": "Next Billing",
+      "planFeatures": "Plan Features",
+      "features": {
+        "essentialAi": "Essential AI features",
+        "basicChat": "Basic chat",
+        "standardResponse": "Standard response times",
+        "emailSupport": "Email support",
+        "advancedAi": "Advanced AI features",
+        "priorityChat": "Priority chat",
+        "fasterResponse": "Faster response times",
+        "emailChatSupport": "Email & chat support",
+        "advancedAnalytics": "Advanced analytics",
+        "premiumAi": "Premium AI features",
+        "prioritySupport": "Priority support",
+        "fastestResponse": "Fastest response times",
+        "support247": "24/7 support",
+        "customIntegrations": "Custom integrations",
+        "allIncluded": "All features included",
+        "premiumSupport": "Premium support",
+        "advancedCapabilities": "Advanced capabilities"
+      },
+      "available": {
+        "title": "Available Plans",
+        "description": "Choose the plan that best fits your needs",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "loading": "Loading plans...",
+        "currentPlan": "Current Plan",
+        "freeTrialBadge": "{days}-day free trial",
+        "popular": "Popular",
+        "savePercent": "Save {percent}%",
+        "billedYearlySuffix": "/month billed yearly",
+        "startTrial": "Start Free Trial",
+        "upgrade": "Upgrade to Plan",
+        "notAvailable": "Not available for {interval} billing",
+        "startTrialBanner": "Start with {days}-day free trial",
+        "trialNoPayment": "No payment required to start. Cancel anytime during trial period.",
+        "trialFullAccess": "Full access",
+        "trialNoCommitment": "No commitment"
+      },
+      "history": {
+        "title": "Billing History",
+        "description": "View your past invoices and payments",
+        "emptyTitle": "No billing history available",
+        "emptyDescription": "Billing history will appear here once you have an active subscription"
+      },
+      "status": {
+        "trialExpired": "Trial has expired",
+        "trialActive": "Free trial period active",
+        "subscriptionPlan": "Subscription Plan",
+        "noActiveSubscription": "No active subscription"
+      }
+    },
+    "channelMgmt": {
+      "addNew": {
+        "title": "Add New Channel",
+        "description": "Connect a new communication channel to expand your reach",
+        "button": "Add Channel",
+        "connectFirstPlatform": "Connect your first communication platform"
+      },
+      "connected": {
+        "title": "Connected Channels",
+        "description": "You have {count} connected channels.",
+        "verified": "Verified",
+        "pendingVerification": "Pending verification",
+        "test": "Test"
+      },
+      "empty": {
+        "title": "No channels connected",
+        "description": "Connect your first channel to start using AnthonChat",
+        "cta": "Add Your First Channel"
+      }
+    }
+  },
+  "legal": {
+    "privacy": {
+      "metaTitle": "Privacy Policy — TryAnthon",
+      "metaDescription": "How TryAnthon collects, uses and protects your data.",
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: 14 August 2025",
+      "backToHome": "Back to Home",
+      "sections": {
+        "intro": {
+          "title": "Introduction",
+          "p1": "This notice explains how we collect, use and protect your personal data when you use TryAnthon across the web and connected channels.",
+          "p2": ""
+        },
+        "controller": {
+          "title": "Data Controller",
+          "p1": "Sincro Group S.R.L., Via Monte Napoleone 8, 20121 Milano (MI), Italy — VAT/C.F. 13508690966, unique code M5UXCR1. Legal representative: Antonio Valente. Contact: info@valenteantonio.it."
+        },
+        "data": {
+          "title": "Data we collect",
+          "bullets": {
+            "1": "Account data (email, name, locale)",
+            "2": "Cookies and tracking technologies",
+            "3": "Billing and subscription metadata processed by Stripe"
+          }
+        },
+        "limitations": {
+          "title": "Automatic limitations",
+          "bullets": {
+            "1": "No processing of health data",
+            "2": "No processing of personal financial data",
+            "3": "No data of children under 14 years old",
+            "4": "No illegal, inappropriate or sensitive content"
+          }
+        },
+        "use": {
+          "title": "How we use your data",
+          "bullets": {
+            "1": "To provide and maintain the service",
+            "2": "To authenticate you and secure the platform",
+            "3": "To personalize content and features",
+            "4": "To analyze performance and improve the product",
+            "5": "To communicate updates, transactional emails and support"
+          }
+        },
+        "legal": {
+          "title": "Legal bases (GDPR)",
+          "bullets": {
+            "1": "Performance of a contract (Art. 6.1.b)",
+            "2": "Consent where required (Art. 6.1.a)",
+            "3": "Legitimate interests, e.g., safety and improvement (Art. 6.1.f)",
+            "4": "Compliance with legal obligations"
+          }
+        },
+        "ai": {
+          "title": "AI processing and consent",
+          "bullets": {
+            "1": "Processing and analysis of conversations",
+            "2": "Personalization of responses",
+            "3": "Temporary storage of chats",
+            "4": "Use of anonymized conversations to improve AI"
+          },
+          "note": "The service does not provide professional advice (medical, legal, financial). Do not base decisions solely on responses."
+        },
+        "age": {
+          "title": "Minimum age",
+          "p1": "Use is allowed only for users aged 14 or older; under 14 requires verifiable parental consent.",
+          "p2": "The Controller is not responsible for false age declarations made by users."
+        },
+        "sharing": {
+          "title": "Sharing and processors",
+          "p1": "We do not sell your data. We use third‑party processors strictly to operate the service (e.g., Supabase for hosting/auth/database and Stripe for payments)."
+        },
+        "transfers": {
+          "title": "Extra‑EU data transfers",
+          "bullets": {
+            "1": "Transfers to countries covered by adequacy decisions",
+            "2": "Standard Contractual Clauses (Art. 46 GDPR)",
+            "3": "Other appropriate safeguards in compliance with EU law"
+          }
+        },
+        "retention": {
+          "title": "Data retention",
+          "p1": "We retain data only as long as necessary for the purposes described or to meet legal obligations. You may request deletion of your account data.",
+          "items": {
+            "1": "Account data: for the duration of the relationship + 24 months for legal defense; up to 10 years for tax obligations.",
+            "2": "Conversations: clear messages 30 days; anonymized data for AI up to 12 months; encrypted backups up to 6 months.",
+            "3": "System backups: up to 6 months, encrypted and access‑restricted."
+          }
+        },
+        "marketing": {
+          "title": "Marketing and profiling (optional)",
+          "bullets": {
+            "1": "Commercial communications, updates and promotions (with consent).",
+            "2": "Personalized content based on interactions with Anthon Chat.",
+            "3": "Invitations to events, webinars or exclusive offers. Consent can be revoked at any time."
+          }
+        },
+        "security": {
+          "title": "Data security",
+          "bullets": {
+            "1": "End‑to‑end encryption of conversations where supported",
+            "2": "Protected backups and audited access",
+            "3": "Automatic deletion after the indicated retention periods",
+            "4": "Automated moderation systems",
+            "5": "Access restricted to authorized personnel only"
+          }
+        },
+        "rights": {
+          "title": "Your rights",
+          "bullets": {
+            "1": "Access your data",
+            "2": "Rectify inaccurate data",
+            "3": "Erase your data (“right to be forgotten”)",
+            "4": "Restrict or object to processing",
+            "5": "Data portability",
+            "6": "Withdraw consent at any time (where processing is based on consent)",
+            "7": "Lodge a complaint with a supervisory authority"
+          }
+        },
+        "changes": {
+          "title": "Changes to this notice",
+          "p1": "We may update this notice at any time. Please check the latest version available in the platform."
+        },
+        "contact": {
+          "title": "Contact",
+          "p1": "For privacy inquiries, use the contact options in the app or write to info@valenteantonio.it."
+        }
+      }
+    }
+  },
+  "errors": {
+    "notFound": {
+      "goHome": "Go Home",
+      "checkingRoute": "Checking route...",
+      "redirecting": "Redirecting to English version...",
+      "title": "404 - Page Not Found",
+      "description": "The page you're looking for doesn't exist.",
+      "requestedPath": "Requested path:",
+      "causesTitle": "This could happen if:",
+      "causes": {
+        "1": "The page was moved or deleted",
+        "2": "You typed the URL incorrectly",
+        "3": "The link you followed is broken"
+      },
+      "goBack": "Go Back",
+      "supportPrompt": "Need help? Contact support at"
+    }
+  }
+}

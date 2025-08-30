@@ -1,0 +1,530 @@
+{
+  "common": {
+    "appName": "TryAnthon",
+    "appDescription": "Il tuo assistente personale per la crescita e il supporto mentale.",
+    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci" }
+  },
+  "marketing": {
+    "hero": {
+      "title": "TRY ANTHON",
+      "subtitle": "L'AI clone di Antonio Valente",
+      "description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Non solo WhatsApp o Telegram: collega anche Web Chat, Email, Instagram e altri canali."
+    },
+    "chat": {
+      "demo": {
+        "username": "Tu",
+        "message": "Ho paura di sbagliare il rigore decisivo domani",
+        "reply": "\"Ehi Marco! 💪 So perfettamente cosa provi... quella sensazione allo stomaco, vero?\"\n\n🎯 30 secondi prima: visualizza il pallone che ENTRA nell’angolino destro\n🫁 Respirazione quadrata: 4-4-4-4\n🗣️ Ripeti: ‘Io comando il pallone’\n\nDomani richiama questa sequenza e spacca!"
+      },
+      "info": {
+        "title": "Provalo gratis su tutti i tuoi canali",
+        "subtitle": "ZERO CARTE. ZERO FREGATURE. SE NON TI FA DIRE WOW, CANCELLI.",
+        "bullets": {
+          "1": "• Risposte AI in tempo reale",
+          "2": "• Regole di routing e fallback umano",
+          "3": "• Attivazione in pochi minuti"
+        }
+      }
+    },
+    "claims": {
+      "1": "NON È CHATGPT.\nÈ ANTHON",
+      "2": "IL VERO NEMICO?\nQUELLA VOCINA CHE TI SABOTA",
+      "3": "ANTHON LO SPEGNE\nIN TEMPO REALE"
+    },
+    "features": {
+      "title": "L’UNICO COACH AI ISTRUITO SUL CAMPO",
+      "description": "Allenato con migliaia di dati e aggiornato quotidianamente con strategie che producono risultati. Oggi la stessa intelligenza opera su più canali: WhatsApp, Telegram, Web Chat, Email, Instagram e altri via API.",
+      "features": {
+        "1": {
+          "title": "MIGLIAIA DI DATI REALI",
+          "description": "Casi e strategie reali presi da anni di risultati"
+        },
+        "2": {
+          "title": "METODO SINCRO",
+          "description": "Processi validati sul campo, adattati all’AI"
+        },
+        "3": {
+          "title": "ISTRUITO DA ESPERTI",
+          "description": "Know-how trasferito, non un bot generico"
+        },
+        "4": {
+          "title": "AGGIORNATO LIVE",
+          "description": "Migliora costantemente con feedback e analytics"
+        }
+      }
+    },
+    "autosabotage": {
+      "title": "L’AUTOSABOTAGGIO",
+      "bullets": {
+        "1": "✗ Ti frena prima della “partita”: allenamento, amichevole o match reale",
+        "2": "✗ Ti fa mollare quando serve lucidità",
+        "3": "✗ Ti convince che “non sei all’altezza”",
+        "4": "✗ Ti fa pensare che “tanto non cambierà nulla”"
+      },
+      "conclusion": "È autosabotaggio."
+    },
+    "realtime": {
+      "title": "RISPOSTE IN TEMPO REALE",
+      "subtitle": "Quando serve. Come serve. Con strumenti concreti e personalizzati su ogni canale.",
+      "bullets": {
+        "1": "Ti risveglia quando sei “spento”",
+        "2": "Ti chiarisce quando sei confuso",
+        "3": "Ti guida quando ti stai perdendo",
+        "4": "Ti fornisce strumenti diretti, con handover umano quando necessario"
+      }
+    },
+    "target": {
+      "title": "È PER TE SE:",
+      "bullets": {
+        "1": "Vuoi rendere per ciò che vali davvero, come atleta o come team",
+        "2": "Sei un genitore o un coach e vuoi un supporto costante, H24",
+        "3": "Gestisci community e clienti su più canali e ti serve ordine",
+        "4": "Vuoi più lucidità, concentrazione e continuità nelle conversazioni"
+      }
+    },
+    "how": {
+      "title": "COME FUNZIONA?",
+      "steps": {
+        "1": "Scegli i canali: WhatsApp, Telegram, Web Chat, Email, Instagram o altri via API",
+        "2": "Scrivi la tua situazione o importa la tua conoscenza (FAQ, documenti, link)",
+        "3": "Chatta e imposta regole: conversazioni mirate, mini sessioni guidate dall’AI",
+        "4": "Ti sblocchi. Ti chiarisci. Agisci. Con analytics a supporto"
+      }
+    },
+    "why": {
+      "title": "PERCHÉ FUNZIONA COSÌ BENE?",
+      "subtitle": "Non è motivazione da Baci Perugina. È una macchina costruita su:",
+      "bullets": {
+        "1": "Strategie vere usate sul campo e codificate in flussi AI",
+        "2": "Dati raccolti in anni di esperienza, ruoli e contesti diversi",
+        "3": "Risultati misurabili, con miglioramenti continui grazie ad analytics"
+      },
+      "conclusion": "E soprattutto, continua a imparare ogni giorno. Nessun altro lo fa così."
+    },
+    "cost": {
+      "title": "QUANTO COSTA?",
+      "subtitle": "Puoi testarlo gratis. Nessuna carta. Nessun rischio. Provalo, poi decidi.",
+      "offer": " OFFERTA VALIDA SOLO PER I PRIMI 1.000 UTENTI - POI DIVENTA A PAGAMENTO"
+    },
+    "footer": {
+      "title": "PROVALO • SARÀ COME PARLARE CON UN COACH • SEMPRE",
+      "description": "Provalo gratis. Poi dimmi se sbaglio."
+    },
+    "cta": {
+      "title": "PRONTO A PROVARE ANTHON?",
+      "subtitle": "Provalo GRATIS su tutti i tuoi canali",
+      "button": "Inizia ora"
+    },
+    "testimonials": {
+      "1": {
+        "text": "È come avere Antonio sempre in tasca. Sa esattamente cosa dirmi.",
+        "author": "- Centrocampista Serie B"
+      },
+      "2": {
+        "text": "Mio figlio è tornato a divertirsi. E a segnare come prima.",
+        "author": "- Padre di talento 16 anni"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi al tuo account",
+      "signUpPrompt": "Non hai un account? Registrati"
+    },
+    "signup": {
+      "title": "Crea il tuo account",
+      "subtitle": "Inizia oggi la tua prova gratuita con AnthonChat",
+      "signInPrompt": "Hai già un account? Accedi",
+      "nonce": {
+        "validating": "Validazione link in corso...",
+        "valid": "Link valido - Il tuo canale {channel} verrà collegato automaticamente",
+        "invalid": "Link non valido o scaduto - Potrai collegare il canale dopo la registrazione",
+        "error": "Errore durante la validazione del link"
+      },
+      "loading": {
+        "auth": "Creazione del tuo account...",
+        "stripe": "Configurazione fatturazione e pagamenti...",
+        "complete": "Quasi fatto! Finalizzazione dell'account...",
+        "processing": "Elaborazione in corso...",
+        "steps": {
+          "creating": "Creazione del tuo account",
+          "configuring": "Configurazione fatturazione e pagamenti",
+          "preparing": "Preparazione della tua dashboard"
+        },
+        "description": "Stiamo configurando il tuo account con elaborazione sicura dei pagamenti. Questo ti assicura di poter gestire abbonamenti e fatturazione senza problemi."
+      },
+      "actions": {
+        "signUp": "Registrati",
+        "showPassword": "Mostra password",
+        "hidePassword": "Nascondi password"
+      },
+      "notifications": {
+        "validationError": "Errore di validazione",
+        "validationErrorDescription": "Il form contiene errori: {errors}",
+        "registrationError": "Errore durante la registrazione",
+        "success": "Registrazione completata!",
+        "successDescription": "Il tuo account è stato creato con successo. Verrai reindirizzato al dashboard.",
+        "externalError": "Errore",
+        "linkVerified": "Link verificato",
+        "verificationError": "Errore durante la verifica del link"
+      }
+    },
+    "signupComplete": {
+      "title": "Completa il tuo profilo",
+      "subtitle": "Ancora pochi dettagli e sei pronto per usare AnthonChat"
+    },
+    "channelLinking": {
+      "fallbackMessage": "Puoi configurare il canale manualmente utilizzando il processo di verifica qui sotto."
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "passwordHelp": "La password deve contenere almeno 8 caratteri, inclusi almeno un numero e una lettera."
+    },
+    "signupWrapper": {
+      "accountExists": {
+        "title": "Account già esistente",
+        "description": "Esiste già un account registrato con questa email. Accedi per continuare.",
+        "channelPreserved": "Le informazioni per il collegamento del canale verranno mantenute."
+      },
+      "actions": {
+        "signInInstead": "Accedi",
+        "tryDifferentEmail": "Prova con un'altra email"
+      },
+      "status": {
+        "checkingAuth": "Verifica autenticazione...",
+        "redirectingToDashboard": "Reindirizzamento alla dashboard..."
+      }
+    }
+  },
+  "dashboard": {
+    "header": {
+      "greeting": "Benvenuto",
+      "subtitle": "Panoramica del tuo workspace",
+      "backToDashboard": "Torna alla Dashboard",
+      "welcomeBack": "Bentornato, {email}",
+      "title": "Dashboard"
+    },
+    "banner": {
+      "welcomeAgain": "Felice di rivederti! 👋",
+      "happening": "Ecco cosa sta succedendo sul tuo account AnthonChat oggi."
+    },
+    "channels": {
+      "title": "Gestione Canali",
+      "description": "Gestisci i tuoi canali di comunicazione collegati"
+    },
+    "channelsAdd": {
+      "title": "Aggiungi Canale",
+      "description": "Collega un nuovo canale per iniziare a ricevere messaggi",
+      "chooseTitle": "Scegli la tua piattaforma di comunicazione",
+      "chooseDescription": "Seleziona tra i canali supportati per iniziare a coinvolgere il tuo pubblico",
+      "helpPrefix": "Hai bisogno di aiuto per configurare il canale?",
+      "viewDocs": "Vedi documentazione",
+      "head": {
+        "title": "Scegli il tipo di canale",
+        "subtitle": "Seleziona il tipo di canale di comunicazione che vuoi aggiungere"
+      },
+      "status": {
+        "connected": "Connesso",
+        "pending": "In attesa",
+        "expired": "Scaduto",
+        "error": "Errore"
+      },
+      "descriptions": {
+        "whatsapp": "Collega il tuo account WhatsApp Business",
+        "telegram": "Collega il tuo bot Telegram",
+        "default": "Collega il tuo canale di comunicazione"
+      },
+      "connectedAs": "Connesso come:",
+      "sessionResumed": "Ripreso dalla sessione precedente",
+      "commandPrompt": "Clicca sul link qui sotto o invia questo comando:",
+      "openChannel": "Apri {name}",
+      "waiting": "Attendi la verifica... Potrebbe richiedere alcuni istanti.",
+      "connect": "Collega {name}",
+      "retry": "Riprova",
+      "startFresh": "Ricomincia",
+      "viewAll": "Vedi tutti i canali",
+      "empty": "Al momento non ci sono canali disponibili da collegare."
+    },
+    "quickActions": {
+      "title": "Azioni rapide",
+      "description": "Attività e impostazioni comuni",
+      "manage": {
+        "title": "Gestisci abbonamento",
+        "description": "Aggiorna piano e fatturazione"
+      },
+      "add": {
+        "title": "Aggiungi canali",
+        "description": "Collega nuove piattaforme"
+      },
+      "comingSoon": "In arrivo",
+      "needHelp": "Hai bisogno di aiuto?",
+      "supportBadge": "Supporto 24/7"
+    },
+    "channelsOverview": {
+      "title": "Canali collegati",
+      "description": "Gestisci i tuoi canali di comunicazione",
+      "addNew": "Aggiungi nuovo canale",
+      "manageAll": "Gestisci tutti i canali",
+      "badges": {
+        "verified": "Verificato",
+        "unverified": "Non verificato"
+      },
+      "emptyTitle": "Nessun canale collegato",
+      "emptyDescription": "Collega il tuo primo canale di comunicazione per iniziare",
+      "emptyCta": "Aggiungi il tuo primo canale"
+    },
+    "subscription": {
+      "title": "Gestione Abbonamento",
+      "description": "Gestisci il tuo abbonamento e le impostazioni di fatturazione",
+      "bannerTitle": "Fatturazione & Abbonamento 💳",
+      "bannerDescription": "Gestisci piano, dati di fatturazione e metodi di pagamento.",
+      "statusTitle": "Stato abbonamento",
+      "subscriptionTitle": "Piano di abbonamento",
+      "noActive": "Nessun abbonamento attivo",
+      "upgradeButton": "Aggiorna abbonamento",
+      "manageButton": "Gestisci abbonamento",
+      "refreshButton": "Aggiorna dati"
+    },
+    "subscriptionMgmt": {
+      "current": {
+        "title": "Abbonamento attuale",
+        "description": "Il tuo piano corrente e le informazioni di fatturazione"
+      },
+      "currency": {
+        "symbol": "€"
+      },
+      "common": {
+        "refresh": "Aggiorna",
+        "freeTrial": "Prova gratuita",
+        "daysLeft": "giorni rimanenti"
+      },
+      "trial": {
+        "period": "Periodo di prova",
+        "progressLabel": "Avanzamento prova",
+        "started": "Iniziata da {days} giorni",
+        "remaining": "{days} giorni rimanenti"
+      },
+      "billingInfo": "Informazioni di fatturazione",
+      "billingCycle": "Ciclo di fatturazione",
+      "currentPeriod": "Periodo corrente",
+      "nextBilling": "Prossima fatturazione",
+      "planFeatures": "Funzionalità del piano",
+      "features": {
+        "essentialAi": "Funzionalità AI essenziali",
+        "basicChat": "Chat di base",
+        "standardResponse": "Tempi di risposta standard",
+        "emailSupport": "Supporto via email",
+        "advancedAi": "Funzionalità AI avanzate",
+        "priorityChat": "Chat prioritaria",
+        "fasterResponse": "Tempi di risposta più rapidi",
+        "emailChatSupport": "Supporto email e chat",
+        "advancedAnalytics": "Analytics avanzate",
+        "premiumAi": "Funzionalità AI premium",
+        "prioritySupport": "Supporto prioritario",
+        "fastestResponse": "Tempi di risposta più veloci",
+        "support247": "Supporto 24/7",
+        "customIntegrations": "Integrazioni personalizzate",
+        "allIncluded": "Tutte le funzionalità incluse",
+        "premiumSupport": "Supporto premium",
+        "advancedCapabilities": "Capacità avanzate"
+      },
+      "available": {
+        "title": "Piani disponibili",
+        "description": "Scegli il piano più adatto alle tue esigenze",
+        "monthly": "Mensile",
+        "yearly": "Annuale",
+        "loading": "Caricamento piani...",
+        "currentPlan": "Piano attuale",
+        "freeTrialBadge": "{days} giorni di prova gratuita",
+        "popular": "Popolare",
+        "savePercent": "Risparmia {percent}%",
+        "billedYearlySuffix": "/mese fatturato annualmente",
+        "startTrial": "Inizia la prova gratuita",
+        "upgrade": "Passa al piano",
+        "notAvailable": "Non disponibile per fatturazione {interval}"
+      },
+      "history": {
+        "title": "Storico fatturazione",
+        "description": "Visualizza le tue fatture e i pagamenti passati",
+        "emptyTitle": "Nessuno storico fatturazione disponibile",
+        "emptyDescription": "Lo storico apparirà qui quando avrai un abbonamento attivo"
+      },
+      "status": {
+        "trialExpired": "Prova scaduta",
+        "trialActive": "Periodo di prova gratuita attivo",
+        "subscriptionPlan": "Piano di abbonamento",
+        "noActiveSubscription": "Nessun abbonamento attivo"
+      }
+    },
+    "channelMgmt": {
+      "addNew": {
+        "title": "Aggiungi nuovo canale",
+        "description": "Collega un nuovo canale di comunicazione per espandere la tua portata",
+        "button": "Aggiungi canale",
+        "connectFirstPlatform": "Collega la tua prima piattaforma di comunicazione"
+      },
+      "connected": {
+        "title": "Canali collegati",
+        "description": "Hai {count} canali collegati.",
+        "verified": "Verificato",
+        "pendingVerification": "Verifica in corso",
+        "test": "Test"
+      },
+      "empty": {
+        "title": "Nessun canale collegato",
+        "description": "Collega il tuo primo canale per iniziare a usare AnthonChat",
+        "cta": "Aggiungi il tuo primo canale"
+      }
+    }
+  },
+  "legal": {
+    "privacy": {
+      "metaTitle": "Informativa Privacy — TryAnthon",
+      "metaDescription": "Come TryAnthon raccoglie, utilizza e protegge i tuoi dati personali.",
+      "title": "Informativa sul Trattamento dei Dati Personali",
+      "lastUpdated": "Ultimo aggiornamento: 14 Agosto 2025",
+      "backToHome": "Torna alla Home",
+      "sections": {
+        "intro": {
+          "title": "Introduzione",
+          "p1": "Questa informativa descrive come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali quando utilizzi TryAnthon sul web e sui canali integrati.",
+          "p2": ""
+        },
+        "controller": {
+          "title": "Titolare del trattamento",
+          "p1": "Sincro Group S.R.L., Via Monte Napoleone 8, 20121 Milano (MI), Italia — C.F./P.IVA 13508690966, codice univoco M5UXCR1. Legale rappresentante: Antonio Valente. Contatti: info@valenteantonio.it."
+        },
+        "data": {
+          "title": "Dati trattati",
+          "bullets": {
+            "1": "Dati account (email, nome, lingua)",
+            "2": "Cookie e tecnologie di tracciamento",
+            "3": "Metadati di fatturazione e abbonamento gestiti da Stripe"
+          }
+        },
+        "limitations": {
+          "title": "Limitazioni automatiche",
+          "bullets": {
+            "1": "Nessun trattamento di dati sanitari",
+            "2": "Nessun trattamento di dati finanziari personali",
+            "3": "Nessun dato di minori di 14 anni",
+            "4": "Nessun contenuto illegale, inappropriato o sensibile"
+          }
+        },
+        "use": {
+          "title": "Finalità del trattamento",
+          "bullets": {
+            "1": "Erogare e mantenere il servizio",
+            "2": "Autenticazione e sicurezza della piattaforma",
+            "3": "Personalizzare contenuti e funzionalità",
+            "4": "Analisi delle performance e miglioramento del prodotto",
+            "5": "Comunicazioni operative, email transazionali e supporto"
+          }
+        },
+        "legal": {
+          "title": "Basi giuridiche (GDPR)",
+          "bullets": {
+            "1": "Esecuzione del contratto (Art. 6.1.b)",
+            "2": "Consenso ove richiesto (Art. 6.1.a)",
+            "3": "Legittimo interesse, es. sicurezza e miglioramento (Art. 6.1.f)",
+            "4": "Adempimento di obblighi di legge"
+          }
+        },
+        "ai": {
+          "title": "Trattamenti AI e consenso",
+          "bullets": {
+            "1": "Elaborazione e analisi delle conversazioni",
+            "2": "Personalizzazione delle risposte",
+            "3": "Archiviazione temporanea delle chat",
+            "4": "Uso di conversazioni anonimizzate per migliorare l’AI"
+          },
+          "note": "Il servizio non fornisce consulenze professionali (mediche, legali, finanziarie). Evita di basare decisioni esclusivamente sulle risposte."
+        },
+        "age": {
+          "title": "Età minima",
+          "p1": "L’uso è consentito solo a utenti di età pari o superiore a 14 anni; per i minori di 14 anni è necessario il consenso genitoriale verificabile.",
+          "p2": "Il Titolare non risponde di dichiarazioni false sull’età fornite dagli utenti."
+        },
+        "sharing": {
+          "title": "Destinatari e responsabili",
+          "p1": "Non vendiamo i tuoi dati. Utilizziamo fornitori terzi solo per l’erogazione del servizio (es. Supabase per hosting/auth/database e Stripe per pagamenti)."
+        },
+        "transfers": {
+          "title": "Trasferimenti extra UE",
+          "bullets": {
+            "1": "Paesi coperti da decisioni di adeguatezza",
+            "2": "Clausole Contrattuali Standard (art. 46 GDPR)",
+            "3": "Altre garanzie idonee nel rispetto della normativa UE"
+          }
+        },
+        "retention": {
+          "title": "Conservazione dei dati",
+          "p1": "I dati sono conservati per il tempo necessario alle finalità descritte o per obblighi di legge. Puoi richiedere la cancellazione dei dati del tuo account.",
+          "items": {
+            "1": "Dati account: per la durata del rapporto + 24 mesi per difesa legale; fino a 10 anni per obblighi fiscali.",
+            "2": "Conversazioni: messaggi in chiaro 30 giorni; dati anonimizzati per AI fino a 12 mesi; backup cifrati fino a 6 mesi.",
+            "3": "Backup di sistema: fino a 6 mesi, cifrati e ad accesso ristretto."
+          }
+        },
+        "marketing": {
+          "title": "Marketing e profilazione (facoltativi)",
+          "bullets": {
+            "1": "Comunicazioni commerciali, aggiornamenti e promozioni (con consenso).",
+            "2": "Contenuti personalizzati in base alle interazioni con Anthon Chat.",
+            "3": "Inviti a eventi, webinar o offerte esclusive. Il consenso è revocabile in qualsiasi momento."
+          }
+        },
+        "security": {
+          "title": "Sicurezza dei dati",
+          "bullets": {
+            "1": "Cifratura end‑to‑end delle conversazioni dove supportato",
+            "2": "Backup protetti e accessi tracciati",
+            "3": "Cancellazione automatica secondo i tempi indicati",
+            "4": "Sistemi di moderazione automatica",
+            "5": "Accesso ai dati riservato a personale autorizzato"
+          }
+        },
+        "rights": {
+          "title": "Diritti dell’interessato",
+          "bullets": {
+            "1": "Accesso ai dati",
+            "2": "Rettifica dei dati inesatti",
+            "3": "Cancellazione dei dati (\"diritto all’oblio\")",
+            "4": "Limitazione o opposizione al trattamento",
+            "5": "Portabilità dei dati",
+            "6": "Revoca del consenso in qualsiasi momento (se il trattamento si basa sul consenso)",
+            "7": "Reclamo all’autorità di controllo competente"
+          }
+        },
+        "changes": {
+          "title": "Modifiche all’informativa",
+          "p1": "Possiamo aggiornare questa informativa in qualsiasi momento. Verifica la versione più recente disponibile sulla piattaforma."
+        },
+        "contact": {
+          "title": "Contatti",
+          "p1": "Per esercitare i diritti o per richieste privacy, utilizza i canali in app oppure scrivi a info@valenteantonio.it."
+        }
+      }
+    },
+    "errors": {
+      "notFound": {
+        "goHome": "Vai alla Home",
+        "checkingRoute": "Verifica del percorso in corso...",
+        "redirecting": "Reindirizzamento alla versione in inglese...",
+        "title": "404 - Pagina non trovata",
+        "description": "La pagina che stai cercando non esiste.",
+        "requestedPath": "Percorso richiesto:",
+        "causesTitle": "Può succedere se:",
+        "causes": {
+          "1": "La pagina è stata spostata o eliminata",
+          "2": "Hai digitato l'URL in modo errato",
+          "3": "Il link che hai seguito è rotto"
+        },
+        "goBack": "Torna indietro",
+        "supportPrompt": "Hai bisogno di aiuto? Contatta l'assistenza a"
+      }
+    }
+  }
+}
