@@ -76,11 +76,11 @@ export const EMAIL_VALIDATION = {
  */
 export const PASSWORD_VALIDATION = {
   /** Lunghezza minima password */
-  minLength: 6,
-  /** Regex pattern per validazione password (almeno 6 caratteri) */
-  pattern: /^.{6,}$/,
+  minLength: 8,
+  /** Regex pattern per validazione password (almeno 8 caratteri, una maiuscola, una minuscola, un numero) */
+  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
   /** Messaggio di errore per password non valida */
-  message: "La password deve contenere almeno 6 caratteri",
+  message: "La password deve contenere almeno 8 caratteri, una maiuscola, una minuscola e un numero",
   /** Messaggio di errore per password mancante */
   required: "La password è richiesta",
 } as const;
@@ -309,52 +309,6 @@ export function createSuccessFormState(
  * @param options - Opzioni aggiuntive per l'errore
  * @returns AuthError strutturato
  */
-export class AuthErrorImpl extends Error implements AuthError {
-  type: AuthErrorType;
-  code?: string;
-  details?: Record<string, unknown>;
-  timestamp: Date;
-  requiresReauth?: boolean;
-
-  constructor(
-    type: AuthErrorType,
-    message: string,
-    options: {
-      code?: string;
-      details?: Record<string, unknown>;
-      requiresReauth?: boolean;
-    } = {}
-  ) {
-    super(message);
-    this.name = "AuthError";
-    this.type = type;
-    this.code = options.code;
-    this.details = options.details;
-    this.timestamp = new Date();
-    this.requiresReauth = options.requiresReauth ?? false;
-
-    // Maintain proper prototype chain for instanceof checks
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-
-  toJSON() {
-    return {
-      type: this.type,
-      message: this.message,
-      code: this.code,
-      details: this.details,
-      timestamp: this.timestamp.toISOString(),
-      requiresReauth: this.requiresReauth,
-      name: this.name,
-      stack: this.stack,
-    };
-  }
-}
-
-/**
- * Create an AuthError instance (subclass of Error) so throwing it produces
- * proper Error objects that ErrorBoundary and console will display correctly.
- */
 export function createAuthError(
   type: AuthErrorType,
   message: string,
@@ -363,8 +317,15 @@ export function createAuthError(
     details?: Record<string, unknown>;
     requiresReauth?: boolean;
   } = {}
-): AuthErrorImpl {
-  return new AuthErrorImpl(type, message, options);
+): AuthError {
+  return {
+    type,
+    message,
+    code: options.code,
+    details: options.details,
+    timestamp: new Date(),
+    requiresReauth: options.requiresReauth ?? false,
+  };
 }
 
 /**
@@ -373,109 +334,53 @@ export function createAuthError(
  * @returns AuthError strutturato
  */
 export function supabaseErrorToAuthError(error: unknown): AuthError {
-  // Helper to safely serialize unknown error values for diagnostics
-  const serialize = (v: unknown) => {
-    try {
-      if (v instanceof Error) {
-        return {
-          name: v.name,
-          message: v.message,
-          stack: v.stack,
-        };
-      }
-      if (typeof v === "string") return { message: v };
-      if (typeof v === "object" && v !== null) {
-        // Attempt to JSON stringify; fall back to shallow copy of enumerable props
-        try {
-          return JSON.parse(JSON.stringify(v));
-        } catch {
-          const copy: Record<string, unknown> = {};
-          for (const k of Object.keys(v as Record<string, unknown>)) {
-            try {
-              copy[k] = (v as Record<string, unknown>)[k];
-            } catch {
-              copy[k] = "[unserializable]";
-            }
-          }
-          return copy;
-        }
-      }
-      return { value: String(v) };
-    } catch {
-      return { message: "Unable to serialize error" };
-    }
-  };
-
   if (!error) {
     return createAuthError(
       AuthErrorType.UNKNOWN_ERROR,
-      "Si è verificato un errore sconosciuto",
-      { details: { originalError: serialize(error) } }
+      "Si è verificato un errore sconosciuto"
     );
   }
 
-  // If it's an Error instance, prefer its message/stack
-  if (error instanceof Error) {
-    const msg = error.message || error.name || "Errore di autenticazione";
-    const details = { originalError: serialize(error) };
-    // Heuristic mappings
-    if (/invalid login credentials/i.test(msg)) {
-      return createAuthError(AuthErrorType.AUTH_FAILED, "Credenziali di accesso non valide", { details });
-    }
-    if (/session_expired|token/i.test(msg)) {
-      return createAuthError(AuthErrorType.SESSION_EXPIRED, "La sessione è scaduta, effettua nuovamente l'accesso", {
-        details,
-        requiresReauth: true,
-      });
-    }
-    if (/network|fetch/i.test(msg)) {
-      return createAuthError(AuthErrorType.NETWORK_ERROR, "Errore di connessione, riprova", { details });
-    }
-    return createAuthError(AuthErrorType.SERVER_ERROR, msg, { details });
+  // Type guard per oggetti con proprietà message/code
+  const errorObj = error as Record<string, unknown>;
+  const message = (typeof errorObj.message === 'string' ? errorObj.message : null) || "Errore di autenticazione";
+  const code = typeof errorObj.code === 'string' ? errorObj.code : undefined;
+  
+  // Mapping specifico per errori Supabase comuni
+  if (message.includes("Invalid login credentials")) {
+    return createAuthError(
+      AuthErrorType.AUTH_FAILED,
+      "Credenziali di accesso non valide",
+      { code, details: { originalError: error } }
+    );
   }
-
-  // If it's a plain object, try common locations for messages (supabase/responses)
-  const obj = error as Record<string, unknown>;
-
-  // helper to safely retrieve nested string properties from unknown objects
-  const safeGetString = (o: Record<string, unknown>, path: string[]): string | undefined => {
-    let cur: unknown = o;
-    for (const key of path) {
-      if (typeof cur === "object" && cur !== null && key in (cur as Record<string, unknown>)) {
-        cur = (cur as Record<string, unknown>)[key];
-      } else {
-        return undefined;
+  
+  if (message.includes("session_expired") || message.includes("token")) {
+    return createAuthError(
+      AuthErrorType.SESSION_EXPIRED,
+      "La sessione è scaduta, effettua nuovamente l'accesso",
+      {
+        code,
+        details: { originalError: error },
+        requiresReauth: true
       }
-    }
-    return typeof cur === "string" ? cur : undefined;
-  };
-
-  const candidates = [
-    safeGetString(obj, ["message"]),
-    safeGetString(obj, ["error", "message"]),
-    safeGetString(obj, ["response", "data", "message"]),
-    safeGetString(obj, ["msg"]),
-    safeGetString(obj, ["code"]),
-  ].filter(Boolean) as string[];
-
-  const messageFromObj =
-    (candidates.length > 0 && String(candidates[0])) || JSON.stringify(obj).slice(0, 200) || "Errore di autenticazione";
-
-  const details = { originalError: serialize(obj) };
-  if (/invalid login credentials/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.AUTH_FAILED, "Credenziali di accesso non valide", { details });
+    );
   }
-  if (/session_expired|token/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.SESSION_EXPIRED, "La sessione è scaduta, effettua nuovamente l'accesso", {
-      details,
-      requiresReauth: true,
-    });
+  
+  if (message.includes("network") || message.includes("fetch")) {
+    return createAuthError(
+      AuthErrorType.NETWORK_ERROR,
+      "Errore di connessione, riprova",
+      { code, details: { originalError: error } }
+    );
   }
-  if (/network|fetch/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.NETWORK_ERROR, "Errore di connessione, riprova", { details });
-  }
-
-  return createAuthError(AuthErrorType.SERVER_ERROR, messageFromObj, { details });
+  
+  // Errore generico
+  return createAuthError(
+    AuthErrorType.SERVER_ERROR,
+    message,
+    { code, details: { originalError: error } }
+  );
 }
 
 /**

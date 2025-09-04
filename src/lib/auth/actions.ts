@@ -222,30 +222,6 @@ export async function signUp(
       email,
     });
 
-    // Persist attribution for analytics (chat vs website)
-    // Use service-role client to avoid RLS/session timing issues right after signUp
-    try {
-      const signupSource = channel && link ? 'chat' : 'website'
-      const { createServiceRoleClient } = await import('@/lib/db/server')
-      const svc = createServiceRoleClient()
-      const { error: srcErr } = await svc
-        .from('users')
-        .update({ signup_source: signupSource })
-        .eq('id', user.id)
-
-      if (srcErr) {
-        console.warn('Failed to set signup_source (service role)', {
-          userId: user.id,
-          signupSource,
-          error: typeof srcErr === 'object' && srcErr && 'message' in srcErr ? srcErr.message : String(srcErr),
-        })
-      } else {
-        console.info('User signup_source set', { userId: user.id, signupSource })
-      }
-    } catch (e) {
-      console.warn('Failed to set signup_source (exception)', { error: e instanceof Error ? e.message : e })
-    }
-
     // Step 3: Creazione customer Stripe con createStripeCustomer()
     try {
       const stripeCustomer = await createStripeCustomer(email);

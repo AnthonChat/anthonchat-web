@@ -41,30 +41,12 @@ export function useAuth(): UseAuthReturn {
       setError(null);
       const { error } = await supabase.auth.signOut();
       if (error) {
-        const msg =
-          typeof (error as any).message === "string" && (error as any).message.trim()
-            ? (error as any).message
-            : (() => {
-                try {
-                  return JSON.stringify(error);
-                } catch {
-                  return "Failed to sign out";
-                }
-              })();
-        setError(msg);
+        setError(error.message);
         throw error;
       }
     } catch (err) {
-      let errorMessage = "Failed to sign out";
-      if (err instanceof Error && err.message) {
-        errorMessage = err.message;
-      } else {
-        try {
-          errorMessage = JSON.stringify(err) || errorMessage;
-        } catch {
-          /* ignore */
-        }
-      }
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign out";
       setError(errorMessage);
       throw err;
     }
@@ -75,31 +57,13 @@ export function useAuth(): UseAuthReturn {
       setError(null);
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
-        const msg =
-          typeof (error as any).message === "string" && (error as any).message.trim()
-            ? (error as any).message
-            : (() => {
-                try {
-                  return JSON.stringify(error);
-                } catch {
-                  return "Failed to refresh session";
-                }
-              })();
-        setError(msg);
+        setError(error.message);
         throw error;
       }
       return data;
     } catch (err) {
-      let errorMessage = "Failed to refresh session";
-      if (err instanceof Error && err.message) {
-        errorMessage = err.message;
-      } else {
-        try {
-          errorMessage = JSON.stringify(err) || errorMessage;
-        } catch {
-          /* ignore */
-        }
-      }
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to refresh session";
       setError(errorMessage);
       throw err;
     }
@@ -119,33 +83,15 @@ export function useAuth(): UseAuthReturn {
         if (!mounted) return;
 
         if (error) {
-          const msg =
-            typeof (error as any).message === "string" && (error as any).message.trim()
-              ? (error as any).message
-              : (() => {
-                  try {
-                    return JSON.stringify(error);
-                  } catch {
-                    return "Failed to get session";
-                  }
-                })();
-          setError(msg);
+          setError(error.message);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (err) {
         if (!mounted) return;
-        let errorMessage = "Failed to get session";
-        if (err instanceof Error && err.message) {
-          errorMessage = err.message;
-        } else {
-          try {
-            errorMessage = JSON.stringify(err) || errorMessage;
-          } catch {
-            /* ignore */
-          }
-        }
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to get session";
         setError(errorMessage);
       } finally {
         if (mounted) {

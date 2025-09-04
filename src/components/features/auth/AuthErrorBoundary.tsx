@@ -228,48 +228,13 @@ class AuthErrorBoundaryInternal extends Component<
       authError = supabaseErrorToAuthError(error);
     }
 
-    // Manteniamo console.error per debugging ma solo in development.
-    // Use a safe serializer to avoid logging empty objects for complex/unserializable errors.
+    // Manteniamo console.error per debugging ma solo in development
     if (process.env.NODE_ENV === 'development') {
-      const safeSerialize = (v: unknown) => {
-        try {
-          return JSON.parse(
-            JSON.stringify(v, (_k, val) => {
-              if (val instanceof Error) {
-                return { name: val.name, message: val.message, stack: val.stack };
-              }
-              return val;
-            })
-          );
-        } catch {
-          try {
-            if (typeof v === 'object' && v !== null) {
-              const copy: Record<string, unknown> = {};
-              for (const k of Object.keys(v as Record<string, unknown>)) {
-                try {
-                  const val = (v as Record<string, unknown>)[k];
-                  if (val instanceof Error) {
-                    copy[k] = { name: val.name, message: val.message };
-                  } else {
-                    copy[k] = val;
-                  }
-                } catch {
-                  copy[k] = '[unserializable]';
-                }
-              }
-              return copy;
-            }
-            return String(v);
-          } catch {
-            return '[unable to serialize]';
-          }
-        }
-      };
-
-      console.error(
-        'AuthErrorBoundary: Caught auth error:',
-        safeSerialize({ authError, errorInfo, originalError: error })
-      );
+      console.error('AuthErrorBoundary: Caught auth error:', {
+        authError,
+        errorInfo,
+        originalError: error
+      });
     }
 
     // Chiama callback con informazioni aggiuntive per supportare toast
