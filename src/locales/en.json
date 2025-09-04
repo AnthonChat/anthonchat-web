@@ -184,7 +184,7 @@
     "fields": {
       "email": "Email",
       "password": "Password",
-      "passwordHelp": "Password must be at least 8 characters long and contain at least one number and one letter."
+      "passwordHelp": "Password must be at least 6 characters."
     },
     "signupWrapper": {
       "accountExists": {

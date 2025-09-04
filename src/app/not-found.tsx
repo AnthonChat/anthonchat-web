@@ -6,14 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Home, ArrowLeft, Search } from 'lucide-react'
 import Link from 'next/link'
-import { useLocale } from 'next-intl'
 import { getPathWithLocale, isSupportedLocale, defaultLocale, extractLocaleFromPath, type Locale } from '@/i18n/routing'
 
-function LocaleHomeLink() {
-  const locale = useLocale();
-  const resolvedLocale: Locale = isSupportedLocale((locale ?? '') as string) ? ((locale as unknown) as Locale) : defaultLocale;
-  const href = getPathWithLocale('/', resolvedLocale);
-  const goHomeLabel = resolvedLocale === 'it' ? 'Vai alla Home' : 'Go Home';
+function LocaleHomeLink({ locale }: { locale: Locale }) {
+  const resolvedLocale: Locale = isSupportedLocale((locale ?? '') as string) ? (locale as Locale) : defaultLocale;
+  const href = getPathWithLocale('/', resolvedLocale)
+  const goHomeLabel = resolvedLocale === 'it' ? 'Vai alla Home' : 'Go Home'
   return (
     <Link href={href} className="flex items-center justify-center">
       <Home className="h-4 w-4 mr-2" />
@@ -156,7 +154,7 @@ export default function NotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button asChild className="flex-1">
-              <LocaleHomeLink />
+              <LocaleHomeLink locale={currentLocale} />
             </Button>
             <Button variant="outline" onClick={() => window.history.back()} className="flex-1">
               <ArrowLeft className="h-4 w-4 mr-2" />
