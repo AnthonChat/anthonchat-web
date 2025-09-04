@@ -2,7 +2,6 @@ import { createServiceRoleClient } from "@/lib/db/server";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 import type { Database as StripeDatabase } from "@/lib/db/schemas/stripe";
 
-type UserRow = PublicDatabase["public"]["Tables"]["users"]["Row"];
 type UserChannelRow = PublicDatabase["public"]["Tables"]["user_channels"]["Row"];
 type ChatMessageRow = PublicDatabase["public"]["Tables"]["chat_messages"]["Row"];
 type StripeSubscription = StripeDatabase["stripe"]["Tables"]["subscriptions"]["Row"];

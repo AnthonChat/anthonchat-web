@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Column } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -30,12 +30,18 @@ function StatusBadge({
       : "Unsubscribed";
 
   const variant: React.ComponentProps<typeof Badge>["variant"] =
-    status === "past_due" ? "destructive" : status === "subscribed" ? "default" : "secondary";
+    status === "past_due"
+      ? "destructive"
+      : status === "subscribed"
+      ? "default"
+      : "secondary";
 
   return (
     <div className="flex items-center gap-2">
       <Badge variant={variant}>{label}</Badge>
-      {stripe ? <span className="text-xs text-muted-foreground">({stripe})</span> : null}
+      {stripe ? (
+        <span className="text-xs text-muted-foreground">({stripe})</span>
+      ) : null}
     </div>
   );
 }
@@ -45,7 +51,7 @@ function DataTableColumnHeader({
   title,
   className,
 }: {
-  column: any;
+  column: Column<AdminUserRow>;
   title: string;
   className?: string;
 }) {
@@ -134,7 +140,11 @@ export const columns: ColumnDef<AdminUserRow>[] = [
       try {
         const d = new Date(iso);
         if (!Number.isNaN(d.getTime())) {
-          out = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+          out = d.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+          });
         }
       } catch {}
       return <span className="whitespace-nowrap">{out}</span>;
@@ -164,7 +174,9 @@ export const columns: ColumnDef<AdminUserRow>[] = [
             </Badge>
           ))}
           {channels.length > 3 ? (
-            <span className="text-xs text-muted-foreground">+{channels.length - 3}</span>
+            <span className="text-xs text-muted-foreground">
+              +{channels.length - 3}
+            </span>
           ) : null}
         </div>
       );
@@ -198,9 +210,13 @@ export const columns: ColumnDef<AdminUserRow>[] = [
           />
           <div className="text-[10px] text-muted-foreground mt-1">
             {u.subscription.current_period_start
-              ? `Period: ${new Date(u.subscription.current_period_start * 1000).toLocaleDateString()} → ${
+              ? `Period: ${new Date(
+                  u.subscription.current_period_start * 1000
+                ).toLocaleDateString()} → ${
                   u.subscription.current_period_end
-                    ? new Date(u.subscription.current_period_end * 1000).toLocaleDateString()
+                    ? new Date(
+                        u.subscription.current_period_end * 1000
+                      ).toLocaleDateString()
                     : "—"
                 }`
               : null}
@@ -208,6 +224,9 @@ export const columns: ColumnDef<AdminUserRow>[] = [
         </div>
       );
     },
-    sortingFn: (a, b) => a.original.subscription_status.localeCompare(b.original.subscription_status),
+    sortingFn: (a, b) =>
+      a.original.subscription_status.localeCompare(
+        b.original.subscription_status
+      ),
   },
 ];

@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { AdminUserSummary } from "@/lib/admin/users";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 
 // Row type extended with flattened subscription status for easier column filters
 export type AdminUserRow = AdminUserSummary & {
@@ -48,34 +48,34 @@ type DataTableProps = {
   baseHref: string; // e.g. /en/admin/users
 };
 
-function StatusBadge({
-  status,
-  stripe,
-}: {
-  status: AdminUserRow["subscription_status"];
-  stripe: string | null;
-}) {
-  const label =
-    status === "subscribed"
-      ? "Subscribed"
-      : status === "trialing"
-      ? "Trialing"
-      : status === "past_due"
-      ? "Past due"
-      : status === "canceled"
-      ? "Canceled"
-      : "Unsubscribed";
+// function StatusBadge({
+//   status,
+//   stripe,
+// }: {
+//   status: AdminUserRow["subscription_status"];
+//   stripe: string | null;
+// }) {
+//   const label =
+//     status === "subscribed"
+//       ? "Subscribed"
+//       : status === "trialing"
+//       ? "Trialing"
+//       : status === "past_due"
+//       ? "Past due"
+//       : status === "canceled"
+//       ? "Canceled"
+//       : "Unsubscribed";
 
-  const variant: React.ComponentProps<typeof Badge>["variant"] =
-    status === "past_due" ? "destructive" : status === "subscribed" ? "default" : "secondary";
+//   const variant: React.ComponentProps<typeof Badge>["variant"] =
+//     status === "past_due" ? "destructive" : status === "subscribed" ? "default" : "secondary";
 
-  return (
-    <div className="flex items-center gap-2">
-      <Badge variant={variant}>{label}</Badge>
-      {stripe ? <span className="text-xs text-muted-foreground">({stripe})</span> : null}
-    </div>
-  );
-}
+//   return (
+//     <div className="flex items-center gap-2">
+//       <Badge variant={variant}>{label}</Badge>
+//       {stripe ? <span className="text-xs text-muted-foreground">({stripe})</span> : null}
+//     </div>
+//   );
+// }
 
 export function DataTable({ columns, data, page, limit, baseHref }: DataTableProps) {
   const router = useRouter();

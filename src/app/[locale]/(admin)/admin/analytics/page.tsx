@@ -1,8 +1,18 @@
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
-export default async function AdminAnalyticsIndex({ params }: { params: { locale: string } }) {
-  const { locale } = params
+export default async function AdminAnalyticsIndex({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   return (
     <div className="space-y-6 p-4">
       <h1 className="text-2xl font-semibold">Admin Analytics</h1>
@@ -16,7 +26,9 @@ export default async function AdminAnalyticsIndex({ params }: { params: { locale
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">View engagement metrics</p>
+              <p className="text-sm text-muted-foreground">
+                View engagement metrics
+              </p>
             </CardContent>
           </Card>
         </Link>
@@ -29,11 +41,13 @@ export default async function AdminAnalyticsIndex({ params }: { params: { locale
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">View revenue metrics</p>
+              <p className="text-sm text-muted-foreground">
+                View revenue metrics
+              </p>
             </CardContent>
           </Card>
         </Link>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { createClient, createServiceRoleClient } from "@/lib/db/server";
+import { createServiceRoleClient } from "@/lib/db/server";
 import { requireAdminForApi } from "@/lib/auth/admin";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
@@ -32,14 +32,6 @@ function verifyExportToken(userId: string, token: string | null): boolean {
   } catch {
     return false;
   }
-}
-
-function bufferToBase64Url(buf: Buffer): string {
-  return buf
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
 }
 
 function base64UrlToBuffer(b64url: string): Buffer {

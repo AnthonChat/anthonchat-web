@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/db/client";
-import type { User, Session } from "@supabase/supabase-js";
+import type { User, Session, AuthError } from "@supabase/supabase-js";
 
 interface UseAuthState {
   user: User | null;
@@ -42,8 +42,9 @@ export function useAuth(): UseAuthReturn {
       const { error } = await supabase.auth.signOut();
       if (error) {
         const msg =
-          typeof (error as any).message === "string" && (error as any).message.trim()
-            ? (error as any).message
+          typeof (error as AuthError).message === "string" &&
+          (error as AuthError).message.trim()
+            ? (error as AuthError).message
             : (() => {
                 try {
                   return JSON.stringify(error);
@@ -76,8 +77,9 @@ export function useAuth(): UseAuthReturn {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         const msg =
-          typeof (error as any).message === "string" && (error as any).message.trim()
-            ? (error as any).message
+          typeof (error as AuthError).message === "string" &&
+          (error as AuthError).message.trim()
+            ? (error as AuthError).message
             : (() => {
                 try {
                   return JSON.stringify(error);
@@ -120,8 +122,9 @@ export function useAuth(): UseAuthReturn {
 
         if (error) {
           const msg =
-            typeof (error as any).message === "string" && (error as any).message.trim()
-              ? (error as any).message
+            typeof (error as AuthError).message === "string" &&
+            (error as AuthError).message.trim()
+              ? (error as AuthError).message
               : (() => {
                   try {
                     return JSON.stringify(error);
