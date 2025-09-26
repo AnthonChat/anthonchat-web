@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { createHmac } from "node:crypto";
+import { BarChart3 } from "lucide-react";
 
 type PageProps = {
   params: Promise<{ locale: string; userId: string }>;
@@ -128,8 +129,19 @@ export default async function AdminUserDetailPage({ params, searchParams }: Page
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Profile</CardTitle>
-            <CardDescription>Basic info and subscription</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Profile</CardTitle>
+                <CardDescription>Basic info and subscription</CardDescription>
+              </div>
+              <Link
+                href={`/${locale}/admin/analytics?userId=${userId}`}
+                className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4" />
+                View Analytics
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1">

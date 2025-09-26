@@ -76,6 +76,21 @@ function DataTableColumnHeader({
 
 export const columns: ColumnDef<AdminUserRow>[] = [
   {
+    id: "#",
+    header: () => <span>#</span>,
+    cell: ({ row, table }) => {
+      // Compute 1-based index according to current sorted/filtered row model
+      const rows = table.getRowModel().rows;
+      const idx = rows.findIndex((r) => r.id === row.id);
+      const displayIndex = (idx >= 0 ? idx : row.index) + 1;
+      return <span className="text-muted-foreground">{displayIndex}</span>;
+    },
+    enableSorting: false,
+    enableColumnFilter: false,
+    enableHiding: false,
+    size: 40,
+  },
+  {
     accessorKey: "id",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="User ID" />
@@ -90,7 +105,10 @@ export const columns: ColumnDef<AdminUserRow>[] = [
             variant="outline"
             size="sm"
             className="h-6 px-2 text-[10px]"
-            onClick={() => navigator.clipboard.writeText(id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(id);
+            }}
             aria-label="Copy user id"
           >
             Copy
