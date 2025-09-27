@@ -42,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { X, Filter, Download, UserCheck, Mail } from "lucide-react";
 
 import type { AdminUserSummary } from "@/lib/admin/users";
@@ -186,7 +185,7 @@ export function DataTable({ columns, data, page, limit, baseHref }: DataTablePro
   const selectedCount = selectedRows.length;
 
   // Virtual scrolling setup
-  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+  const tableContainerRef = React.useRef<HTMLTableSectionElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: table.getRowModel().rows.length,
     getScrollElement: () => tableContainerRef.current,

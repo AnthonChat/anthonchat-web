@@ -17,6 +17,7 @@ import { Download } from 'lucide-react'
 
 type Point = { date: string; value: number }
 type Series = { name: string; data: Point[]; color?: string }
+type CSVRow = Record<string, string | number>
 
 interface AreaChartProps {
   title?: string
@@ -124,7 +125,7 @@ export default function AreaChart({
     if (!series.length) return
 
     const csvData = series[0].data.map((point, index) => {
-      const row: any = { date: point.date, [series[0].name]: point.value }
+      const row: CSVRow = { date: point.date, [series[0].name]: point.value }
       series.slice(1).forEach(s => {
         const matchingPoint = s.data[index]
         row[s.name] = matchingPoint?.value || 0
@@ -223,7 +224,7 @@ export default function AreaChart({
                     return String(v)
                   }
                 }}
-                formatter={(value: number, name: string, props: any) => {
+                formatter={(value: number, name: string, props) => {
                   // Calculate trend from previous data point
                   const dataIndex = props.payload?.index
                   const seriesData = series.find(s => s.name === name)?.data

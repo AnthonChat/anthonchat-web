@@ -5,6 +5,7 @@ import AreaChart from '@/components/admin/analytics/AreaChart'
 import { getNewUsersCount } from '@/lib/analytics/engagement'
 import { unstable_cache as nextCache } from 'next/cache'
 import type { DateRange, TimePreset } from '@/lib/analytics/time'
+import { resolvePresetOrRange } from '@/lib/analytics/time'
 
 // Create cached version within this component
 const cachedGetNewUsersCount = nextCache(
@@ -47,18 +48,19 @@ interface NewUsersCardProps {
 }
 
 async function NewUsersCardContent({ range, intervalHours }: NewUsersCardProps) {
+  const resolvedRange = resolvePresetOrRange(range)
   const newUsers = await cachedGetNewUsersCount(range)
 
   // Sparkline data
   const nuSpark = await Promise.all(
-    bucketizeByHours(range, intervalHours).map((r) => cachedGetNewUsersCount(r))
+    bucketizeByHours(resolvedRange, intervalHours).map((r) => cachedGetNewUsersCount(r))
   )
 
   const nuSeries = [
     {
       name: "New Users",
       color: "var(--primary)",
-      data: bucketizeByHours(range, intervalHours).map((r, i) => ({
+      data: bucketizeByHours(resolvedRange, intervalHours).map((r, i) => ({
         date: r.start ?? r.end ?? new Date().toISOString(),
         value: nuSpark[i] ?? 0,
       })),

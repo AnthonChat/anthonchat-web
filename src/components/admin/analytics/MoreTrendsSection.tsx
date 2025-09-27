@@ -13,10 +13,6 @@ import {
 type TPoint = { date: string; value: number }
 type NVRBucketPoint = { date: string; newActive: number; returningActive: number; totalActive: number }
 type ReactivationPoint = { date: string; reactivated: number; active: number; rate: number }
-type SessionizationSeries = {
-  sessionsPerUser: TPoint[]
-  avgSessionMinutes: TPoint[]
-}
 
 const cachedGetStickinessOverTime = nextCache(
   (range: TimePreset | DateRange, bucketHours: number) => getStickinessOverTime(range, bucketHours),

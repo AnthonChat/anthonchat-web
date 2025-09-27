@@ -13,7 +13,6 @@ import {
   getUsersPerChannel,
   getDAUWAUMAU,
 } from "@/lib/analytics/engagement";
-import { fetchAdminUsersSummary } from "@/lib/admin/users";
 import { unstable_cache as nextCache } from "next/cache";
 import { Users, MessageSquare, TrendingUp, Activity } from "lucide-react";
 
@@ -21,10 +20,10 @@ import { Users, MessageSquare, TrendingUp, Activity } from "lucide-react";
 const cachedGetDashboardMetrics = nextCache(
   async () => { 
     const [newUsers, messages, usersPerChannel, dauwau] = await Promise.all([
-      getNewUsersCount({ preset: "7d" }),
-      getMessagesCount({ preset: "7d" }),
-      getUsersPerChannel("lifetime"),
-      getDAUWAUMAU({ preset: "7d" }),
+      getNewUsersCount("7d"),
+      getMessagesCount("7d"),
+      getUsersPerChannel("lifetime" as const),
+      getDAUWAUMAU("7d"),
     ]);
 
     return {

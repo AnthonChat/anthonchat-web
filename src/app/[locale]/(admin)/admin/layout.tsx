@@ -23,7 +23,7 @@ export default async function AdminLayout({
   let broadcastLabel = "Broadcast";
   try {
     const messages = await loadMessages(locale);
-    broadcastLabel = (messages as any)?.admin?.broadcast?.nav?.broadcast ?? broadcastLabel;
+    broadcastLabel = (messages as { admin?: { broadcast?: { nav?: { broadcast?: string } } } })?.admin?.broadcast?.nav?.broadcast ?? broadcastLabel;
   } catch {
     // ignore and keep fallback
   }
