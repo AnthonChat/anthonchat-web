@@ -130,7 +130,8 @@
     "login": {
       "title": "Bentornato",
       "subtitle": "Accedi al tuo account",
-      "signUpPrompt": "Non hai un account? Registrati"
+      "signUpPrompt": "Non hai un account? Registrati",
+      "forgot": "Password dimenticata?"
     },
     "signup": {
       "title": "Crea il tuo account",
@@ -195,6 +196,32 @@
       "status": {
         "checkingAuth": "Verifica autenticazione...",
         "redirectingToDashboard": "Reindirizzamento alla dashboard..."
+      }
+    },
+    "password": {
+      "forgot": {
+        "title": "Hai dimenticato la password?",
+        "subtitle": "Inserisci la tua email e ti invieremo un link per reimpostarla.",
+        "sending": "Invio email di reimpostazione...",
+        "button": "Invia link di reimpostazione",
+        "backToLogin": "Torna al login",
+        "success": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password."
+      },
+      "reset": {
+        "title": "Reimposta la tua password",
+        "subtitleWithEmail": "Aggiornamento password per {email}",
+        "subtitle": "Inserisci una nuova password per il tuo account",
+        "invalidLink": "Il tuo link di reimpostazione non è valido o è scaduto. Richiedi un nuovo link.",
+        "success": "La tua password è stata aggiornata con successo.",
+        "serverError": "Impossibile aggiornare la password. Riprova più tardi.",
+        "newPassword": "Nuova password",
+        "confirmPassword": "Conferma password",
+        "help": "La password deve contenere almeno {min} caratteri.",
+        "mismatch": "Le password non coincidono",
+        "updating": "Aggiornamento password...",
+        "updateButton": "Aggiorna password",
+        "backToLogin": "Torna al login",
+        "requestNewLink": "Richiedi un nuovo link"
       }
     }
   },

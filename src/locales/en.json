@@ -134,7 +134,8 @@
     "login": {
       "title": "Welcome Back",
       "subtitle": "Log in to continue",
-      "signUpPrompt": "Don't have an account? Sign Up"
+      "signUpPrompt": "Don't have an account? Sign Up",
+      "forgot": "Forgot password?"
     },
     "signup": {
       "title": "Create an Account",
@@ -199,6 +200,32 @@
       "status": {
         "checkingAuth": "Checking authentication...",
         "redirectingToDashboard": "Redirecting to dashboard..."
+      }
+    },
+    "password": {
+      "forgot": {
+        "title": "Forgot your password?",
+        "subtitle": "Enter your email and we'll send you a reset link.",
+        "sending": "Sending reset email...",
+        "button": "Send reset link",
+        "backToLogin": "Back to login",
+        "success": "If an account exists for this email, you'll receive a reset link shortly."
+      },
+      "reset": {
+        "title": "Reset your password",
+        "subtitleWithEmail": "Updating password for {email}",
+        "subtitle": "Enter a new password for your account",
+        "invalidLink": "Your reset link is invalid or has expired. Please request a new link.",
+        "success": "Your password has been updated successfully.",
+        "serverError": "Unable to update password. Please try again.",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "help": "Password must be at least {min} characters.",
+        "mismatch": "Passwords do not match",
+        "updating": "Updating password...",
+        "updateButton": "Update password",
+        "backToLogin": "Back to login",
+        "requestNewLink": "Request a new reset link"
       }
     }
   },

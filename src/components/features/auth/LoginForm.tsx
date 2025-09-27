@@ -21,6 +21,7 @@ import { signInWithState } from "@/app/[locale]/(auth)/actions";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 
 /**
  * Props per il componente LoginForm
@@ -112,6 +113,7 @@ export default function LoginForm({ message, link, channel }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const { showError, showSuccess } = useNotifications();
   const searchParams = useSearchParams();
+  const tLogin = useTranslations("auth.login");
 
   // Client-side validation state and helpers (Zod)
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFields, string>>>({});
@@ -415,6 +417,12 @@ export default function LoginForm({ message, link, channel }: LoginFormProps) {
               )}
             </div>
 
+            {/* Forgot password link */}
+            <div className="flex justify-end">
+              <LocaleLink href="/forgot-password" className="text-sm text-primary hover:underline">
+                {tLogin("forgot")}
+              </LocaleLink>
+            </div>
             {/* Loading Progress Indicator */}
             {isPending && (
               <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
