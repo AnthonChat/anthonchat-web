@@ -38,25 +38,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const verifyRecoverySession = async () => {
       try {
-        // If redirected with a PKCE auth code, exchange it for a session first.
-        // Supabase sometimes uses `code` (PKCE) instead of hash-based tokens for recovery.
-        if (typeof window !== "undefined") {
-          const url = new URL(window.location.href);
-          const code = url.searchParams.get("code");
-          if (code) {
-            try {
-              await supabase.auth.exchangeCodeForSession(code);
-              // Clean the URL (remove sensitive params)
-              url.searchParams.delete("code");
-              url.searchParams.delete("type");
-              window.history.replaceState({}, document.title, url.toString());
-            } catch {
-              // Ignore and fall back to getSession below
-            }
-          }
-        }
-
-        // Now read the session (hash-based tokens are auto-parsed by the browser client).
+        // Visiting this page via the Supabase email link should create a "recovery" session client-side
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           setSessionValid(false);
@@ -74,7 +56,7 @@ export default function ResetPasswordPage() {
       }
     };
 
-    // Supabase puts tokens in the URL hash on redirect or a PKCE `code` in query; handle both.
+    // Supabase puts tokens in the URL hash on redirect; the client handles parsing automatically.
     verifyRecoverySession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

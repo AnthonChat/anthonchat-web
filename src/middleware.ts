@@ -25,14 +25,6 @@ const intlMiddleware = createIntlMiddleware({
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // Bypass i18n and session processing for auth confirmation endpoints
-  // This ensures /auth/confirm works without locale prefix and prevents unwanted rewrites
-  if (pathname.startsWith('/auth/confirm')) {
-    const res = NextResponse.next();
-    res.headers.set('x-pathname', pathname);
-    return res;
-  }
   
   // Check for invalid locale in pathname and handle gracefully
   const { locale: pathLocale, pathnameWithoutLocale } = extractLocaleFromPath(pathname);

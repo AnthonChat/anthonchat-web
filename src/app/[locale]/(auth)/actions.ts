@@ -27,70 +27,51 @@ async function getCurrentLocale(): Promise<Locale> {
 
 /**
  * Compute absolute site base URL for redirects (protocol + host).
- * Prefer the domain the user is currently on (handles custom domains and previews).
- * Priority:
- *   1) Referer/Origin headers (most accurate for the current navigation)
- *   2) x-forwarded-host / host + x-forwarded-proto
- *   3) VERCEL_URL (deployment url)
- *   4) NEXT_PUBLIC_SITE_URL (static fallback)
+ * Dynamically detects the current domain from request headers to ensure
+ * password reset links work correctly across different domains (e.g., test.tryanthon.com).
+ *
+ * Priority order:
+ * 1. Vercel deployment URL (VERCEL_URL) - for preview/production environments
+ * 2. Request headers (x-forwarded-host, host, origin) - for runtime detection
+ * 3. NEXT_PUBLIC_SITE_URL environment variable - fallback
  */
 async function getSiteBaseUrl(): Promise<string> {
   const h = await headers();
-
-  // 1) Prefer Referer (full URL of the page that submitted the action)
-  const referer = h.get("referer") || h.get("referrer");
-  if (referer && /^https?:\/\//i.test(referer)) {
-    try {
-      const u = new URL(referer);
-      return `${u.protocol}//${u.host}`;
-    } catch {
-      // ignore parse errors, continue to other fallbacks
-    }
+  
+  // Check for Vercel deployment URL first (most reliable for Vercel deployments)
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    return `${protocol}://${vercelUrl}`;
   }
-
-  // Also consider Origin if present
+  
+  // Try to get the host from various headers (most reliable first)
+  const host = h.get("x-forwarded-host") || h.get("host") || "";
   const origin = h.get("origin");
+  
+  // If we have an origin header, use it (most reliable)
   if (origin && /^https?:\/\//i.test(origin)) {
     try {
       const u = new URL(origin);
       return `${u.protocol}//${u.host}`;
     } catch {
-      // ignore parse errors
+      // ignore parse errors, fall back to host
     }
   }
-
-  // 2) Forwarded host/standard host (handle potential comma-separated list)
-  const forwardedHostHeader = h.get("x-forwarded-host") || "";
-  const forwardedHost = forwardedHostHeader.split(",")[0]?.trim();
-  const hostHeader = h.get("host") || "";
-  const host = (forwardedHost || hostHeader).trim();
-
+  
+  // If we have a host header, construct the URL
   if (host) {
-    const proto =
-      h.get("x-forwarded-proto") ||
-      // Some platforms set this alternative header
-      h.get("x-forwarded-protocol") ||
-      "https";
+    const proto = h.get("x-forwarded-proto") || "https";
     return `${proto}://${host}`;
   }
-
-  // 3) Vercel deployment URL (when headers are unavailable)
-  const vercelHeader = h.get("x-vercel-deployment-url") || h.get("x-vercel-id");
-  const vercelUrl = process.env.VERCEL_URL || vercelHeader || "";
-  if (vercelUrl) {
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    // Strip any accidental protocol if header already has it
-    const cleaned = vercelUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    return `${protocol}://${cleaned}`;
-  }
-
-  // 4) Configured site URL
+  
+  // Final fallback to environment variable (for cases where headers aren't available)
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
   if (envUrl && envUrl.trim().length > 0) {
     return envUrl.replace(/\/$/, "");
   }
-
-  // Local fallback
+  
+  // Last resort fallback
   return "http://localhost:3000";
 }
 
@@ -300,25 +281,12 @@ export async function requestPasswordReset(
     }
 
     const locale = await getCurrentLocale();
-
-    // Prefer explicit origin posted by the client (ensures the same domain the user is on),
-    // then fall back to server-detected site base URL.
-    const postedOrigin = formData.get("origin")?.toString()?.trim();
-    let baseUrl: string;
-    if (postedOrigin && /^https?:\/\/[^ \t\r\n]+$/i.test(postedOrigin)) {
-      baseUrl = postedOrigin.replace(/\/$/, "");
-    } else {
-      baseUrl = await getSiteBaseUrl();
-    }
-
+    const baseUrl = await getSiteBaseUrl();
     const redirectTo = buildRedirectUrl(
       "/reset-password",
       {},
       { baseUrl, locale }
     );
-
-    // Diagnostics to confirm the exact redirect URL passed to Supabase
-    console.info("PASSWORD_RESET_REDIRECT_TO", { baseUrl, locale, redirectTo, postedOrigin });
 
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(rawEmail, { redirectTo });

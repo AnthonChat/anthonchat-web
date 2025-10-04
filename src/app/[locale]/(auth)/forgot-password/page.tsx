@@ -42,8 +42,6 @@ export default function ForgotPasswordPage({
   );
   const t = useTranslations("auth.password.forgot");
   const [email, setEmail] = useState("");
-  // Capture the current origin on the client so the server action can build the correct absolute URL
-  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -54,15 +52,6 @@ export default function ForgotPasswordPage({
         // ignore
       }
     })();
-
-    // Read the current browser origin to ensure password reset uses the same domain
-    try {
-      if (typeof window !== "undefined" && window.location?.origin) {
-        setOrigin(window.location.origin);
-      }
-    } catch {
-      // ignore
-    }
   }, [searchParams]);
 
   const emailError = formState.errors?.find((e) => e.field === "email")?.message;
@@ -90,8 +79,6 @@ export default function ForgotPasswordPage({
         </CardHeader>
 
         <form action={formAction} noValidate>
-          {/* Provide the current origin to the server action for accurate absolute redirect URLs */}
-          <input type="hidden" name="origin" value={origin} readOnly />
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
