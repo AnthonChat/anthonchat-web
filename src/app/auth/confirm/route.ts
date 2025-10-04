@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
 /**
  * Safe helper to produce an absolute URL for redirects
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({
       token_hash,
-      type: type as any,
+      type: type as EmailOtpType,
     });
 
     const successLocation = toAbsolute(next, request);
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.redirect(failureUrl.toString(), { status: 303 });
-  } catch (e) {
+  } catch {
     const next = "/en/reset-password";
     const failureUrl = new URL(toAbsolute(next, request));
     failureUrl.searchParams.set("error", "access_denied");
