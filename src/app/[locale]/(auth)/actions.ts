@@ -27,26 +27,52 @@ async function getCurrentLocale(): Promise<Locale> {
 
 /**
  * Compute absolute site base URL for redirects (protocol + host).
- * Prefers NEXT_PUBLIC_SITE_URL; falls back to request headers.
+ * Dynamically detects the current domain from request headers to ensure
+ * password reset links work correctly across different domains (e.g., test.tryanthon.com).
+ *
+ * Priority order:
+ * 1. Vercel deployment URL (VERCEL_URL) - for preview/production environments
+ * 2. Request headers (x-forwarded-host, host, origin) - for runtime detection
+ * 3. NEXT_PUBLIC_SITE_URL environment variable - fallback
  */
 async function getSiteBaseUrl(): Promise<string> {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (envUrl && envUrl.trim().length > 0) {
-    return envUrl.replace(/\/$/, "");
-  }
   const h = await headers();
-  const proto = h.get("x-forwarded-proto") || "https";
+  
+  // Check for Vercel deployment URL first (most reliable for Vercel deployments)
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    return `${protocol}://${vercelUrl}`;
+  }
+  
+  // Try to get the host from various headers (most reliable first)
   const host = h.get("x-forwarded-host") || h.get("host") || "";
   const origin = h.get("origin");
+  
+  // If we have an origin header, use it (most reliable)
   if (origin && /^https?:\/\//i.test(origin)) {
     try {
       const u = new URL(origin);
       return `${u.protocol}//${u.host}`;
     } catch {
-      // ignore parse errors, fall back to proto/host
+      // ignore parse errors, fall back to host
     }
   }
-  return host ? `${proto}://${host}` : "http://localhost:3000";
+  
+  // If we have a host header, construct the URL
+  if (host) {
+    const proto = h.get("x-forwarded-proto") || "https";
+    return `${proto}://${host}`;
+  }
+  
+  // Final fallback to environment variable (for cases where headers aren't available)
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.replace(/\/$/, "");
+  }
+  
+  // Last resort fallback
+  return "http://localhost:3000";
 }
 
 /**
