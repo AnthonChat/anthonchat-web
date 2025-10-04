@@ -300,7 +300,17 @@ export async function requestPasswordReset(
     }
 
     const locale = await getCurrentLocale();
-    const baseUrl = await getSiteBaseUrl();
+
+    // Prefer explicit origin posted by the client (ensures the same domain the user is on),
+    // then fall back to server-detected site base URL.
+    const postedOrigin = formData.get("origin")?.toString()?.trim();
+    let baseUrl: string;
+    if (postedOrigin && /^https?:\/\/[^ \t\r\n]+$/i.test(postedOrigin)) {
+      baseUrl = postedOrigin.replace(/\/$/, "");
+    } else {
+      baseUrl = await getSiteBaseUrl();
+    }
+
     const redirectTo = buildRedirectUrl(
       "/reset-password",
       {},
@@ -308,7 +318,7 @@ export async function requestPasswordReset(
     );
 
     // Diagnostics to confirm the exact redirect URL passed to Supabase
-    console.info("PASSWORD_RESET_REDIRECT_TO", { baseUrl, locale, redirectTo });
+    console.info("PASSWORD_RESET_REDIRECT_TO", { baseUrl, locale, redirectTo, postedOrigin });
 
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(rawEmail, { redirectTo });
