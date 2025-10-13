@@ -5,7 +5,9 @@
     "actions": {
       "signIn": "Sign In",
       "signUp": "Join Free",
-      "signOut": "Log Out"
+      "signOut": "Log Out",
+      "cancel": "Cancel",
+      "processing": "Processing..."
     }
   },
   "marketing": {
@@ -230,6 +232,12 @@
     }
   },
   "dashboard": {
+    "common": {
+      "actions": {
+        "cancel": "Cancel",
+        "processing": "Processing..."
+      }
+    },
     "header": {
       "greeting": "Welcome",
       "subtitle": "Your performance command center",
@@ -319,9 +327,19 @@
       "refreshButton": "Refresh Data"
     },
     "subscriptionMgmt": {
+      "actions": {
+        "title": "Actions",
+        "description": "Manage your subscription settings."
+      },
       "current": {
         "title": "Current Subscription",
-        "description": "Your current plan and billing information"
+        "description": "Your current plan and billing information",
+        "cancelButton": "Cancel subscription",
+        "cancelConfirm": "Are you sure you want to cancel your subscription at the end of the current period? Your subscription will remain active until it expires.",
+        "cancelSuccess": "Cancellation scheduled. Your subscription will remain active until expiration.",
+        "cancelAlreadyScheduled": "Cancellation is already scheduled at the end of the current period.",
+        "cancelError": "Unable to schedule cancellation. Please try again later.",
+        "cancelledAtPeriodEnd": "Your subscription will be canceled at the end of the current billing period."
       },
       "currency": {
         "symbol": "€"

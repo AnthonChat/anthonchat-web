@@ -2,7 +2,7 @@
   "common": {
     "appName": "TryAnthon",
     "appDescription": "Il tuo assistente personale per la crescita e il supporto mentale.",
-    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci" }
+    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci", "cancel": "Annulla", "processing": "Elaborazione..." }
   },
   "marketing": {
     "hero": {
@@ -226,6 +226,12 @@
     }
   },
   "dashboard": {
+    "common": {
+      "actions": {
+        "cancel": "Annulla",
+        "processing": "Elaborazione..."
+      }
+    },
     "header": {
       "greeting": "Benvenuto",
       "subtitle": "Panoramica del tuo workspace",
@@ -315,9 +321,18 @@
       "refreshButton": "Aggiorna dati"
     },
     "subscriptionMgmt": {
+      "actions": {
+        "title": "Azioni",
+        "description": "Gestisci le impostazioni del tuo abbonamento."
+      },
       "current": {
-        "title": "Abbonamento attuale",
-        "description": "Il tuo piano corrente e le informazioni di fatturazione"
+        "description": "Il tuo piano corrente e le informazioni di fatturazione",
+        "cancelButton": "Cancella abbonamento",
+        "cancelConfirm": "Sei sicuro di voler cancellare l'abbonamento alla fine del periodo corrente? L'abbonamento rimarrà attivo fino alla scadenza.",
+        "cancelSuccess": "Cancellazione programmata. L'abbonamento rimarrà attivo fino alla scadenza.",
+        "cancelAlreadyScheduled": "La cancellazione è già programmata alla fine del periodo corrente.",
+        "cancelError": "Impossibile programmare la cancellazione. Riprova più tardi.",
+        "cancelledAtPeriodEnd": "Il tuo abbonamento verrà cancellato alla fine del periodo di fatturazione corrente."
       },
       "currency": {
         "symbol": "€"
