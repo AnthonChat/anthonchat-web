@@ -211,7 +211,11 @@
         "sending": "Sending reset email...",
         "button": "Send reset link",
         "backToLogin": "Back to login",
-        "success": "If an account exists for this email, you'll receive a reset link shortly."
+        "success": "If an account exists for this email, you'll receive a reset link shortly.",
+        "successTitle": "Check your inbox",
+        "successDescription": "If an account exists for this email, you'll receive a reset link shortly.",
+        "successHint": "Didn’t get an email? Check your spam folder or try again in a few minutes.",
+        "resendButton": "Send again"
       },
       "reset": {
         "title": "Reset your password",

@@ -205,7 +205,11 @@
         "sending": "Invio email di reimpostazione...",
         "button": "Invia link di reimpostazione",
         "backToLogin": "Torna al login",
-        "success": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password."
+        "success": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password.",
+        "successTitle": "Controlla la tua casella email",
+        "successDescription": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password.",
+        "successHint": "Non hai ricevuto l'email? Controlla la cartella spam o riprova tra qualche minuto.",
+        "resendButton": "Invia di nuovo"
       },
       "reset": {
         "title": "Reimposta la tua password",

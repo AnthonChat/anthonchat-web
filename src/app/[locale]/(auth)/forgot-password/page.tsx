@@ -14,9 +14,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LocaleLink } from "@/components/ui/locale-link";
-import { Loader2, Mail, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type FormState = {
@@ -66,20 +65,42 @@ export default function ForgotPasswordPage({
             {t("subtitle")}
           </CardDescription>
 
-          {formState.success && serverMessage && (
-            <Alert className="mt-4 border-green-200 bg-green-50">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-sm">
-                  {serverMessage ?? t("success")}
-                </AlertDescription>
-              </div>
-            </Alert>
-          )}
         </CardHeader>
 
         <form action={formAction} noValidate>
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
+            {formState.success && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-6 shadow-[0_12px_40px_-18px_rgba(16,185,129,0.45)] animate-in fade-in slide-in-from-top-2"
+              >
+                <div className="flex flex-wrap items-start gap-4 sm:gap-6">
+                  <div className="flex flex-1 min-w-[14rem] items-start gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
+                      <MailCheck className="h-6 w-6" aria-hidden="true" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-base font-semibold text-foreground">
+                        {t("successTitle")}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {serverMessage ?? t("successDescription")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("successHint")}
+                      </p>
+                    </div>
+                  </div>
+                  {email && (
+                    <span className="inline-flex max-w-full shrink-0 items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300 sm:self-center break-all">
+                      {email}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+    
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
                 Email
@@ -134,7 +155,7 @@ export default function ForgotPasswordPage({
                   {t("sending")}
                 </>
               ) : (
-                t("button")
+                formState.success ? t("resendButton") : t("button")
               )}
             </Button>
 
