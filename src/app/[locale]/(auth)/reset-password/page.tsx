@@ -14,9 +14,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LocaleLink } from "@/components/ui/locale-link";
-import { Loader2, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Lock, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function ResetPasswordPage() {
@@ -86,14 +85,15 @@ export default function ResetPasswordPage() {
       if (error) {
         // Common cases: session invalid/expired
         if (/session/i.test(error.message) || /token/i.test(error.message)) {
-          setServerError(t("invalidLink"));
+          setSessionValid(false);
+          setServerError(null);
         } else {
-          setServerError(error.message || t("serverError"));
+          setServerError(error.message || t("serverErrorDescription"));
         }
         return;
       }
 
-      setSuccessMessage(t("success"));
+      setSuccessMessage(t("successDescription"));
       // Optional: sign out recovery session to require fresh login
       try {
         await supabase.auth.signOut();
@@ -129,42 +129,87 @@ export default function ResetPasswordPage() {
           </CardDescription>
 
           {sessionValid === false && !successMessage && (
-            <Alert className="mt-4 border-red-200 bg-red-50">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <div className="flex-1 text-left">
-                  <AlertDescription className="text-sm">
-                    {t("invalidLink")}
-                  </AlertDescription>
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="mt-4 rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent p-6 shadow-[0_12px_40px_-18px_rgba(244,63,94,0.45)] animate-in fade-in slide-in-from-top-2"
+            >
+              <div className="flex flex-wrap items-start gap-4 sm:gap-6">
+                <div className="flex min-w-[14rem] flex-1 items-start gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-500">
+                    <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("invalidTitle")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t("invalidDescription")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("invalidHint")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </Alert>
+            </div>
           )}
 
           {successMessage && (
-            <Alert className="mt-4 border-green-200 bg-green-50">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <div className="flex-1 text-left">
-                  <AlertDescription className="text-sm">
-                    {successMessage}
-                  </AlertDescription>
+            <div
+              role="status"
+              aria-live="polite"
+              className="mt-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-6 shadow-[0_12px_40px_-18px_rgba(16,185,129,0.45)] animate-in fade-in slide-in-from-top-2"
+            >
+              <div className="flex flex-wrap items-start gap-4 sm:gap-6">
+                <div className="flex min-w-[14rem] flex-1 items-start gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
+                    <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("successTitle")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {successMessage ?? t("successDescription")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("successHint")}
+                    </p>
+                  </div>
                 </div>
+                {email && (
+                  <span className="inline-flex max-w-full shrink-0 items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300 sm:self-center break-all">
+                    {email}
+                  </span>
+                )}
               </div>
-            </Alert>
+            </div>
           )}
 
           {serverError && !successMessage && (
-            <Alert className="mt-4 border-red-200 bg-red-50">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <div className="flex-1 text-left">
-                  <AlertDescription className="text-sm">
-                    {serverError}
-                  </AlertDescription>
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="mt-4 rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent p-6 shadow-[0_12px_40px_-18px_rgba(244,63,94,0.45)] animate-in fade-in slide-in-from-top-2"
+            >
+              <div className="flex flex-wrap items-start gap-4 sm:gap-6">
+                <div className="flex min-w-[14rem] flex-1 items-start gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-500">
+                    <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <h3 className="text-base font-semibold text-foreground">
+                      {t("serverErrorTitle")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{serverError}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("serverErrorHint")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </Alert>
+            </div>
           )}
         </CardHeader>
 
@@ -251,7 +296,7 @@ export default function ResetPasswordPage() {
           <CardFooter className="flex flex-col w-full gap-4 pt-6 px-6">
             {successMessage ? (
               <Button variant="outline" className="w-full" asChild>
-                <LocaleLink href="/login">Go to login</LocaleLink>
+                <LocaleLink href="/login">{t("backToLogin")}</LocaleLink>
               </Button>
             ) : (
               <Button variant="outline" className="w-full" asChild>
