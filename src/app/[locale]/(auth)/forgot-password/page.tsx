@@ -90,6 +90,9 @@ export default function ForgotPasswordPage({
                       <p className="text-xs text-muted-foreground">
                         {t("successHint")}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("successSender")}
+                      </p>
                     </div>
                   </div>
                   {email && (

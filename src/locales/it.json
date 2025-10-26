@@ -209,6 +209,7 @@
         "successTitle": "Controlla la tua casella email",
         "successDescription": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password.",
         "successHint": "Non hai ricevuto l'email? Controlla la cartella spam o riprova tra qualche minuto.",
+        "successSender": "L'email arriverà da Supabase Auth.",
         "resendButton": "Invia di nuovo"
       },
       "reset": {

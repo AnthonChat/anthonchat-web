@@ -215,6 +215,7 @@
         "successTitle": "Check your inbox",
         "successDescription": "If an account exists for this email, you'll receive a reset link shortly.",
         "successHint": "Didn’t get an email? Check your spam folder or try again in a few minutes.",
+        "successSender": "The email will come from Supabase Auth.",
         "resendButton": "Send again"
       },
       "reset": {
