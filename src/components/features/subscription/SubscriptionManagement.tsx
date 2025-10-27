@@ -271,16 +271,29 @@ function SubscriptionManagementContent({
         body: JSON.stringify({}), // server will infer user from session
       });
 
+      const payload = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || "failed to schedule cancellation");
+        throw new Error(payload?.error || "failed to schedule cancellation");
       }
 
-      const data = await res.json().catch(() => ({}));
-      if (data && data.message === "already_cancelled_at_period_end") {
-        toast.info(t('subscriptionMgmt.current.cancelAlreadyScheduled'));
-      } else {
-        toast.success(t('subscriptionMgmt.current.cancelSuccess'));
+      switch (payload?.message) {
+        case "already_cancelled_at_period_end":
+          toast.info(t('subscriptionMgmt.current.cancelAlreadyScheduled'));
+          break;
+        case "subscription_already_canceled":
+          toast.info(t('subscriptionMgmt.current.cancelAlreadyCanceled'));
+          break;
+        case "subscription_missing":
+        case "no_subscription_for_customer":
+          toast.info(t('subscriptionMgmt.current.cancelNoSubscription'));
+          break;
+        case "cancel_scheduled":
+          toast.success(t('subscriptionMgmt.current.cancelSuccess'));
+          break;
+        default:
+          toast.success(t('subscriptionMgmt.current.cancelSuccess'));
+          break;
       }
 
       // Ask parent to refresh subscription data

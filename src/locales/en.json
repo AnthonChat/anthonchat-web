@@ -351,6 +351,8 @@
         "cancelConfirm": "Are you sure you want to cancel your subscription at the end of the current period? Your subscription will remain active until it expires.",
         "cancelSuccess": "Cancellation scheduled. Your subscription will remain active until expiration.",
         "cancelAlreadyScheduled": "Cancellation is already scheduled at the end of the current period.",
+        "cancelAlreadyCanceled": "Your subscription is already canceled.",
+        "cancelNoSubscription": "No active subscription found to cancel.",
         "cancelError": "Unable to schedule cancellation. Please try again later.",
         "cancelledAtPeriodEnd": "Your subscription will be canceled at the end of the current billing period."
       },
