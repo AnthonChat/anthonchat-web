@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/db/client";
-import type { User, Session } from "@supabase/supabase-js";
+import type { User, Session, AuthError } from "@supabase/supabase-js";
 
 interface UseAuthState {
   user: User | null;
@@ -41,12 +41,31 @@ export function useAuth(): UseAuthReturn {
       setError(null);
       const { error } = await supabase.auth.signOut();
       if (error) {
-        setError(error.message);
+        const msg =
+          typeof (error as AuthError).message === "string" &&
+          (error as AuthError).message.trim()
+            ? (error as AuthError).message
+            : (() => {
+                try {
+                  return JSON.stringify(error);
+                } catch {
+                  return "Failed to sign out";
+                }
+              })();
+        setError(msg);
         throw error;
       }
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to sign out";
+      let errorMessage = "Failed to sign out";
+      if (err instanceof Error && err.message) {
+        errorMessage = err.message;
+      } else {
+        try {
+          errorMessage = JSON.stringify(err) || errorMessage;
+        } catch {
+          /* ignore */
+        }
+      }
       setError(errorMessage);
       throw err;
     }
@@ -57,13 +76,32 @@ export function useAuth(): UseAuthReturn {
       setError(null);
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
-        setError(error.message);
+        const msg =
+          typeof (error as AuthError).message === "string" &&
+          (error as AuthError).message.trim()
+            ? (error as AuthError).message
+            : (() => {
+                try {
+                  return JSON.stringify(error);
+                } catch {
+                  return "Failed to refresh session";
+                }
+              })();
+        setError(msg);
         throw error;
       }
       return data;
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to refresh session";
+      let errorMessage = "Failed to refresh session";
+      if (err instanceof Error && err.message) {
+        errorMessage = err.message;
+      } else {
+        try {
+          errorMessage = JSON.stringify(err) || errorMessage;
+        } catch {
+          /* ignore */
+        }
+      }
       setError(errorMessage);
       throw err;
     }
@@ -83,15 +121,34 @@ export function useAuth(): UseAuthReturn {
         if (!mounted) return;
 
         if (error) {
-          setError(error.message);
+          const msg =
+            typeof (error as AuthError).message === "string" &&
+            (error as AuthError).message.trim()
+              ? (error as AuthError).message
+              : (() => {
+                  try {
+                    return JSON.stringify(error);
+                  } catch {
+                    return "Failed to get session";
+                  }
+                })();
+          setError(msg);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (err) {
         if (!mounted) return;
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to get session";
+        let errorMessage = "Failed to get session";
+        if (err instanceof Error && err.message) {
+          errorMessage = err.message;
+        } else {
+          try {
+            errorMessage = JSON.stringify(err) || errorMessage;
+          } catch {
+            /* ignore */
+          }
+        }
         setError(errorMessage);
       } finally {
         if (mounted) {

@@ -13,6 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   CreditCard,
   Calendar,
   AlertTriangle,
@@ -60,6 +70,7 @@ export function SubscriptionManagement({
   const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     async function fetchPlans() {
@@ -94,6 +105,8 @@ export function SubscriptionManagement({
         isYearly={isYearly}
         setIsYearly={setIsYearly}
         onRefresh={onRefresh}
+        showCancelDialog={showCancelDialog}
+        setShowCancelDialog={setShowCancelDialog}
       />
     </LoadingWrapper>
   );
@@ -108,6 +121,8 @@ function SubscriptionManagementContent({
   isYearly,
   setIsYearly,
   onRefresh,
+  showCancelDialog,
+  setShowCancelDialog,
 }: {
   subscription: UserSubscription | null;
   availablePlans: SubscriptionPlan[];
@@ -117,6 +132,8 @@ function SubscriptionManagementContent({
   isYearly: boolean;
   setIsYearly: (isYearly: boolean) => void;
   onRefresh?: () => void;
+  showCancelDialog: boolean;
+  setShowCancelDialog: (show: boolean) => void;
 }) {
   const t = useSafeTranslations('dashboard');
   const trialInfo = calculateTrialInfo({
@@ -235,6 +252,59 @@ function SubscriptionManagementContent({
   };
  
   const planCount = availablePlans.length;
+  
+  const handleCancelClick = () => {
+    setShowCancelDialog(true);
+  };
+
+  const handleCancelAtPeriodEnd = async () => {
+    if (!subscription) return;
+
+    setIsActionLoading(true);
+    setShowCancelDialog(false);
+    try {
+      const res = await fetch("/api/user/subscription/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // server will infer user from session
+      });
+
+      const payload = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(payload?.error || "failed to schedule cancellation");
+      }
+
+      switch (payload?.message) {
+        case "already_cancelled_at_period_end":
+          toast.info(t('subscriptionMgmt.current.cancelAlreadyScheduled'));
+          break;
+        case "subscription_already_canceled":
+          toast.info(t('subscriptionMgmt.current.cancelAlreadyCanceled'));
+          break;
+        case "subscription_missing":
+        case "no_subscription_for_customer":
+          toast.info(t('subscriptionMgmt.current.cancelNoSubscription'));
+          break;
+        case "cancel_scheduled":
+          toast.success(t('subscriptionMgmt.current.cancelSuccess'));
+          break;
+        default:
+          toast.success(t('subscriptionMgmt.current.cancelSuccess'));
+          break;
+      }
+
+      // Ask parent to refresh subscription data
+      onRefresh?.();
+    } catch (err) {
+      console.error("CANCEL_SUBSCRIPTION_ERROR", { err });
+      toast.error(t('subscriptionMgmt.current.cancelError'));
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
  
   return (
     <div className="space-y-6">
@@ -308,7 +378,7 @@ function SubscriptionManagementContent({
           </div>
 
           {subscription && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -416,15 +486,6 @@ function SubscriptionManagementContent({
                 )}
               </div>
 
-              {subscription.cancel_at_period_end && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    Your subscription will be canceled at the end of the current
-                    billing period.
-                  </AlertDescription>
-                </Alert>
-              )}
             </div>
           )}
 
@@ -759,24 +820,87 @@ function SubscriptionManagementContent({
         </Card>
       )}
 
-      {/* Billing History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('subscriptionMgmt.history.title')}</CardTitle>
-          <CardDescription>
-            {t('subscriptionMgmt.history.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>{t('subscriptionMgmt.history.emptyTitle')}</p>
-            <p className="text-sm">
-              {t('subscriptionMgmt.history.emptyDescription')}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Cancel Subscription Section - Bottom of Page */}
+      {subscription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl text-destructive">
+              {t('subscriptionMgmt.current.cancelButton', { default: 'Cancel subscription' })}
+            </CardTitle>
+            <CardDescription>
+              {t('subscriptionMgmt.actions.description', { default: 'Manage your subscription settings.' })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {subscription.cancel_at_period_end && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {t('subscriptionMgmt.current.cancelledAtPeriodEnd')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Cancel button: show when user has an active or trialing subscription and cancellation not already scheduled */}
+            {!subscription.cancel_at_period_end &&
+              subscription.status !== "canceled" &&
+              subscription.status !== "unsubscribed" && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-sm sm:text-base mb-1">
+                      {t('subscriptionMgmt.current.cancelButton', { default: 'Cancel subscription' })}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('subscriptionMgmt.current.cancelConfirm')}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleCancelClick}
+                    disabled={isActionLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    {t('subscriptionMgmt.current.cancelButton', { default: 'Cancel subscription' })}
+                  </Button>
+                </div>
+              )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Cancel Subscription Alert Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {t('subscriptionMgmt.current.cancelButton')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {t('subscriptionMgmt.current.cancelConfirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isActionLoading}>
+              {t('common.actions.cancel', { default: 'Cancel' })}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelAtPeriodEnd}
+              disabled={isActionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isActionLoading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  {t('common.actions.processing', { default: 'Processing...' })}
+                </>
+              ) : (
+                t('subscriptionMgmt.current.cancelButton')
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

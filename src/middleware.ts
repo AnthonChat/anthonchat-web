@@ -66,8 +66,11 @@ export default async function middleware(req: NextRequest) {
     res.headers.set('x-intl-fallback', 'true');
   }
 
-  // Expose pathname so server actions relying on it can read it
+  // Expose pathname and host information so server actions can build correct URLs
   res.headers.set('x-pathname', req.nextUrl.pathname);
+  res.headers.set('x-forwarded-host', req.nextUrl.host);
+  res.headers.set('x-forwarded-proto', req.nextUrl.protocol);
+  res.headers.set('origin', req.url);
 
   try {
     // Bridge cookies between Supabase SSR client and Next middleware response

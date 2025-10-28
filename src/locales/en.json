@@ -5,14 +5,16 @@
     "actions": {
       "signIn": "Sign In",
       "signUp": "Join Free",
-      "signOut": "Log Out"
+      "signOut": "Log Out",
+      "cancel": "Cancel",
+      "processing": "Processing..."
     }
   },
   "marketing": {
     "hero": {
       "title": "TRY ANTHON",
       "subtitle": "The AI Clone of Antonio Valente",
-      "description": "The mental coach trusted by elite footballers and VIPs — now in your pocket, 24/7. More than WhatsApp or Telegram: connect Web Chat, Email, Instagram and more, all in minutes."
+      "description": "The mental coach for professional footballers and VIPs. Now always with you 24 HOURS A DAY 7 DAYS A WEEK. Access now via WhatsApp or Telegram."
     },
     "chat": {
       "demo": {
@@ -134,7 +136,8 @@
     "login": {
       "title": "Welcome Back",
       "subtitle": "Log in to continue",
-      "signUpPrompt": "Don't have an account? Sign Up"
+      "signUpPrompt": "Don't have an account? Sign Up",
+      "forgot": "Forgot password?"
     },
     "signup": {
       "title": "Create an Account",
@@ -184,7 +187,7 @@
     "fields": {
       "email": "Email",
       "password": "Password",
-      "passwordHelp": "Password must be at least 8 characters long and contain at least one number and one letter."
+      "passwordHelp": "Password must be at least 6 characters."
     },
     "signupWrapper": {
       "accountExists": {
@@ -200,9 +203,54 @@
         "checkingAuth": "Checking authentication...",
         "redirectingToDashboard": "Redirecting to dashboard..."
       }
+    },
+    "password": {
+      "forgot": {
+        "title": "Forgot your password?",
+        "subtitle": "Enter your email and we'll send you a reset link.",
+        "sending": "Sending reset email...",
+        "button": "Send reset link",
+        "backToLogin": "Back to login",
+        "success": "If an account exists for this email, you'll receive a reset link shortly.",
+        "successTitle": "Check your inbox",
+        "successDescription": "If an account exists for this email, you'll receive a reset link shortly.",
+        "successHint": "Didn’t get an email? Check your spam folder or try again in a few minutes.",
+        "successSender": "The email will come from Supabase Auth.",
+        "resendButton": "Send again"
+      },
+      "reset": {
+        "title": "Reset your password",
+        "subtitleWithEmail": "Updating password for {email}",
+        "subtitle": "Enter a new password for your account",
+        "invalidLink": "Your reset link is invalid or has expired. Please request a new link.",
+        "success": "Your password has been updated successfully.",
+        "successTitle": "Password reset complete",
+        "successDescription": "Your password has been updated successfully. You can now sign in with your new credentials.",
+        "successHint": "For security, be sure to use your new password the next time you log in.",
+        "invalidTitle": "Reset link invalid or expired",
+        "invalidDescription": "The password reset link is no longer valid. This usually happens when it has already been used or expired.",
+        "invalidHint": "Request a new link below to continue.",
+        "serverErrorTitle": "Something went wrong",
+        "serverErrorDescription": "Unable to update password. Please try again.",
+        "serverErrorHint": "If the issue persists, request a new reset link or contact support.",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "help": "Password must be at least {min} characters.",
+        "mismatch": "Passwords do not match",
+        "updating": "Updating password...",
+        "updateButton": "Update password",
+        "backToLogin": "Back to login",
+        "requestNewLink": "Request a new reset link"
+      }
     }
   },
   "dashboard": {
+    "common": {
+      "actions": {
+        "cancel": "Cancel",
+        "processing": "Processing..."
+      }
+    },
     "header": {
       "greeting": "Welcome",
       "subtitle": "Your performance command center",
@@ -292,9 +340,21 @@
       "refreshButton": "Refresh Data"
     },
     "subscriptionMgmt": {
+      "actions": {
+        "title": "Actions",
+        "description": "Manage your subscription settings."
+      },
       "current": {
         "title": "Current Subscription",
-        "description": "Your current plan and billing information"
+        "description": "Your current plan and billing information",
+        "cancelButton": "Cancel subscription",
+        "cancelConfirm": "Are you sure you want to cancel your subscription at the end of the current period? Your subscription will remain active until it expires.",
+        "cancelSuccess": "Cancellation scheduled. Your subscription will remain active until expiration.",
+        "cancelAlreadyScheduled": "Cancellation is already scheduled at the end of the current period.",
+        "cancelAlreadyCanceled": "Your subscription is already canceled.",
+        "cancelNoSubscription": "No active subscription found to cancel.",
+        "cancelError": "Unable to schedule cancellation. Please try again later.",
+        "cancelledAtPeriodEnd": "Your subscription will be canceled at the end of the current billing period."
       },
       "currency": {
         "symbol": "€"

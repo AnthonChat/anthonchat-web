@@ -16,7 +16,7 @@ import {
 import { Loader2, CreditCard, CheckCircle, Eye, EyeOff } from "lucide-react";
 
 import { signUp } from "@/lib/auth/actions";
-import type { FormState } from "@/lib/auth/types";
+import { PASSWORD_VALIDATION, type FormState } from "@/lib/auth/types";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationErrorType } from "@/lib/notifications/types";
 import { useTranslations, useLocale } from "next-intl";
@@ -46,7 +46,7 @@ const initialState: FormState = {
   success: false,
 };
 
-// Zod schema for client-side signup validation
+// Zod schema for client-side signup validation (aligned with server PASSWORD_VALIDATION)
 const SignupSchema = z.object({
   email: z
     .string()
@@ -55,7 +55,8 @@ const SignupSchema = z.object({
     .email("Formato email non valido"),
   password: z
     .string()
-    .min(8, "La password deve contenere almeno 8 caratteri"),
+    .min(PASSWORD_VALIDATION.minLength, PASSWORD_VALIDATION.message)
+    .regex(PASSWORD_VALIDATION.pattern, PASSWORD_VALIDATION.message),
 });
 type SignupFields = z.infer<typeof SignupSchema>;
 
@@ -246,12 +247,12 @@ export default function SignupForm({
     }
   }, [link, channel, validateNonceOnMount]);
 
-  // Cleanup email change timeout on unmount
+  // Cleanup email change timeout on unmount (use current ref at cleanup time)
   useEffect(() => {
-    const timeoutRef = emailChangeTimeoutRef.current;
     return () => {
-      if (timeoutRef) {
-        window.clearTimeout(timeoutRef);
+      if (emailChangeTimeoutRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        window.clearTimeout(emailChangeTimeoutRef.current);
       }
     };
   }, []);
@@ -353,12 +354,21 @@ export default function SignupForm({
  
   // Handle form state changes and loading progression
   useEffect(() => {
+    let t1: number | null = null;
+    let t2: number | null = null;
     if (isPending) {
       setLoadingStep("auth");
       // Simulate the progression through steps for UX
-      setTimeout(() => setLoadingStep("stripe"), 1000);
-      setTimeout(() => setLoadingStep("complete"), 2000);
+      t1 = window.setTimeout(() => setLoadingStep("stripe"), 250);
+      t2 = window.setTimeout(() => setLoadingStep("complete"), 250);
+    } else {
+      // reset when not pending
+      setLoadingStep("auth");
     }
+    return () => {
+      if (t1) window.clearTimeout(t1);
+      if (t2) window.clearTimeout(t2);
+    };
   }, [isPending]);
 
   // unified notification handler with improved deduplication
@@ -634,6 +644,7 @@ export default function SignupForm({
             </Button>
 
             <Button
+              type="button"
               variant="outline"
               className="w-full"
               onClick={onRedirectToLogin || (() => window.location.href = '/login')}

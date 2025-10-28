@@ -288,6 +288,7 @@ export type Database = {
           id: string
           last_name: string
           nickname: string
+          signup_source: string | null
           stripe_customer_id: string | null
           updated_at: string
         }
@@ -298,6 +299,7 @@ export type Database = {
           id: string
           last_name: string
           nickname: string
+          signup_source?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
         }
@@ -308,6 +310,7 @@ export type Database = {
           id?: string
           last_name?: string
           nickname?: string
+          signup_source?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
         }

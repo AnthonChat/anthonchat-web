@@ -26,22 +26,48 @@ function getProvidedApiKey(req: NextRequest) {
 
 type NormalizedStatus =
   | "trialing"
+  | "trial_expired"
   | "subscribed"
   | "unsubscribed"
   | "canceled"
   | "past_due";
 
+interface StripeSubscription {
+  id: string;
+  status: string;
+  cancel_at_period_end: boolean | null;
+  current_period_start: number | null;
+  current_period_end: number | null;
+  trial_end: number | null;
+  created: number;
+}
+
 function normalizeStatus(
-  stripeStatus: string | null | undefined
+  stripeStatus: string | null | undefined,
+  subscription: StripeSubscription | null
 ): NormalizedStatus {
+  // If there's no subscription at all, it's unsubscribed
+  if (!subscription) {
+    return "unsubscribed";
+  }
+
   switch (stripeStatus) {
     case "trialing":
       return "trialing";
     case "active":
       // Still considered subscribed; caller can inspect cancel_at_period_end
       return "subscribed";
-    case "past_due":
+    case "past_due": {
+      // If no paid billing period has started, treat as trial_expired (trial ended without successful first payment)
+      const startedPaid =
+        !!subscription.current_period_start &&
+        Number(subscription.current_period_start) > 0;
+
+      if (!startedPaid) {
+        return "trial_expired";
+      }
       return "past_due";
+    }
     case "canceled":
       return "canceled";
     // Stripe possible extra states
@@ -158,9 +184,9 @@ async function buildStatusPayload(userId: string) {
   const cancelAtPeriodEnd =
     (subscription.cancel_at_period_end as boolean | null) ?? null;
 
-  const normalized = normalizeStatus(stripeStatus);
+  const normalized = normalizeStatus(stripeStatus, subscription as StripeSubscription | null);
 
-  // active or trialing are considered active
+  // active, trialing, or trial_expired are considered based on their actual state
   const hasActive =
     normalized === "subscribed" || normalized === "trialing" ? true : false;
 

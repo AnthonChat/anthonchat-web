@@ -2,13 +2,13 @@
   "common": {
     "appName": "TryAnthon",
     "appDescription": "Il tuo assistente personale per la crescita e il supporto mentale.",
-    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci" }
+    "actions": { "signIn": "Accedi", "signUp": "Registrati", "signOut": "Esci", "cancel": "Annulla", "processing": "Elaborazione..." }
   },
   "marketing": {
     "hero": {
       "title": "TRY ANTHON",
       "subtitle": "L'AI clone di Antonio Valente",
-      "description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Non solo WhatsApp o Telegram: collega anche Web Chat, Email, Instagram e altri canali."
+      "description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Accedi ora da Whasapp o Telegram."
     },
     "chat": {
       "demo": {
@@ -130,7 +130,8 @@
     "login": {
       "title": "Bentornato",
       "subtitle": "Accedi al tuo account",
-      "signUpPrompt": "Non hai un account? Registrati"
+      "signUpPrompt": "Non hai un account? Registrati",
+      "forgot": "Password dimenticata?"
     },
     "signup": {
       "title": "Crea il tuo account",
@@ -180,7 +181,7 @@
     "fields": {
       "email": "Email",
       "password": "Password",
-      "passwordHelp": "La password deve contenere almeno 8 caratteri, inclusi almeno un numero e una lettera."
+      "passwordHelp": "La password deve contenere almeno 6 caratteri."
     },
     "signupWrapper": {
       "accountExists": {
@@ -196,9 +197,54 @@
         "checkingAuth": "Verifica autenticazione...",
         "redirectingToDashboard": "Reindirizzamento alla dashboard..."
       }
+    },
+    "password": {
+      "forgot": {
+        "title": "Hai dimenticato la password?",
+        "subtitle": "Inserisci la tua email e ti invieremo un link per reimpostarla.",
+        "sending": "Invio email di reimpostazione...",
+        "button": "Invia link di reimpostazione",
+        "backToLogin": "Torna al login",
+        "success": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password.",
+        "successTitle": "Controlla la tua casella email",
+        "successDescription": "Se esiste un account con questa email, riceverai a breve un link per reimpostare la password.",
+        "successHint": "Non hai ricevuto l'email? Controlla la cartella spam o riprova tra qualche minuto.",
+        "successSender": "L'email arriverà da Supabase Auth.",
+        "resendButton": "Invia di nuovo"
+      },
+      "reset": {
+        "title": "Reimposta la tua password",
+        "subtitleWithEmail": "Aggiornamento password per {email}",
+        "subtitle": "Inserisci una nuova password per il tuo account",
+        "invalidLink": "Il tuo link di reimpostazione non è valido o è scaduto. Richiedi un nuovo link.",
+        "success": "La tua password è stata aggiornata con successo.",
+        "successTitle": "Password reimpostata correttamente",
+        "successDescription": "La tua password è stata aggiornata con successo. Ora puoi accedere con le nuove credenziali.",
+        "successHint": "Per sicurezza, utilizza la nuova password al prossimo accesso.",
+        "invalidTitle": "Link di reimpostazione non valido o scaduto",
+        "invalidDescription": "Il link per reimpostare la password non è più valido. Di solito accade quando è già stato usato o è scaduto.",
+        "invalidHint": "Richiedi un nuovo link qui sotto per continuare.",
+        "serverErrorTitle": "Si è verificato un errore",
+        "serverErrorDescription": "Impossibile aggiornare la password. Riprova più tardi.",
+        "serverErrorHint": "Se il problema persiste, richiedi un nuovo link di reimpostazione o contatta il supporto.",
+        "newPassword": "Nuova password",
+        "confirmPassword": "Conferma password",
+        "help": "La password deve contenere almeno {min} caratteri.",
+        "mismatch": "Le password non coincidono",
+        "updating": "Aggiornamento password...",
+        "updateButton": "Aggiorna password",
+        "backToLogin": "Torna al login",
+        "requestNewLink": "Richiedi un nuovo link"
+      }
     }
   },
   "dashboard": {
+    "common": {
+      "actions": {
+        "cancel": "Annulla",
+        "processing": "Elaborazione..."
+      }
+    },
     "header": {
       "greeting": "Benvenuto",
       "subtitle": "Panoramica del tuo workspace",
@@ -288,9 +334,20 @@
       "refreshButton": "Aggiorna dati"
     },
     "subscriptionMgmt": {
+      "actions": {
+        "title": "Azioni",
+        "description": "Gestisci le impostazioni del tuo abbonamento."
+      },
       "current": {
-        "title": "Abbonamento attuale",
-        "description": "Il tuo piano corrente e le informazioni di fatturazione"
+        "description": "Il tuo piano corrente e le informazioni di fatturazione",
+        "cancelButton": "Cancella abbonamento",
+        "cancelConfirm": "Sei sicuro di voler cancellare l'abbonamento alla fine del periodo corrente? L'abbonamento rimarrà attivo fino alla scadenza.",
+        "cancelSuccess": "Cancellazione programmata. L'abbonamento rimarrà attivo fino alla scadenza.",
+        "cancelAlreadyScheduled": "La cancellazione è già programmata alla fine del periodo corrente.",
+        "cancelAlreadyCanceled": "Il tuo abbonamento risulta già annullato.",
+        "cancelNoSubscription": "Nessun abbonamento attivo da cancellare.",
+        "cancelError": "Impossibile programmare la cancellazione. Riprova più tardi.",
+        "cancelledAtPeriodEnd": "Il tuo abbonamento verrà cancellato alla fine del periodo di fatturazione corrente."
       },
       "currency": {
         "symbol": "€"

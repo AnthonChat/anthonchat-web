@@ -1,231 +1,171 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+"use client"
 
-interface LoadingSpinnerProps {
-  size?: "sm" | "md" | "lg" | "xl";
-  className?: string;
+import * as React from "react"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
+
+interface LoadingProps {
+  size?: "sm" | "md" | "lg"
+  text?: string
+  className?: string
 }
 
-function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
+export function Loading({ size = "md", text, className }: LoadingProps) {
   const sizeClasses = {
     sm: "h-4 w-4",
-    md: "h-6 w-6",
-    lg: "h-8 w-8",
-    xl: "h-12 w-12",
-  };
+    md: "h-8 w-8",
+    lg: "h-12 w-12",
+  }
 
   return (
-    <Loader2 
-      className={cn("animate-spin", sizeClasses[size], className)} 
-    />
-  );
+    <div className={cn("flex flex-col items-center justify-center p-4", className)}>
+      <div
+        className={cn(
+          "animate-spin rounded-full border-2 border-primary border-t-transparent",
+          sizeClasses[size]
+        )}
+      />
+      {text && (
+        <p className="text-sm text-muted-foreground mt-2">{text}</p>
+      )}
+    </div>
+  )
 }
 
-interface LoadingStateProps {
-  message?: string;
-  size?: "sm" | "md" | "lg" | "xl";
-  className?: string;
-  showSpinner?: boolean;
+export function LoadingCard({ text = "Loading...", className }: { text?: string; className?: string }) {
+  return (
+    <div className={cn("min-h-[200px] flex items-center justify-center p-4", className)}>
+      <Loading text={text} />
+    </div>
+  )
 }
 
-function LoadingState({ 
-  message = "Loading...", 
-  size = "md", 
+export function LoadingTable({ rows = 5, className }: { rows?: number; className?: string }) {
+  return (
+    <div className={cn("space-y-3", className)}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center space-x-4">
+          <div className="h-4 bg-muted rounded w-4" />
+          <div className="h-4 bg-muted rounded flex-1" />
+          <div className="h-4 bg-muted rounded w-20" />
+          <div className="h-4 bg-muted rounded w-16" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Generic wrapper to render a skeleton while loading.
+ * Falls back to a minimal LoadingCard if no skeleton is provided.
+ */
+export interface LoadingWrapperProps {
+  isLoading?: boolean
+  skeleton?: React.ReactNode
+  className?: string
+  children: React.ReactNode
+}
+
+export function LoadingWrapper({
+  isLoading = false,
+  skeleton,
   className,
-  showSpinner = true 
-}: LoadingStateProps) {
-  return (
-    <div className={cn("flex items-center justify-center p-4", className)}>
-      <div className="flex flex-col items-center gap-2">
-        {showSpinner && <LoadingSpinner size={size} />}
-        <p className="text-sm text-muted-foreground">{message}</p>
-      </div>
-    </div>
-  );
-}
-
-// Enhanced skeleton components for specific use cases
-export function SubscriptionCardSkeleton({ className }: { className?: string }) {
-  return (
-    <Card className={cn("hover-lift overflow-hidden relative border-2", className)}>
-      <CardHeader className="relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-12 w-12 rounded-lg" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-16 rounded-full" />
-        </div>
-      </CardHeader>
-      <CardContent className="relative space-y-6">
-        {/* Usage stats skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(2)].map((_, i) => (
-            <Card key={i} className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4" />
-                  <Skeleton className="h-4 w-16" />
-                </div>
-                <Skeleton className="h-2 w-2 rounded-full" />
-              </div>
-              <Skeleton className="h-8 w-20 mb-1" />
-              <Skeleton className="h-3 w-16 mb-4" />
-              <Skeleton className="h-3 w-full rounded-full" />
-              <div className="flex justify-between mt-2">
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            </Card>
-          ))}
-        </div>
-        
-        {/* Action buttons skeleton */}
-        <div className="flex gap-3">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 flex-1" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function ChannelsOverviewSkeleton({ className }: { className?: string }) {
-  return (
-    <Card className={cn("hover-lift overflow-hidden relative border-2", className)}>
-      <CardHeader className="relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-12 w-12 rounded-lg" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="relative">
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 rounded-xl bg-card border-2 border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="w-12 h-12 rounded-lg" />
-                  <div className="space-y-2">
-                    <Skeleton className="w-24 h-5" />
-                    <Skeleton className="w-32 h-4" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Skeleton className="w-5 h-5 rounded-full" />
-                  <Skeleton className="w-16 h-6 rounded-full" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Action buttons skeleton */}
-        <div className="mt-8 pt-6 border-t">
-          <div className="flex gap-4">
-            <Skeleton className="h-12 flex-1" />
-            <Skeleton className="h-12 flex-1" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function SubscriptionManagementSkeleton({ className }: { className?: string }) {
-  return (
-    <div className={cn("space-y-6", className)}>
-      {/* Current plan skeleton */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-            <Skeleton className="h-6 w-20 rounded-full" />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-3">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Available plans skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-8 w-8" />
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-24" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {[...Array(4)].map((_, j) => (
-                  <Skeleton key={j} className="h-4 w-full" />
-                ))}
-              </div>
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Generic loading wrapper for any component
-interface LoadingWrapperProps {
-  isLoading: boolean;
-  skeleton?: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function LoadingWrapper({ 
-  isLoading, 
-  skeleton, 
-  children, 
-  className 
+  children,
 }: LoadingWrapperProps) {
-  if (isLoading && skeleton) {
-    return <div className={className}>{skeleton}</div>;
-  }
-  
   if (isLoading) {
-    return (
-      <div className={cn("flex items-center justify-center p-8", className)}>
-        <LoadingState />
-      </div>
-    );
+    return <div className={cn("relative", className)}>{skeleton ?? <LoadingCard />}</div>
   }
-  
-  return <>{children}</>;
+  return <>{children}</>
+}
+
+/**
+ * SubscriptionCard skeleton used by features/subscription/SubscriptionCard
+ */
+export function SubscriptionCardSkeleton() {
+  return (
+    <div className="p-4 sm:p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+        <Skeleton className="h-4 w-20" />
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-3 w-1/3" />
+          <div className="h-3 bg-border rounded-full overflow-hidden">
+            <Skeleton className="h-3 w-1/3 rounded-full" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-3 w-1/4" />
+          <div className="h-3 bg-border rounded-full overflow-hidden">
+            <Skeleton className="h-3 w-1/4 rounded-full" />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border/50">
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * SubscriptionManagement skeleton used by features/subscription/SubscriptionManagement
+ */
+export function SubscriptionManagementSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Current Subscription Status Card */}
+      <div className="p-4 sm:p-6 space-y-4 border rounded-lg">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/5" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </div>
+      </div>
+
+      {/* Plans Grid */}
+      <div className="p-4 sm:p-6 border rounded-lg">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-6 w-40" />
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-4 border rounded-lg space-y-3">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }

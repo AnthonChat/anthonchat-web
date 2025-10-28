@@ -6,7 +6,7 @@ import type { FormState } from "@/lib/auth/types";
 import { getPathWithLocale, type Locale, defaultLocale } from "@/i18n/routing";
 import { headers } from "next/headers";
 import { validateChannelLinkingParams } from "@/lib/utils/url-params";
-import { buildDashboardRedirectUrl } from "@/lib/utils/redirect-helpers";
+import { buildDashboardRedirectUrl, buildRedirectUrl } from "@/lib/utils/redirect-helpers";
 import { ChannelLinkingService } from "@/lib/services/channel-linking";
 
 /**
@@ -23,6 +23,54 @@ async function getCurrentLocale(): Promise<Locale> {
   }
   
   return defaultLocale;
+}
+
+/**
+ * Compute absolute site base URL for redirects (protocol + host).
+ * Dynamically detects the current domain from request headers to ensure
+ * password reset links work correctly across different domains (e.g., test.tryanthon.com).
+ *
+ * Priority order:
+ * 1. Request headers (origin, x-forwarded-host, host) - uses the current domain (incl. previews/custom domains)
+ * 2. NEXT_PUBLIC_SITE_URL environment variable - fallback
+ * 3. VERCEL_URL - last resort when headers/env URL are unavailable
+ * 4. localhost (development fallback)
+ */
+async function getSiteBaseUrl(): Promise<string> {
+  const h = await headers();
+
+  // 1) Prefer the actual request origin/host (most accurate for previews/custom domains)
+  const origin = h.get("origin");
+  if (origin && /^https?:\/\//i.test(origin)) {
+    try {
+      const u = new URL(origin);
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      // ignore parse errors and continue to fallbacks
+    }
+  }
+
+  const host = h.get("x-forwarded-host") || h.get("host");
+  if (host) {
+    const proto = h.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
+    return `${proto}://${host}`;
+  }
+
+  // 2) Fallback to configured site URL (useful for background/server jobs)
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.replace(/\/$/, "");
+  }
+
+  // 3) Last resort: Vercel-provided URL (no protocol)
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl && vercelUrl.trim().length > 0) {
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    return `${protocol}://${vercelUrl.replace(/\/$/, "")}`;
+  }
+
+  // 4) Local development
+  return "http://localhost:3000";
 }
 
 /**
@@ -201,6 +249,71 @@ function handlePostLoginRedirect(
       },
       locale
     );
+  }
+}
+
+/**
+ * Server Action to request a password reset email.
+ * Uses Supabase Auth reset flow with a locale-aware absolute redirect URL.
+ */
+export async function requestPasswordReset(
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    const rawEmail = formData.get("email")?.toString()?.trim() || "";
+    if (!rawEmail) {
+      return {
+        message: "L'email è richiesta",
+        errors: [{ field: "email", message: "L'email è richiesta" }],
+        success: false,
+      };
+    }
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+      return {
+        message: "Formato email non valido",
+        errors: [{ field: "email", message: "Inserisci un indirizzo email valido" }],
+        success: false,
+      };
+    }
+
+    const locale = await getCurrentLocale();
+    const baseUrl = await getSiteBaseUrl();
+    const redirectTo = buildRedirectUrl(
+      "/reset-password",
+      {},
+      { baseUrl, locale }
+    );
+
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(rawEmail, { redirectTo });
+
+    if (error) {
+      console.error("PASSWORD_RESET_EMAIL_ERROR", {
+        emailPrefix: rawEmail.substring(0, 3) + "***",
+        error: error.message,
+      });
+      // Do not reveal whether email exists
+      return {
+        message: "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
+        success: true,
+      };
+    }
+
+    return {
+      message: "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
+      success: true,
+    };
+  } catch (err) {
+    console.error("PASSWORD_RESET_EMAIL_EXCEPTION", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      message: "Si è verificato un errore durante la richiesta. Riprova più tardi.",
+      errors: [{ field: "server", message: "Errore del server" }],
+      success: false,
+    };
   }
 }
 
