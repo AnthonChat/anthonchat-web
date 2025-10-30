@@ -26,7 +26,6 @@ const AUTHORS = [
   { name: "Tommaso Coviello", role: "Co-Founder & Lead Developer" },
   { name: "Matteo Scarselletta", role: "Co-Founder & Developer" },
 ];
-const DEFAULT_IMAGE = "/file.svg";
  
 // Root-level metadata: sensible defaults, keyword hints and language alternates.
 // Per-locale routes produce their own metadata via src/app/[locale]/layout.tsx generateMetadata.
@@ -44,30 +43,6 @@ export const metadata: Metadata = {
     "SINCRO GROUP SRL"
   ],
   authors: AUTHORS,
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '16x16 32x32' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-  manifest: '/site.webmanifest',
-  openGraph: {
-    title: SITE_NAME,
-    description: DEFAULT_DESCRIPTION,
-    siteName: SITE_NAME,
-    url: SITE_URL,
-    images: [DEFAULT_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_NAME,
-    description: DEFAULT_DESCRIPTION,
-    images: [DEFAULT_IMAGE],
-  },
   alternates: {
     canonical: SITE_URL,
     languages: (locales as readonly string[]).reduce<Record<string, string>>(
@@ -94,6 +69,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang={defaultLocale} suppressHydrationWarning>
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Anthon" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
