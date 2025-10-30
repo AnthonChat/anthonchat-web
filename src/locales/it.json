@@ -339,6 +339,7 @@
         "description": "Gestisci le impostazioni del tuo abbonamento."
       },
       "current": {
+        "title": "Abbonamento corrente",
         "description": "Il tuo piano corrente e le informazioni di fatturazione",
         "cancelButton": "Cancella abbonamento",
         "cancelConfirm": "Sei sicuro di voler cancellare l'abbonamento alla fine del periodo corrente? L'abbonamento rimarrà attivo fino alla scadenza.",
