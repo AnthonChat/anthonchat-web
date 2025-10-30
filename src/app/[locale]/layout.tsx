@@ -67,18 +67,6 @@ export async function generateMetadata({
   return {
     title: fullTitle,
     description,
-    openGraph: {
-      title,
-      description,
-      siteName,
-      url: `${siteUrl}${getPathWithLocale("/", locale)}`,
-      locale,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
     alternates,
   };
 }
