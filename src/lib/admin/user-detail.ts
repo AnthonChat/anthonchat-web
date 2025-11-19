@@ -1,36 +1,14 @@
 import { createServiceRoleClient } from "@/lib/db/server";
 import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 import type { Database as StripeDatabase } from "@/lib/db/schemas/stripe";
+import {
+  normalizeSubscriptionStatus,
+  type NormalizedSubscriptionStatus,
+} from "@/lib/admin/subscriptions";
 
 type UserChannelRow = PublicDatabase["public"]["Tables"]["user_channels"]["Row"];
 type ChatMessageRow = PublicDatabase["public"]["Tables"]["chat_messages"]["Row"];
 type StripeSubscription = StripeDatabase["stripe"]["Tables"]["subscriptions"]["Row"];
-
-export type NormalizedSubscriptionStatus =
-  | "trialing"
-  | "subscribed"
-  | "unsubscribed"
-  | "canceled"
-  | "past_due";
-
-function normalizeStatus(stripeStatus: string | null | undefined): NormalizedSubscriptionStatus {
-  switch (stripeStatus) {
-    case "trialing":
-      return "trialing";
-    case "active":
-      return "subscribed";
-    case "past_due":
-      return "past_due";
-    case "canceled":
-      return "canceled";
-    // extra Stripe states default to unsubscribed
-    case "incomplete":
-    case "incomplete_expired":
-    case "unpaid":
-    default:
-      return "unsubscribed";
-  }
-}
 
 export interface AdminUserOverview {
   id: string;
@@ -146,7 +124,7 @@ export async function fetchAdminUserOverview(userId: string): Promise<AdminUserO
     const sub = await fetchLatestSubscriptionForCustomer(customerId);
     if (sub) {
       stripe_status = (sub.status as string | null) ?? null;
-      normalized_status = normalizeStatus(stripe_status);
+      normalized_status = normalizeSubscriptionStatus(stripe_status);
       cancel_at_period_end = !!sub.cancel_at_period_end;
       current_period_start = (sub.current_period_start as number | null) ?? null;
       current_period_end = (sub.current_period_end as number | null) ?? null;

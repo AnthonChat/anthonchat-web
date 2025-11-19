@@ -19,6 +19,7 @@ import { z } from "zod";
 const rawEnvSchema = z.object({
   WHATSAPP_TOKEN: z.string().min(1, "WHATSAPP_TOKEN is required"),
   WHATSAPP_PHONE_NUMBER_ID: z.string().min(1, "WHATSAPP_PHONE_NUMBER_ID is required"),
+  WHATSAPP_BUSINESS_ACCOUNT_ID: z.string().min(1).optional(),
   NEXT_PUBLIC_SITE_URL: z.string().min(1).optional(),
   ALLOW_AUTH_USERS_FALLBACK: z.enum(["true", "false"]).default("false"),
 });
@@ -26,6 +27,7 @@ const rawEnvSchema = z.object({
 const envSchema = rawEnvSchema.transform((v) => ({
   WHATSAPP_TOKEN: v.WHATSAPP_TOKEN,
   WHATSAPP_PHONE_NUMBER_ID: v.WHATSAPP_PHONE_NUMBER_ID,
+  WHATSAPP_BUSINESS_ACCOUNT_ID: v.WHATSAPP_BUSINESS_ACCOUNT_ID,
   NEXT_PUBLIC_SITE_URL: v.NEXT_PUBLIC_SITE_URL,
   ALLOW_AUTH_USERS_FALLBACK: v.ALLOW_AUTH_USERS_FALLBACK === "true",
 }));
