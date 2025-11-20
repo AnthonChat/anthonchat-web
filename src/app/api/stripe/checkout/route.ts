@@ -111,12 +111,24 @@ export async function POST(request: NextRequest) {
 
     // Create checkout session
     const session = await createCheckoutSession({
-      customerId,
-      priceId,
-      successUrl: `${request.nextUrl.origin}/dashboard/subscription?success=true`,
-      cancelUrl: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
-      userId: userId,
-      trialPeriodDays: effectiveTrialDays,
+      customer: customerId,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: "subscription",
+      metadata: {
+        userId: userId,
+      },
+      subscription_data: effectiveTrialDays
+        ? {
+            trial_period_days: effectiveTrialDays,
+          }
+        : undefined,
+      success_url: `${request.nextUrl.origin}/dashboard/subscription?success=true`,
+      cancel_url: `${request.nextUrl.origin}/dashboard/subscription?canceled=true`,
     });
 
     console.log("[API_CHECKOUT] Created Stripe checkout session", {

@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { createServiceRoleClient } from "@/lib/db/server";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-10-28.acacia",
+  apiVersion: "2025-06-30.basil",
   typescript: true,
 });
 
@@ -426,3 +426,26 @@ export async function hasCustomerRedeemedCoupon(
     return false;
   }
 }
+
+export const waitForCustomerSync = async (customerId: string, timeoutMs: number = 10000): Promise<boolean> => {
+  const start = Date.now();
+  const supabase = createServiceRoleClient();
+  while (Date.now() - start < timeoutMs) {
+    const { data } = await supabase.schema("stripe").from("customers").select("id").eq("id", customerId).maybeSingle();
+    if (data) return true;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return false;
+};
+
+export const debugCheckCustomerExists = async (customerId: string) => {
+  const supabase = createServiceRoleClient();
+  const { data } = await supabase.schema("stripe").from("customers").select("*").eq("id", customerId).maybeSingle();
+  return data;
+};
+
+export const linkCustomerToUser = async (userId: string, customerId: string): Promise<boolean> => {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase.from("users").update({ stripe_customer_id: customerId }).eq("id", userId);
+  return !error;
+};

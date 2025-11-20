@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { TemplateDispatcher } from "@/components/admin/templates/TemplateDispatcher";
 import { getAdminChannelOptions } from "@/lib/admin/templates";
-import { getMetaTemplates } from "@/lib/meta/templates";
+import { getMetaTemplates, type ParsedMetaTemplate } from "@/lib/meta/templates";
 import { isSupportedLocale } from "@/i18n/routing";
 
 type PageProps = {
@@ -24,7 +24,7 @@ export default async function AdminBroadcastPage({ params }: PageProps) {
       return [data, null] as const;
     } catch (error) {
       console.error("[ADMIN_TEMPLATES_FETCH_ERROR]", error);
-      return [[], (error as Error).message] as const;
+      return [[] as ParsedMetaTemplate[], (error as Error).message] as const;
     }
   })();
 
