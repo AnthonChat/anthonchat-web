@@ -18,13 +18,13 @@ export default async function AdminBroadcastPage({ params }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isSupportedLocale(rawLocale) ? rawLocale : "en";
 
-  const [templates, templateError] = await (async () => {
+  const [templates, templateError] = await (async (): Promise<[ParsedMetaTemplate[], string | null]> => {
     try {
       const data = await getMetaTemplates();
-      return [data, null] as const;
+      return [data, null];
     } catch (error) {
       console.error("[ADMIN_TEMPLATES_FETCH_ERROR]", error);
-      return [[] as ParsedMetaTemplate[], (error as Error).message] as const;
+      return [[], (error as Error).message];
     }
   })();
 
