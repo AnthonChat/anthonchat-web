@@ -16,19 +16,15 @@ Anthonchat Web is a Next.js application built with Tailwind CSS, Supabase, and S
 
 ### Prerequisites
 - Node.js
-- npm or bun
+- Bun
 
 ### Installation
 ```bash
-npm install
-# or
 bun install
 ```
 
 ### Running Development Server
 ```bash
-npm run dev
-# or
 bun dev
 ```
 

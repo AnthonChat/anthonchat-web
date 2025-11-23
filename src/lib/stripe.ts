@@ -420,32 +420,81 @@ export async function hasCustomerRedeemedCoupon(
         couponId,
       });
     }
-
     return used;
   } catch {
     return false;
   }
 }
 
-export const waitForCustomerSync = async (customerId: string, timeoutMs: number = 10000): Promise<boolean> => {
+/**
+ * Waits for the Stripe customer to be synced to the local database via webhooks.
+ */
+export async function waitForCustomerSync(customerId: string, timeoutMs: number = 10000): Promise<boolean> {
   const start = Date.now();
   const supabase = createServiceRoleClient();
+
   while (Date.now() - start < timeoutMs) {
-    const { data } = await supabase.schema("stripe").from("customers").select("id").eq("id", customerId).maybeSingle();
+    const { data } = await supabase
+      .schema("stripe")
+      .from("customers")
+      .select("id")
+      .eq("id", customerId)
+      .single();
+
     if (data) return true;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
+
   return false;
-};
+}
 
-export const debugCheckCustomerExists = async (customerId: string) => {
+/**
+ * Checks if a customer exists in the local database.
+ */
+export async function debugCheckCustomerExists(customerId: string): Promise<unknown | null> {
   const supabase = createServiceRoleClient();
-  const { data } = await supabase.schema("stripe").from("customers").select("*").eq("id", customerId).maybeSingle();
+  const { data } = await supabase
+    .schema("stripe")
+    .from("customers")
+    .select("*")
+    .eq("id", customerId)
+    .single();
   return data;
-};
+}
 
-export const linkCustomerToUser = async (userId: string, customerId: string): Promise<boolean> => {
+/**
+ * Links a Stripe customer to a Supabase user in the local database.
+ * This is a fallback if the webhook sync fails or is delayed.
+ */
+export async function linkCustomerToUser(userId: string, customerId: string): Promise<boolean> {
   const supabase = createServiceRoleClient();
-  const { error } = await supabase.from("users").update({ stripe_customer_id: customerId }).eq("id", userId);
+  
+  // First check if the customer record exists
+  const { data: customer } = await supabase
+    .schema("stripe")
+    .from("customers")
+    .select("id")
+    .eq("id", customerId)
+    .single();
+
+  if (!customer) {
+    // If customer doesn't exist in stripe.customers, we can't link it there yet.
+    // But we can update the public.users table.
+    console.warn("[LINK_CUSTOMER] Customer not found in stripe.customers, updating public.users only", { customerId });
+  } else {
+    // Update stripe.customers if it exists
+    await supabase
+      .schema("stripe")
+      .from("customers")
+      .update({ user_id: userId } as unknown as Record<string, unknown>) // Cast to unknown first to avoid any
+      .eq("id", customerId);
+  }
+
+  // Always update public.users
+  const { error } = await supabase
+    .from("users")
+    .update({ stripe_customer_id: customerId })
+    .eq("id", userId);
+
   return !error;
-};
+}
