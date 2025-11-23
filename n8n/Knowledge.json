@@ -1,0 +1,327 @@
+{
+  "updatedAt": "2025-09-03T02:15:10.000Z",
+  "createdAt": "2025-09-02T10:13:56.503Z",
+  "id": "hu1y6Ol08u03iZCU",
+  "name": "Knowledge",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1BEZmNf5Fx5v-yuH7x36iwSEwubtftSJg",
+          "mode": "list",
+          "cachedResultName": "knowledge",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1BEZmNf5Fx5v-yuH7x36iwSEwubtftSJg"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "9306c5c2-8955-445a-90d2-63824e02d130",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "BtvUh3N9z4v8aOWQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1BEZmNf5Fx5v-yuH7x36iwSEwubtftSJg",
+          "mode": "list",
+          "cachedResultName": "knowledge",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1BEZmNf5Fx5v-yuH7x36iwSEwubtftSJg"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -192
+      ],
+      "id": "67398899-b08c-4568-8d8c-68b19af95eae",
+      "name": "Google Drive Trigger1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "BtvUh3N9z4v8aOWQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        -96
+      ],
+      "id": "44eae4f4-aed5-4bb5-96dd-b23f357b655f",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "BtvUh3N9z4v8aOWQ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "files",
+          "mode": "list",
+          "cachedResultName": "files"
+        },
+        "embeddingBatchSize": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        -96
+      ],
+      "id": "6586f5ec-110c-4e76-abd2-510071440ddf",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "9ix7qGBGD5JYVYfM",
+          "name": "Pinecone Anthon Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        48,
+        128
+      ],
+      "id": "e478e603-e4be-48ff-a433-9e8d94847b2a",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        128,
+        336
+      ],
+      "id": "5974a442-f588-4feb-b1ef-cb128f11b142",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "modelName": "Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        96
+      ],
+      "id": "c49c6697-c34a-4e45-8ecb-f8665dcad035",
+      "name": "Qwen3-8B",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "g9Pfulx8iLjGrPQi",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qwen3-8B": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Drive Trigger": {
+      "lastTimeChecked": "2025-11-17T15:04:10Z"
+    },
+    "node:Google Drive Trigger1": {
+      "lastTimeChecked": "2025-11-17T15:04:11Z"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7ada1050-1d9b-4dea-be31-20abf25edc7d",
+  "versionCounter": 5,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-09-02T10:13:56.505Z",
+      "createdAt": "2025-09-02T10:13:56.505Z",
+      "role": "workflow:owner",
+      "workflowId": "hu1y6Ol08u03iZCU",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

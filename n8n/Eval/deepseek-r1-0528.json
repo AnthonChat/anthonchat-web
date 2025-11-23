@@ -1,0 +1,450 @@
+{
+  "updatedAt": "2025-11-23T16:04:08.000Z",
+  "createdAt": "2025-11-17T15:27:52.642Z",
+  "id": "E1eux7KfamV56pkE",
+  "name": "deepseek-r1-0528",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        432,
+        640
+      ],
+      "id": "aa998686-8590-4797-9d56-5050cd136056",
+      "name": "Qwen3-8B Knowledge 4"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "prompt"
+            },
+            {
+              "name": "system"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "b37e753c-2c91-49c1-ac30-00a72ef5ff9f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "={{ $json.system }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "a63306e0-4a4d-4a98-b08c-ecb09a54a46d",
+      "name": "Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Stripe Expert",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', `Ask about the needed payment information about the subscription using the payment_info tool`, 'string') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "93d780bc-a8d2-4a13-adc6-26d2260ba862",
+      "name": "Stripe"
+    },
+    {
+      "parameters": {
+        "description": "save_memory",
+        "jsCode": "return \"done\""
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        224
+      ],
+      "id": "f9be3470-f309-4d82-8b6a-bb367c9ab09f",
+      "name": "save_memory"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:exacto",
+        "options": {
+          "temperature": 0.5,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        432
+      ],
+      "id": "d7d595a4-8779-42dd-af5c-306cfb855b0f",
+      "name": "StripeModel",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:exacto",
+        "options": {
+          "temperature": 0.5,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        176,
+        432
+      ],
+      "id": "279ee8d1-2747-4d31-bb7e-fcdafa032f0d",
+      "name": "KnowledgeModel",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return \"subscription active until tomorrow\""
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        432
+      ],
+      "id": "d57fbe99-d3cd-4300-ac80-f84734d68297",
+      "name": "payment_info"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge",
+        "toolDescription": "retrive information",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "files",
+          "mode": "list",
+          "cachedResultName": "files"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        432
+      ],
+      "id": "4c16573c-696c-4f90-81b6-1c6162fa6e00",
+      "name": "knowledge"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Knowledge Expert",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', `Ask about techniques that could be useful for a  mental problem `, 'string') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        224
+      ],
+      "id": "f2631f86-de67-4014-be48-f0080e11c207",
+      "name": "Knowledge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44bee18e-062e-413d-b116-51c1f26b60f9",
+              "name": "model",
+              "value": "deepseek-r1-0528",
+              "type": "string"
+            },
+            {
+              "id": "51a4307b-8427-45ee-bd23-4cd4e335f2b6",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "9804309a-dc0f-4273-996e-5296de551288",
+              "name": "steps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "string"
+            },
+            {
+              "id": "6c56c90b-39d6-4ed3-a69d-6f63467d923a",
+              "name": "prompt",
+              "value": "={{ $('When Executed by Another Workflow').item.json.prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        0
+      ],
+      "id": "cb95fa39-a5fc-4e49-a3a1-00d558611c6e",
+      "name": "Parse Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-r1-0528",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        224
+      ],
+      "id": "fb118b1a-f6cb-47f9-9531-6cbe07103f33",
+      "name": "deepseek-r1-0528",
+      "notesInFlow": false,
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Qwen3-8B Knowledge 4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "knowledge",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StripeModel": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stripe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KnowledgeModel": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Knowledge",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "payment_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stripe",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Knowledge",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "deepseek-r1-0528": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "a8f1b8bd-12ef-4d05-9254-26568b01907c",
+  "versionCounter": 22,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-17T15:27:52.651Z",
+      "createdAt": "2025-11-17T15:27:52.651Z",
+      "role": "workflow:owner",
+      "workflowId": "E1eux7KfamV56pkE",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-23T16:03:35.518Z",
+      "createdAt": "2025-11-23T16:03:35.518Z",
+      "id": "iLYi1Hvw8QWh6Ul3",
+      "name": "model"
+    }
+  ]
+}

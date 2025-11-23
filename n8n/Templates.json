@@ -1,0 +1,263 @@
+{
+  "updatedAt": "2025-11-15T17:24:50.000Z",
+  "createdAt": "2025-11-14T07:52:33.605Z",
+  "id": "96Z9YKzAzhLcuxLV",
+  "name": "Templates",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        128
+      ],
+      "id": "841221b5-3c7d-4b83-9932-0483612ee4b6",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.get_users_subscription_events();",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -352,
+        128
+      ],
+      "id": "2b688a2c-82b1-4888-9793-34c6c83827de",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.sent_subscription_notifications (user_id, event_type, event_key)\nVALUES ($1, $2, $3)\nON CONFLICT DO NOTHING;\n",
+        "options": {
+          "queryReplacement": "={{ [$('Execute a SQL query').item.json.user_id, $('Execute a SQL query').item.json.event_type, $('Execute a SQL query').item.json.event_key] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        304,
+        96
+      ],
+      "id": "ecf8e1f3-cbe6-465a-b66b-13d5140f0fa1",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        120
+      ],
+      "id": "31d46487-539c-4c54-9d0b-109369ab6bd3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/688829180989827/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAZA2vQUGPv0BPQZA5TeGAZCB4oKH3pNWyYgfgQz8blETQZAvPN9Egyls1CXqrKZASYl5jviif9tdiQNanAnzfJlYBmIH4dOtWjXY4ZAtRk8H0pjRAbZAMZArl58Cqk2oGIQaSwmrsKIyVdNJkhbhf4SYAZA7e1cjZA8ZARBXGIA1RutVlB2VkYSRVsausk49f7DQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"messaging_product\": \"whatsapp\",\n    \"to\": \"{{ \n(()=>{\n  const authed = [\"+393515031075\",\"+393297692043\"]\n  const num = $json.whatsapp_number\n  if (authed.includes(num)){\n    return num\n  } \n  return \"\"\n})()\n}}\",\n    \"type\": \"template\",\n    \"template\": {\n      \"name\": \"abbonamento_scaduto\",\n      \"language\": { \"code\": \"it\" },\n      \"components\": [\n        {\n          \"type\": \"header\",\n          \"parameters\": [\n            {\n              \"type\": \"video\",\n              \"video\": {\n                \"link\": \"https://vyzvdvghlhztxpvysbor.supabase.co/storage/v1/object/public/whatsapp/{{\n(() => {\n  const ev = $('Execute a SQL query').item.json.event_type;\n\n  switch (ev) {\n    case \"trial_expiring\":\n      return \"prova_in_scadenza\";\n    case \"trial_expired\":\n      return \"prova_scaduta\";\n    case \"subscription_activated\":\n      return \"abbonamento_attivo\";\n    default:\n      return \"\";\n  }\n})()\n}}.mp4\"\n              }\n            }\n          ]\n        }\n      ]\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        96,
+        64
+      ],
+      "id": "d8800af1-8266-45aa-8c15-9cee6b062d76",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -128
+      ],
+      "id": "88bbc41b-5cd9-451a-bf06-cf9ad62a74f0",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        15
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e646d565-ba58-4917-adf7-9cd38558d11a",
+  "versionCounter": 76,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-14T07:52:33.609Z",
+      "createdAt": "2025-11-14T07:52:33.609Z",
+      "role": "workflow:owner",
+      "workflowId": "96Z9YKzAzhLcuxLV",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

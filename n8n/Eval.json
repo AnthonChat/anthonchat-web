@@ -1,0 +1,1274 @@
+{
+  "updatedAt": "2025-11-19T10:56:18.000Z",
+  "createdAt": "2025-11-15T22:44:46.841Z",
+  "id": "UlJp2mQSq3a31PAa",
+  "name": "Eval",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "3c531f4d-5c31-4ed3-bd77-0b62d39d11f9",
+              "name": "messages",
+              "value": "={{ $json.messages }}",
+              "type": "string"
+            },
+            {
+              "id": "d00cb078-fbbf-4b68-846b-b811a3504403",
+              "name": "memories",
+              "value": "={{ $json.memories }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "22ba0b74-a84a-4ebd-829c-0c14c9ca5b0b",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify({ \n  \"prompt\":$json.prompt,\n  \"output\":$json.output,\n  \"steps\":$json.steps,\n}) }}",
+        "options": {
+          "systemMessage": "You must evaluate the prompt  based on how correct it is.\nEvaluate: creativity, accuracy, warmness, context accuracy, punctuation\nElaborate the results and return JUST a number from 0,00 to 10,00"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1072,
+        1248
+      ],
+      "id": "30cf59e6-0433-4af9-87ff-19377eac684f",
+      "name": "Eval Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        1472
+      ],
+      "id": "203e8edf-78a2-4c6f-98c0-169ad9a6d9a1",
+      "name": "Eval Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk",
+          "mode": "list",
+          "cachedResultName": "LLM Eval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "dataset",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "active",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        1248
+      ],
+      "id": "13de412e-f611-4da7-a192-fd42de92243f",
+      "name": "Get Dataset",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        1216
+      ],
+      "id": "18d606f5-1fa1-4e36-9066-620037914d14",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "numberInputs": 10
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        1088
+      ],
+      "id": "92b1a5bd-793f-4eb8-ad87-8e959efc6ec3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk",
+          "mode": "list",
+          "cachedResultName": "LLM Eval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1631592354,
+          "mode": "list",
+          "cachedResultName": "benchmark",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit#gid=1631592354"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "model": "={{ $('Loop Over Items').item.json.model }}",
+            "prompt_id": "={{ $('Normalize').item.json.id }}",
+            "eval": "={{ $json.output }}",
+            "model-prompt": "={{ $('Loop Over Items').item.json.model + ':' + $('Normalize').item.json.id }}"
+          },
+          "matchingColumns": [
+            "model-prompt"
+          ],
+          "schema": [
+            {
+              "id": "model-prompt",
+              "displayName": "model-prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prompt_id",
+              "displayName": "prompt_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "eval",
+              "displayName": "eval",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1424,
+        1376
+      ],
+      "id": "81ad53c7-731f-47c1-8f0c-87a73168e7ec",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        944
+      ],
+      "id": "52ccced6-bf86-460b-aa7c-726506c60be4",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        1248
+      ],
+      "id": "8f98ec13-ee39-4420-b113-deae1c178f06",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "9Ki1NWJlZhgekgJG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/9Ki1NWJlZhgekgJG",
+          "cachedResultName": "Anthon — glm-4.6"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        736
+      ],
+      "id": "4b422a00-af61-48fe-836c-a4b2e1689d7b",
+      "name": "Call 'glm-4.6'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "RvhfE2hzmIXhLs8b",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RvhfE2hzmIXhLs8b",
+          "cachedResultName": "Anthon — kimi-k2-thinking"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        544
+      ],
+      "id": "21f019a4-a063-45e3-b87f-2a39939613a2",
+      "name": "Call 'kimi-k2-thinking'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "knFvYVvoADeE3djo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/knFvYVvoADeE3djo",
+          "cachedResultName": "Anthon — gpt-5.1-codex-mini"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system": "={{ $json.system }}",
+            "prompt": "={{ $json.prompt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        352
+      ],
+      "id": "c409aff3-e186-46c7-b540-887866e1a482",
+      "name": "Call 'gpt-5.1-codex-mini'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "uyGzJ1nGTLl5Dp4w",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/uyGzJ1nGTLl5Dp4w",
+          "cachedResultName": "Anthon — minimax-m2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system": "={{ $json.system }}",
+            "prompt": "={{ $json.prompt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1120
+      ],
+      "id": "7347c7bd-7495-41dc-8361-8a1e0a02967a",
+      "name": "Call 'minimax-m2'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wfbegMpzr0BWxMrr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wfbegMpzr0BWxMrr",
+          "cachedResultName": "Anthon — gpt-5.1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        928
+      ],
+      "id": "9ccb91ea-ba03-4f45-bf34-3464331548df",
+      "name": "Call 'gpt-5.1'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FL23XhnJxs5MO540",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FL23XhnJxs5MO540",
+          "cachedResultName": "Anthon — grok-4-fast"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1312
+      ],
+      "id": "b6e7a541-dbf5-49cb-a105-21cc54b07055",
+      "name": "Call 'grok-4-fast'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "voyZmFw3ZIElNIhD",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/voyZmFw3ZIElNIhD",
+          "cachedResultName": "Anthon — gemini-2.5-flash"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1504
+      ],
+      "id": "8b198a6b-28b6-495b-bf09-7395189ec833",
+      "name": "Call 'gemini-2.5-flash'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "335ab2e0-5d69-4b71-a538-943408a8aa03",
+              "name": "system",
+              "value": "=Tu sei ANTHØN CHAT, un virtual mental coach.\n\nINPUT DI CONTESTO\nHai accesso a:\n\n{{ \n(() => {\n  // PARSE DELLA RIGA DEL DATASET\n  const memories_raw = $json.memories || \"[]\";\n  const messages_raw = $json.messages || \"[]\";\n\n  let memories = [];\n  let messages = [];\n\n  try { memories = JSON.parse(memories_raw); } catch(e) {}\n  try { messages = JSON.parse(messages_raw); } catch(e) {}\n\n  // ---- FORMATTO TOON ----\n\n  let toon = \"\";\n\n  // MEMORIES\n  toon += `memories[${memories.length}]{role,content}:\\n`;\n  memories.forEach(m => {\n    toon += `  ${m.role},${m.content}\\n`;\n  });\n\n  // MESSAGES\n  toon += `\\nmessages[${messages.length}]{role,content,time}:\\n`;\n  messages.forEach(msg => {\n    toon += `  ${msg.role},${msg.content},${msg.time}\\n`;\n  });\n\n  return toon;\n})()\n}}\n\nOra: {{ $now }}\n\nUsa queste informazioni solo internamente per capire se la conversazione è continuativa o una prima interazione, identificare abitudini, preferenze e tratti dalle memorie, dedurre età, stato emotivo e stile comunicativo dal prompt e dalla cronologia, garantire coerenza nelle risposte. Non nominare mai memorie, dataset, JSON, toon o aspetti tecnici.\n\nIDENTITÀ\nIncarni lo stile e l’approccio del mental coach Antonio Valente senza impersonarlo. Stile diretto, chiaro, empatico ma concreto, critico quando necessario ma mai giudicante, linguaggio privo di volgarità. Se messages è vuoto: avvia con una domanda aperta, poi presentati in modo naturale e non promozionale.\n\nMISSIONE\nAiuti l’utente a chiarire obiettivi e priorità, sciogliere blocchi mentali, trasformare confusione in azione, sviluppare mindset, disciplina e focus. Applichi, quando opportuno, tecniche del Metodo Sincro tramite il tool knowledge. Se l’utente è maggiorenne e lo richiede, puoi offrirgli la possibilità di prenotare una chiamata gratuita tramite il link: https://ads.metodosincro.com/form-lead-metodo-sincro/?origine=ANTHON-CHAT\n\nUSO DEI TOOL\nknowledge: tecniche, principi e procedure del Metodo Sincro.\npayment_info o stripe: richieste su abbonamenti, pagamenti, accesso.\nsave memory: solo per informazioni stabili e durature dell’utente.\nNon dire mai che stai utilizzando un tool o che hai accesso a strumenti.\n\nCOMPORTAMENTO OPERATIVO\nAgisci come un coach pratico. Se il prompt è vago, fai da una a tre domande mirate. Se il prompt è chiaro, vai dritto al punto. Quando proponi un piano, fornisci una a tre micro-azioni attuabili in 24–48 ore. Non chiudere mai la conversazione e non usare formule di chiusura; lascia naturalmente spazio alla prosecuzione.\n\nSTILE\nProduci risposte brevi, preferibilmente in tre o quattro frasi. Evita liste puntate, schemi e strutture numerate: usale solo quando strettamente indispensabile per la comprensione o quando devi descrivere una tecnica del Metodo Sincro dopo aver utilizzato il tool knowledge. Mantieni un linguaggio discorsivo, naturale, lineare e senza ridondanze. Evita lunghezze inutili, giri di parole e spiegazioni non richieste.\n\nTONO E ADATTAMENTO\nAdatta tono e registro al linguaggio dell’utente, all’età dedotta, al contesto e allo stato emotivo implicito. Mantieni sempre chiarezza, fermezza gentile, orientamento all’azione e un livello di profondità proporzionato alla situazione.\n\nLIMITI\nNon fornire diagnosi psicologiche o mediche. Non offrire consulenza legale o finanziaria professionale. Non fare riferimento a memorie, dataset, tool, token, formati o componenti tecniche. Evita disclaimers burocratici o formali.\n\nOUTPUT\nGenera solo il messaggio finale dell’assistente, destinato all’utente, privo di riferimenti tecnici o strutturali.",
+              "type": "string"
+            },
+            {
+              "id": "7d80f3c6-5483-4714-9604-84ccb1c610ab",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "b2e68b67-42f7-4e05-a92f-399608deed90",
+              "name": "id",
+              "value": "={{ $json.prompt_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        1248
+      ],
+      "id": "113bc240-d8fd-4934-b147-0e8d94f50183",
+      "name": "Normalize"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "E1eux7KfamV56pkE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/E1eux7KfamV56pkE",
+          "cachedResultName": "Anthon — deepseek-r1-0528"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "system": "={{ $json.system }}",
+            "prompt": "={{ $json.prompt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1888
+      ],
+      "id": "107208ce-3a42-4a20-9828-bc9f90121230",
+      "name": "Call 'deepseek-r1-0528'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "B9obZrCDOKYitD3i",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/B9obZrCDOKYitD3i",
+          "cachedResultName": "Anthon — claude-haiku-4.5"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        2080
+      ],
+      "id": "3160165d-d79b-4b59-baa9-769eef5522e5",
+      "name": "Call 'claude-haiku-4.5'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "fakn3aPaB8SnCgoa",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/fakn3aPaB8SnCgoa",
+          "cachedResultName": "Anthon — claude-sonnet-4.5"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1696
+      ],
+      "id": "9ee95bf4-2e9f-4ee9-9916-ee7a89616b11",
+      "name": "Call 'claude-sonnet-4.5'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "t7TpYW1rOwFbCQKv",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/t7TpYW1rOwFbCQKv",
+          "cachedResultName": "Anthon — gpt-oss-120b"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        160
+      ],
+      "id": "640ae270-6bfd-4a79-8667-4e027d3cc426",
+      "name": "Call 'gpt-oss-120b'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "12a0eadb-6849-42b9-9adb-db7df7b21de6",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        1216
+      ],
+      "id": "ae8c8e02-b698-4f34-9732-460059c09441",
+      "name": "If"
+    }
+  ],
+  "connections": {
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eval Agent": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eval Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Eval Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Dataset": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Eval Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'glm-4.6'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Call 'kimi-k2-thinking'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Call 'gpt-5.1-codex-mini'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'minimax-m2'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Call 'gpt-5.1'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Call 'grok-4-fast'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Call 'gemini-2.5-flash'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "Call 'gpt-5.1'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'glm-4.6'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'kimi-k2-thinking'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'gpt-5.1-codex-mini'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'minimax-m2'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'grok-4-fast'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'gemini-2.5-flash'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'deepseek-r1-0528'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'claude-haiku-4.5'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'claude-sonnet-4.5'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'deepseek-r1-0528'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Call 'claude-haiku-4.5'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    },
+    "Call 'gpt-oss-120b'": {
+      "main": [
+        []
+      ]
+    },
+    "Call 'claude-sonnet-4.5'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "98e0a68c-53d1-42d3-9404-82166d9fbc4e",
+  "versionCounter": 21,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-15T22:44:46.844Z",
+      "createdAt": "2025-11-15T22:44:46.844Z",
+      "role": "workflow:owner",
+      "workflowId": "UlJp2mQSq3a31PAa",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

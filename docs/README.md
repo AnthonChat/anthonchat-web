@@ -1,29 +1,34 @@
 # Anthonchat Web
 
 ## Overview
+
 Anthonchat Web is a Next.js application built with Tailwind CSS, Supabase, and Stripe. It serves as the web interface for the Anthonchat platform.
 
 ## Tech Stack
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Backend/Database**: [Supabase](https://supabase.com/)
-- **Payments**: [Stripe](https://stripe.com/)
-- **Internationalization**: [next-intl](https://next-intl-docs.vercel.app/)
+
+-   **Framework**: [Next.js](https://nextjs.org/) (App Router)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **UI Components**: [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
+-   **Animations**: [Framer Motion](https://www.framer.com/motion/)
+-   **Backend/Database**: [Supabase](https://supabase.com/)
+-   **Payments**: [Stripe](https://stripe.com/)
+-   **Internationalization**: [next-intl](https://next-intl-docs.vercel.app/)
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js
-- Bun
+
+-   Node.js
+-   Bun
 
 ### Installation
+
 ```bash
 bun install
 ```
 
 ### Running Development Server
+
 ```bash
 bun dev
 ```
@@ -32,14 +37,19 @@ bun dev
 
 The project source code is located in the `src` directory:
 
-- **`app`**: Next.js App Router pages and API routes.
-- **`components`**: Reusable UI components (see [components.md](./components.md)).
-- **`hooks`**: Custom React hooks.
-- **`i18n`**: Internationalization configuration.
-- **`lib`**: Utility libraries and configurations (e.g., Supabase client, Stripe).
-- **`locales`**: Translation files.
-- **`utils`**: General utility functions.
-- **`middleware.ts`**: Next.js middleware for authentication and routing.
+-   **`app`**: Next.js App Router pages and API routes.
+-   **`components`**: Reusable UI components (see [components.md](./components.md)).
+-   **`hooks`**: Custom React hooks.
+-   **`i18n`**: Internationalization configuration.
+-   **`lib`**: Utility libraries and configurations (e.g., Supabase client, Stripe).
+-   **`locales`**: Translation files.
+-   **`utils`**: General utility functions.
+-   **`middleware.ts`**: Next.js middleware for authentication and routing.
 
 ## Database
+
 Database documentation can be found in [database.md](./database.md).
+
+## Workflows
+
+Documentation for n8n workflows (AI logic, triggers, integrations) can be found in [n8n-workflows.md](./n8n-workflows.md).

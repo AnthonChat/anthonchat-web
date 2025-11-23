@@ -1,0 +1,450 @@
+{
+  "updatedAt": "2025-11-23T16:03:37.000Z",
+  "createdAt": "2025-11-17T15:30:25.980Z",
+  "id": "fakn3aPaB8SnCgoa",
+  "name": "claude-sonnet-4.5",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        432,
+        640
+      ],
+      "id": "6ff0c954-1487-4b6a-b157-d1b864301bca",
+      "name": "Qwen3-8B Knowledge 4"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "prompt"
+            },
+            {
+              "name": "system"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "143ad7dd-6eb2-4fa0-993d-960b3c6b97ec",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "={{ $json.system }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "dd2343da-b938-4859-b9e0-6d89c033c836",
+      "name": "Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Stripe Expert",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', `Ask about the needed payment information about the subscription using the payment_info tool`, 'string') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "a911ed4b-09de-4108-bc3c-4b3fc52201d1",
+      "name": "Stripe"
+    },
+    {
+      "parameters": {
+        "description": "save_memory",
+        "jsCode": "return \"done\""
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        224
+      ],
+      "id": "8da22a5e-e701-4208-9202-4458a4b6d3df",
+      "name": "save_memory"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:exacto",
+        "options": {
+          "temperature": 0.5,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        432
+      ],
+      "id": "9b16959f-b81b-4b02-a4fe-20d3137e0b9d",
+      "name": "StripeModel",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:exacto",
+        "options": {
+          "temperature": 0.5,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        176,
+        432
+      ],
+      "id": "3f35345c-a1df-4759-a933-49af8e297776",
+      "name": "KnowledgeModel",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return \"subscription active until tomorrow\""
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        432
+      ],
+      "id": "c0e77b1a-5237-47e1-869d-5d13dbd97418",
+      "name": "payment_info"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge",
+        "toolDescription": "retrive information",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "files",
+          "mode": "list",
+          "cachedResultName": "files"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        432
+      ],
+      "id": "e6259206-360c-40c9-9343-2d48b38622fd",
+      "name": "knowledge"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Knowledge Expert",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', `Ask about techniques that could be useful for a  mental problem `, 'string') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        224
+      ],
+      "id": "5d16fa89-c84b-4932-bd70-4895032f589d",
+      "name": "Knowledge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44bee18e-062e-413d-b116-51c1f26b60f9",
+              "name": "model",
+              "value": "claude-sonnet-4.5",
+              "type": "string"
+            },
+            {
+              "id": "51a4307b-8427-45ee-bd23-4cd4e335f2b6",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "9804309a-dc0f-4273-996e-5296de551288",
+              "name": "steps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "string"
+            },
+            {
+              "id": "6c56c90b-39d6-4ed3-a69d-6f63467d923a",
+              "name": "prompt",
+              "value": "={{ $('When Executed by Another Workflow').item.json.prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        0
+      ],
+      "id": "49798aaf-d91c-481c-bf56-258c7d53f214",
+      "name": "Parse Agent"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4.5",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        224
+      ],
+      "id": "a3736328-bd14-4b74-adf6-0673383adf1d",
+      "name": "claude-sonnet-4.5",
+      "notesInFlow": false,
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Qwen3-8B Knowledge 4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "knowledge",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StripeModel": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stripe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KnowledgeModel": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Knowledge",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "payment_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stripe",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Knowledge",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "claude-sonnet-4.5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "24309c38-3023-4dfc-b069-20e2f526cf3f",
+  "versionCounter": 25,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-17T15:30:25.985Z",
+      "createdAt": "2025-11-17T15:30:25.985Z",
+      "role": "workflow:owner",
+      "workflowId": "fakn3aPaB8SnCgoa",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-23T16:03:35.518Z",
+      "createdAt": "2025-11-23T16:03:35.518Z",
+      "id": "iLYi1Hvw8QWh6Ul3",
+      "name": "model"
+    }
+  ]
+}

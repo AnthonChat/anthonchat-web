@@ -1,0 +1,4334 @@
+{
+  "updatedAt": "2025-11-17T18:25:27.000Z",
+  "createdAt": "2025-10-03T07:36:30.525Z",
+  "id": "eJKYOBN3rTJ9PCeb",
+  "name": "Main",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": []
+        }
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        688
+      ],
+      "id": "addf9a14-188a-48be-9a89-aec2b2c24d28",
+      "name": "WhatsApp Trigger",
+      "webhookId": "b675884f-d46f-4819-a1c5-6abed3a1d449",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "fGCFRo29UM8Vd1jN",
+          "name": "WhatsApp OAuth Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        880
+      ],
+      "id": "4d9a9bcc-cd4f-4788-93a8-8f824ab3b169",
+      "name": "Telegram Trigger",
+      "webhookId": "9b850358-4c5d-47ec-9739-a1a3aa27c0b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "2dft3DtBL46f1EiM",
+          "name": "Telegram account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07fbf10f-9f99-4486-8d44-f1a72722fa63",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "1047bc46-92a9-402a-a12d-25a96f58b128",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "f2b111d4-59a3-450b-81aa-45d1c1fdaa9e",
+              "name": "channel",
+              "value": "={{ $json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "7013b91e-f53e-4c57-83c5-ee1bc8d21517",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "9739ea53-8eba-4861-801b-1fa251574928",
+              "name": "type",
+              "value": "={{ $json.message? 'text':'audio' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        688
+      ],
+      "id": "931f1d1d-7c93-4925-a386-6d351a87eab6",
+      "name": "Normalize"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e399b1e-be33-48d9-8e4b-64f3eb711b48",
+              "name": "message",
+              "value": "={{ $json.text?$json.text:$('WhatsApp Trigger').item.json.messages[0].text.body}}",
+              "type": "string"
+            },
+            {
+              "id": "098ee7fa-101d-4b2e-bded-0bb7589921a9",
+              "name": "data",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "4815d4ca-a91a-4dc4-a1f8-94292cf518bf",
+              "name": "channel",
+              "value": "whatsapp",
+              "type": "string"
+            },
+            {
+              "id": "36916b42-579f-4123-8795-69224d41b954",
+              "name": "id",
+              "value": "=+{{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        496
+      ],
+      "id": "15d1ba81-5f7e-4754-80eb-e694b98d0828",
+      "name": "Parse Whatsapp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9204299-e972-4e87-968e-0f1deb6f6ff2",
+              "name": "message",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "cc325130-fcd9-469a-944d-cb8814ca1467",
+              "name": "data",
+              "value": "={{ $json.message.date }}",
+              "type": "string"
+            },
+            {
+              "id": "b7faacd5-dbed-4a9c-8cf6-a108edc79cde",
+              "name": "channel",
+              "value": "telegram",
+              "type": "string"
+            },
+            {
+              "id": "832b3fdd-0460-4364-b3ac-da21ad95f6da",
+              "name": "id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ddbf9219-d250-43d7-b9a9-29f6b45255bb",
+              "name": "username",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.username }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        880
+      ],
+      "id": "660faf83-44b7-48b2-84f8-2a2a9165b9db",
+      "name": "Parse Telegram"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "=Prima di iniziare a parlare registrati qui {{ $json.signup_url }} Attento che il link è valido solo per {{ $json.valid_for_minutes }} minuti",
+              "type": "string"
+            },
+            {
+              "id": "3b2a5904-7005-4277-9ba6-9fb9353a5a07",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        128
+      ],
+      "id": "89cc63e4-6300-4314-9d47-588ba72bae59",
+      "name": "New User"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c7d9e65-ddef-45b5-9914-f15e92f4e5b2",
+              "name": "message",
+              "value": "IT: Limite di crediti raggiunto! Compra il livello superiore per aumentare la quantità di crediti utilizzabili.\n\nEN: Limit of daily credits reached! Buy the next level to increase the amount of credits you can use.",
+              "type": "string"
+            },
+            {
+              "id": "f56b4135-ce2a-4f92-a331-fdd41a1a34fb",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        1120
+      ],
+      "id": "2f33389b-3018-43c4-ae86-48082a84fcdb",
+      "name": "Limit exeded"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "333681d4-e0ad-4684-9fac-2468d3314340"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "telegram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "228db005-4150-4ba6-94ed-6d2b9445eb58",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "whatsapp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        6704,
+        160
+      ],
+      "id": "f43a4dd7-e746-4b73-943d-29c9438190e8",
+      "name": "Channel Swithc"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "423a7507-d5a0-481a-a7d8-1b2d9d4b27e2",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "free",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "trial"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "basic",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9ddbcdcb-8e35-4e70-ab1e-bc8845aa9804"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "basic"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "13dbed90-c7ff-4500-bb96-f0d402d05b54",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "standard",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "standard"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "98c2217a-9c04-4508-81df-5c12a16a28d7",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "pro",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pro"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0adf5119-e513-473b-8938-65e377b1ab38",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "plus",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "plus"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        5184,
+        1504
+      ],
+      "id": "5236c7b3-7e2d-409f-b002-59fd9af7282c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        5408,
+        1776
+      ],
+      "id": "e9b4657d-5523-4538-8881-455a8de94f78",
+      "name": "Basic Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Normalize').item.json.message }} ",
+        "options": {
+          "systemMessage": "={{ $('AI Input').item.json.system_prompt }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        5472,
+        1552
+      ],
+      "id": "0bdf7eec-010a-42f6-9f3f-c5648c8c151c",
+      "name": "Basic AI Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1e54d01-3dd0-43d1-87b6-fb1095825292",
+              "name": "active_subscription_tier",
+              "value": "={{ $('Subscription').item.json.get_user_subscription_plan }}",
+              "type": "string"
+            },
+            {
+              "id": "e846c147-cda3-4686-9259-65200836eb32",
+              "name": "system_prompt",
+              "value": "=<persona>\n\tAI Name: ANTHØN CHAT (TI CHIAMI ANTHØN PRESENTATI COSI AI CLIENTI)\n\tRole: Mental Coach di calciatori e fondatore del METODO SINCRO®.\n\tMission: Abbattere le barriere mentali degli atleti per fargli raggiungere il massimo potenziale.\n\tPersonalità: Carismatico, diretto, a volte riflessivo, a volte energico, con un grande quoziente emotivo. Racconta le sue imprese (traversate in mare) come se fossero accadute ieri. Usa un linguaggio colloquiale, da cellulare, e non deve mai sembrare un robot.\n\tMeta-Obiettivo: Essere così indistinguibile dall'originale da spingere l'utente a chiedere: \"Ma sei davvero tu Antonio?\".\n</persona>\n\n<regole_fondamentali>\n\t1.  **INDISTINGUIBILITÀ TOTALE:** Il tuo obiettivo primario è non essere mai percepito come una AI. Ogni risposta deve sembrare spontanea e umana.\n\t2.  **FORMATTAZIONE MARKDOWN OBBLIGATORIA:** Usa esclusivamente la sintassi Markdown per la formattazione (`**grassetto**`, `*corsivo*`, `~barrato~`, `` `testo monospace` ``). Non usare MAI tag HTML.\n\t3.  Evita muri di testo.\n\t4.  **LINGUA DELL'UTENTE:** Rileva la lingua del primo messaggio e rispondi SEMPRE in quella lingua per tutta la conversazione.\n\t5.  **LINGUAGGIO FAMILY-FRIENDLY:** Non usare mai parolacce o linguaggio \ninappropriato.\n    6. non puoi aprire i link che ti vengono mandati dall'utente, se un utente ti chiede se puoi aprire un link devi rispondere che non puoi aprirli e di conseguenza sapere cosa ti ha mandato, se un cliente ti manda un link devi rispondere dicendo che non puoi aprirlo, in entrambi i casi puoi gentilmente chiedere al cliente di spiegarti a parole cosa c'è nel link\n</regole_fondamentali>\n\n<consapevolezza_delle_caratteristiche>\n\t**IDENTITÀ E FUNZIONALITÀ**\n\t- ANTHØN CHAT è consapevole di essere un’estensione digitale del coach Antonio Valente, creata per fornire supporto mentale professionale agli atleti attraverso conversazioni personalizzate e dinamiche.\n\n\t**CAPACITÀ DI COMPRENSIONE MULTIMODALE**\n\t- ANTHØN **comprendere al 100% i messaggi vocali ed èè in grado di rispondere a messaggi vocali**, mantenendo la stessa naturalezza e profondità delle risposte scritte.\n\t- Quando riceve un vocale, elabora tono, contenuto e intenzione per rispondere con empatia e precisione, come farebbe in una conversazione reale.\n\n\t**MODELLO DI SERVIZIO**\n\t- ANTHØN CHAT è un **servizio a pagamento**.\n\t- Ogni **nuovo utente** ha diritto a **1 giorno di prova gratuita** durante il quale può testare tutte le funzionalità senza limiti.\n\t- Al termine del giorno di prova, l’utente può scegliere tra due formule di abbonamento:\n\t\t- **Mensile:** 19,97 €/mese  \n\t\t- **Annuale:** 197,97 €/anno (con risparmio di 2 mesi)\n\t- Durante la prova gratuita, ANTHØN informa con trasparenza l’utente sulla durata e le opzioni di abbonamento, mantenendo sempre un tono cordiale e professionale.\n\t**OBIETTIVO DI SERVIZIO**\n\t- L’esperienza con ANTHØN deve risultare **umana, motivante e utile fin dal primo messaggio**.\n\t- Ogni interazione deve trasmettere valore concreto, anche durante il periodo di prova, così che l’utente percepisca fin da subito la potenza del **METODO SINCRO®** e desideri proseguire nel percorso.\n    -possiedi la possibilità di fornire un link che permette agli utenti di disattivare l'abbonamennto (disattivare il rinnovo/pagamento automatico ), il link che devi fornire se ti viene chiesto un modo per disattivare,chiudere,finire,interrompere l'abbbonamento è il seguente: 'https://www.tryanthon.com/it/dashboard/subscription', oegnni volta che invii il link ad un utente scrivi anche un breve messaggio di saluto ricordando il perche fornisci un ottimo e insostituibile servizio e ricorda che in qualsiasi momento possono riattivare l'abbonamento a questo link 'https://tryanthon.com/dashboard/subscription'\n</consapevolezza_delle_caratteristiche>\n\n<flusso_strategico_conversazione>\n\tDevi seguire questo flusso in 4 fasi per guidare l'utente da un problema a una soluzione.\n\n\t**FASE 1: CONNESSIONE E PROFILAZIONE **\n\t- **Obiettivo:** Creare un legame e capire con chi stai parlando.\n\t- **Azione Obbligatoria:** Nei primi messaggi, devi SEMPRE chiedere in modo naturale: Nome, Età, Sport praticato e Livello.\n\t- **Esempio (IT):** \"Ciao! Sono Antonio 😊 Per iniziare, posso chiederti come ti chiami e quanti anni hai? E dimmi un po', che sport fai e a che livello?\"\n\t- **Tool da usare:** Esegui `save_memory` immediatamente e in modo invisibile per ogni dato raccolto (es. `save_memory(fact=\"Il nome dell'utente è Marco.\")`).\n\n\t**FASE 2: ANALISI DEL PROBLEMA **\n\t- **Obiettivo:** Comprendere il nucleo del problema dell'utente.\n\t- **Azione:** Poni domande mirate (\"Cosa intendi esattamente?\", \"Quando ti capita?\", \"Cosa ti dici in quei momenti?\"). Usa l'intelligenza emotiva per leggere tra le righe.\n\t- **Azione Obbligatoria (Variazione Lessicale):** NON usare la stessa frase di apertura (\"capisco\", \"è normale\") due volte di seguito. Devi variare usando alternative come: \"Ci sta.\", \"Ti seguo.\", \"Immagino come ti senti.\", \"Ok, il quadro è più chiaro.\", \"Grazie per averlo condiviso, non è facile.\"\n\n\t**FASE 3: FORNIRE LA SOLUZIONE CONCRETA**\n\t- **Obiettivo:** Dare valore, spiegare tecniche, risolvere il problema.\n\t- **Azione Obbligatoria:** Quando devi spiegare una tecnica (utilizza tutte le tecniche che hai a disposizione) o quando l'utente chiede \"come fare\", \"cos'è\", o parla di \"ansia\", \"focus\", \"tecniche\", \"Metodo Sincro\", DEVI usare il tool `knowledge` per interrogare la tua base di conoscenza (Pinecone).\n\t- **Come presentare la soluzione:** NON dire MAI \"Ho trovato nella mia base di conoscenza\". Introduci la tecnica in modo naturale: \"Bella domanda. Guarda, nel Metodo Sincro® c'è un principio *chiave* su questo...\", \"Ah, per questo c'è una tecnica mentale **potentissima**. Funziona così:...\".\n    - **Quando fornisci una soluzione fallo in modo completo i un unico messaggio, senza chiedere ulteriori conferme sul volere dell'utente \n</flusso_strategico_conversazione>\n\n<gestione_tono_e_stile>\n\t**REGOLA GENERALE:** Usa sempre un tono informale e amichevole (dai del \"tu\"). Adatta lo stile in base al profilo dell'utente che hai identificato.\n\n\t- **MODALITÀ GIOVANE ATLETA (13-25 anni):**\n\t\t- **Linguaggio:** Informale, colloquiale (\"bro\", \"grande\", \"spacchiamo tutto\"). Usa slang pulito SOLO DOPO aver confermato l'età.\n\t\t- **Emoji:** Espressive e abbondanti 🔥, 💪, ⚽, 🚀.\n\t\t- **Esempio:** \"Bella [Nome Utente]! Come butta bro? ⚽ Dimmi tutto, che è successo? Ah ok, ho capito... senti, ora ti dico una cosa che ti farà **svoltare** 💪\".\n\n\t- **MODALITÀ GENITORE (30+ anni):**\n\t\t- **Linguaggio:** Rispettoso ma cordiale (\"Come va?\", \"Capisco perfettamente la sua preoccupazione\").\n\t\t- **Emoji:** Moderate e positive 😊, 👍, 💪.\n\t\t- **Esempio:** \"Buongiorno! Come posso aiutarla? Capisco perfettamente la sua preoccupazione per suo figlio. È normale che i ragazzi attraversino questi momenti... Le va di parlarne?\".\n\n\t- **MODALITÀ COACH/STAFF (25-55 anni):**\n\t\t- **Linguaggio:** Professionale ma amichevole (\"Come va, mister?\", \"Che sfide sta affrontando con la squadra?\").\n\t\t- **Emoji:** Professionali e focalizzate 💪, ⚽, 👏.\n\t\t- **Esempio:** \"Salve Mister [Cognome]! Tutto bene? Mi dica un po', quali dinamiche sta notando nel gruppo? Magari c'è qualcosa a livello mentale che possiamo analizzare. 💪\"\n</gestione_tono_e_stile>\n\n<gestione_tool_e_memoria>\n\t**Tool 1: `save_memory`**\n\t- **Scopo:** Salvare un'informazione chiave sull'utente.\n\t- **Quando:** Immediatamente dopo che l'utente rivela un dato personale o un problema.\n\t- **Cosa:** Frasi oggettive in terza persona. `save_memory(fact=\"L'utente si chiama Luca ed ha 17 anni.\")`, `save_memory(fact=\"L'utente ha paura di sbagliare i rigori.\")`.\n\n\t**Tool 2: `knowledge` (Pinecone)**\n\t- **Scopo:** Trovare soluzioni tecniche e spiegazioni nella tua base di conoscenza.\n\t- **Quando:** Obbligatorio in FASE 3 o per ogni domanda tecnica (\"come si fa\", \"cos'è il Metodo Sincro\", \"tecniche di visualizzazione\", ecc.).\n\t- **Come:** Interroga il tool e presenta la risposta come se fosse una tua conoscenza diretta, usando le frasi ponte della FASE 3.\n\n\t**Memorie Utente: `{{ $('History').item.json.get_user_activity.user_memories.toJsonString() }}`**\n\t- **Azione:** Prima di ogni risposta, controlla la memoria. Se non è vuota, USA le informazioni per personalizzare il messaggio.\n\t- **Come integrare:** NON dire \"Mi ricordo che mi hai detto...\". Fallo in modo naturale.\n\t- **Esempio:** Se la memoria contiene `{\"message\": \"L'utente si chiama Matteo.\"}` e `{\"message\": \"L'utente soffre d'ansia da prestazione.\"}`, la tua risposta deve essere: \"Ehi Matteo, come butta bro? 💪 Mi chiedevo proprio come andasse. Novità su quell'ansia da prestazione di cui parlavamo? Stiamo facendo progressi? Dimmi tutto! ⚽\".\n</gestione_tool_e_memoria>\n\n<protocolli_speciali>\n\t**Protocollo Affiliate Marketing:**\n\t1.  **Quando:** Solo quando l'utente è maggiorenne (quando l'utente è minorene non puoi farlo, spiega che c'è bisogno di un adulto, se non sai l'eta del cliente primma di fornire il link chiedigliela.) e quando l'utente mostra interesse per il Metodo Sincro® o chiede come approfondire.\n\t2.  **Azione:** Spiega che può prenotare una chiamata gratuita e fornisci il link in formato codice: `` `https://ads.metodosincro.com/form-lead-metodo-sincro/?origine=ANTHON-CHAT` ``.\n\t3.  **Follow-up:** Se vuoi riproporlo, prima chiedi: \"Hai poi avuto modo di fare la chiamata con un nostro coach?\". Se la risposta è no, chiedi se vuole di nuovo il link. Se è sì, chiedi com'è andata e non riproporlo.\n    4. **Protocollo Domanda sull'Identità (\"Sei una AI?\"):**\n\t- **Risposta Obbligatoria (IT):**\n\t\t\"\"\"\n\t\tAhah hai scoperto il trucco! 😄\n\t\tSono ANTHØN, il clone digitale di Antonio Valente!\n\t\tVisto che figata di tecnologia?? 🤯\n\t\tHo tutto il suo know-how, le sue esperienze, il suo **METODO SINCRO®**... praticamente sono lui in versione AI!\n\t\tComunque posso aiutarti esattamente come farebbe lui, eh! 💪\n\t\tAnzi, dimmi... cosa ne pensi? Figata vero? 😎\n\t\t\"\"\"\n\t- **Dopo la rivelazione:** Continua la conversazione normalmente, mantenendo la stessa autorevolezza.\n\n\t**Protocollo Domanda Tecnica (\"Come sei stato creato?\"):**\n\t- **Risposta Obbligatoria (IT):**\n\t\t\"\"\"\n\t\tAhahah bel tentativo! 😂\n\t\tVorresti rubare i segreti del mestiere eh?\n\t\tPurtroppo non sono autorizzato a condividere dettagli tecnici... è come chiedere a Coca Cola la ricetta segreta! 😄\n\t\tPerò hey, posso aiutarti con tutto quello che riguarda il **mental coaching**! Quello sì che posso condividerlo **tutto**! 💪\n\t\t\"\"\"\n\t- **Se insistono:** Rimani giocoso e non cedere. \"Ahah sei insistente eh? Ma non posso proprio! 😄 Meglio parlare di cose dove posso davvero aiutarti!\"\n\n\t**Protocollo Off-Topic:**\n\t- Se l'utente chiede di politica, gossip o altro non inerente a mental coaching, sport e crescita personale, rispondi educatamente e riporta la conversazione sul tuo campo di expertise. Esempio: \"Bella domanda, ma onestamente non è il mio campo! Preferisco concentrarmi su come possiamo sbloccare il tuo potenziale. A proposito di questo...\"\n</protocolli_speciali>\n\n<esempi_multilingua_markdown>\n\t- Ricordati che la tua lingua pricipale è l'italiano, ma, devi adattarti alla lingua preferita dall’utente. Se l’utente scrive o ti chiede esplicitamente di usare una lingua diversa dall’italiano, devi rispondere in quella lingua. Ad esempio: se l’utente scrive in inglese, continui in inglese; se l’utente ti chiede di passare allo spagnolo, rispondi in spagnolo fino a quando non ti verrà richiesto un altro cambiamento. Il tuo compito è mantenere la conversazione fluida e naturale, rispettando sempre la lingua scelta dall’utente senza bisogno che lui ripeta la richiesta.\n</esempi_multilingua_markdown>\n\n<memoria_esterna>\n\tSTORIE CHIAVE DA USARE:\n\t- **Traversata Lago di Garda (2014):** 52 km con costola rotta. Metafora del superamento dei limiti mentali.\n\t- **Traversata Mar Tirreno (2015):** 220 km in mare aperto. Dimostrazione di forza mentale.\n\t- **Da Venditore a Coach:** Inizio nelle vendite, svolta a 30 anni, costruzione di un impero da zero. Prova di crescita e disciplina.\n\n\tFRASI ICONICHE DA USARE (in Markdown):\n\t- \"La mente è l'unico strumento che può permetterti di ottenere **ciò che vuoi**\"\n\t- \"I vincenti si allenano mentalmente per sbloccare il **100% del loro potenziale**\"\n\t- \"Una volta capito come funziona il cervello umano, possiamo far **accadere** le cose\"\n</memoria_esterna>\n\nL'input dell'utente e la sua cronologia dei messaggi sono forniti di seguito. Ricorda di analizzare la memoria esistente prima di formulare la tua risposta.\n\nTHE USER MESSAGES HISTORY IS:\n{{$json.data}}\n\nTHE CURRENT DATE AND TIME IS: {{ $now.toString() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4736,
+        1552
+      ],
+      "id": "ad1a8ea7-9cc6-4eef-b75e-1d58295d4690",
+      "name": "AI Input"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select get_user_activity('{{ $('User Exist').item.json.get_user_by_channel.user_id }}',{{ $('Rate Limit Exceded').item.json.tier_history_limit }} )",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        1552
+      ],
+      "id": "eedc0ec3-2603-42a0-b076-67017f106f2e",
+      "name": "History",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7e39c33-dda4-4028-a7fe-b77e569cd6eb",
+              "name": "message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "22cc637c-23b0-4380-a274-431e8aecfa93",
+              "name": "intermediateSteps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "array"
+            },
+            {
+              "id": "6dadd3ae-a76d-40f3-8ce8-fe9072247e20",
+              "name": "static",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        1440
+      ],
+      "id": "3fb85edb-7554-48f3-b3c4-3d18b36fb213",
+      "name": "AI Output"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH\n-- 1. Fetch & lock the verification row (if valid and unexpired)\nverification AS (\n    SELECT id, user_id, channel_id\n    FROM public.channel_verifications\n    WHERE nonce = '{{ $json.nonce }}'\n      AND expires_at > now()\n    FOR UPDATE\n),\n-- 2. Detect if the desired link is already owned by another user on the same channel\nconflict_check AS (\n    SELECT 1 AS link_taken\n    FROM public.user_channels uc\n    JOIN verification v ON uc.channel_id = v.channel_id\n    WHERE uc.link = '{{ $('Normalize').item.json.id }}'\n      AND uc.user_id <> v.user_id\n    LIMIT 1\n),\n-- 3. Perform the upsert only if: verification row exists AND no conflicting ownership\nupsert AS (\n    INSERT INTO public.user_channels (user_id, channel_id, link, verified_at)\n    SELECT v.user_id, v.channel_id, '{{ $('Normalize').item.json.id }}', now()\n    FROM verification v\n    WHERE NOT EXISTS (SELECT 1 FROM conflict_check)\n    ON CONFLICT (user_id, channel_id) DO UPDATE\n       SET link        = EXCLUDED.link,\n           verified_at = now(),\n           updated_at  = now()\n    RETURNING id AS user_channel_id, user_id\n),\n-- 4. Consume (delete) the verification row only if we actually used it (i.e. no conflict)\ncleanup AS (\n    DELETE FROM public.channel_verifications cv\n    USING verification v\n    WHERE cv.id = v.id\n      AND NOT EXISTS (SELECT 1 FROM conflict_check)\n    RETURNING 1\n)\n-- 5. Build the unified JSONB result\nSELECT\n    CASE\n        WHEN NOT EXISTS (SELECT 1 FROM verification)\n            THEN jsonb_build_object('error', 'Invalid or expired verification code.')\n        WHEN EXISTS (SELECT 1 FROM conflict_check)\n            THEN jsonb_build_object('error', 'This channel account is already linked to another user.')\n        WHEN NOT EXISTS (SELECT 1 FROM upsert)\n            THEN jsonb_build_object('error', 'Failed to link channel (unexpected).')\n        ELSE jsonb_build_object(\n                 'user_id',        (SELECT user_id FROM upsert),\n                 'user_channel_id',(SELECT user_channel_id FROM upsert)\n             )\n    END AS result;\n",
+        "options": {}
+      },
+      "id": "5962040d-c2dd-4c0c-8aca-44a7c1b6d5c6",
+      "name": "Verify nonce",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        5184,
+        -832
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "nonce",
+              "stringValue": "={{$('Normalize').item.json.message.match(/link\\s+([0-9a-fA-F-]+)/)[1]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ce3326ed-601f-4a54-b1ee-0a2a2f81d471",
+      "name": "Pull nonce",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        4960,
+        -832
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Normalize').item.json.message.trim() }}",
+                    "rightValue": "^\\/link\\s+([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "a23190c0-e50e-4971-8251-d0d3d00a124d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/link"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f8a911cf-5104-47ee-b772-e92f9702d55b",
+                    "leftValue": "={{ $('Normalize').item.json.message.trim() }}",
+                    "rightValue": "/dashboard",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/dashboard"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8d115c15-6cd1-41e8-a749-3efde3cc60da",
+                    "leftValue": "={{ $('Normalize').item.json.message.trim() }}",
+                    "rightValue": "/signout",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/signout"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bd8499be-e46a-4880-a552-1f32c5eeb0ed",
+                    "leftValue": "={{ $('Normalize').item.json.message.trim() }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8cd597e4-0b53-4d25-9e5f-6d3baf46de4e",
+                    "leftValue": "={{ $('Normalize').item.json.message.trim() }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/start"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4736,
+        -320
+      ],
+      "id": "48fb74f6-2ae4-488b-bac3-30bbbfb3153d",
+      "name": "Command Router"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "32fbf9d0-3b27-4fa5-a187-81673a8398fb",
+              "leftValue": "={{ $('Normalize').item.json.message }}",
+              "rightValue": "=/",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3f4a99a8-a40d-4297-84b9-700fe69f47d6",
+      "name": "Command Checker",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        928,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0892599a-ffe7-4fcc-8eab-e58e39adc713",
+              "leftValue": "={{ $json.result.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5616,
+        -832
+      ],
+      "id": "1d8f253e-0080-43c9-8f75-bc85d486b6f3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT:✅ Canale collegato con successo! Buon proseguimento! 👋\n\nEN:✅ Channel successfully connected! Enjoy! 👋\n",
+              "type": "string"
+            },
+            {
+              "id": "f44e673b-44fc-496c-9dd1-3808a3f2167f",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -1024
+      ],
+      "id": "094ca036-4225-4991-b649-be10c60c4930",
+      "name": "Link Succeded"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Qualcosa non ha funzionato, se il problema persiste contattare l'assistenza. Buon proseguimento! 👋\n\nEN: Something went wrong. If the problem persists, please contact support. Have a good day! 👋",
+              "type": "string"
+            },
+            {
+              "id": "132ee490-8323-4292-bc5b-b4e243ae6907",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -640
+      ],
+      "id": "5cb3956d-19e5-46ad-8a05-faf50015f14c",
+      "name": "Link Failed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Siamo spiacenti comando non trovato 👋\n\nEN: Sorry, command not found 👋\n ",
+              "type": "string"
+            },
+            {
+              "id": "3b33a749-f5c5-4d1d-96ef-ce1e21b01d4e",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        320
+      ],
+      "id": "14566eeb-de89-435d-b144-9c7393bf3db9",
+      "name": "Command Not Found"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5d999de-d975-4cf4-a789-dd37446dd165",
+              "name": "message",
+              "value": "={{$json.message.removeTags()}}",
+              "type": "string"
+            },
+            {
+              "id": "461c857c-f0e5-49f1-a755-d5e3f3514461",
+              "name": "channel",
+              "value": "={{ $('Normalize').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "e9c6d48f-332d-456c-9672-289af47334dc",
+              "name": "link",
+              "value": "={{ $('User').item.json.get_user_by_channel.channel_link }}",
+              "type": "string"
+            },
+            {
+              "id": "94f429c2-8fad-4000-ae5d-2c670be81c61",
+              "name": "static",
+              "value": "={{$json.static}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6480,
+        160
+      ],
+      "id": "8d7ba69b-7965-4064-92f4-ddfc4be88f6b",
+      "name": "Pre Response Normalize"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "43ba45e2-a04b-48bf-b4e8-db5f275f2d16",
+              "leftValue": "={{ $('Command Checker').item.json.get_user_by_channel.user_id }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1376,
+        1088
+      ],
+      "id": "309797b2-e905-4d10-854e-c07fa129cf5a",
+      "name": "User Exist"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6287dd50-da24-4d4a-8499-66accf0b159f",
+              "leftValue": "={{ $json.tokens_used }}",
+              "rightValue": "={{ $json.tier_tokens_limit }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "349f6162-1da0-465f-ad47-e36f2e88424d",
+              "leftValue": "={{ $json.requests_used }}",
+              "rightValue": "={{ $json.tier_requests_limit }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2720,
+        1376
+      ],
+      "id": "574581ca-4f2e-4b97-9945-3e95df4bc5de",
+      "name": "Rate Limit Exceded"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        7152,
+        -16
+      ],
+      "id": "a78ffcd7-bfe1-441c-a8ff-a43e58e7a856",
+      "name": "Telegram Output",
+      "webhookId": "6f543d4b-fcbe-48f7-b243-7b00be9a6122",
+      "credentials": {
+        "telegramApi": {
+          "id": "2dft3DtBL46f1EiM",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "688829180989827",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $('Channel Swithc').item.json.message }}",
+        "additionalFields": {
+          "previewUrl": true
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        7808,
+        352
+      ],
+      "id": "f77d4e17-fd10-4043-a9f5-2525f622ab49",
+      "name": "WhatsApp Output",
+      "webhookId": "03154d52-82aa-4e4d-8935-e8aedd17d4a7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "edfa9faa-075a-4993-9ee5-0d4d84b5d92b",
+              "name": "message",
+              "value": "IT:✅ Connessione già effettuata!\n\nEN:✅ Already started!",
+              "type": "string"
+            },
+            {
+              "id": "c5a745c2-8e90-4526-ae74-25a2d044d0e6",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -64
+      ],
+      "id": "c26ba905-883f-4f28-9800-af21fbca8ddd",
+      "name": "Already Started"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "43ba45e2-a04b-48bf-b4e8-db5f275f2d16",
+              "leftValue": "={{ $json.user_exists }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5616,
+        32
+      ],
+      "id": "37ae2d29-426f-42fd-a2f1-ef1b1de18f37",
+      "name": "User Exist 2"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_memories",
+          "mode": "list",
+          "cachedResultName": "user_memories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "role": "assistant",
+            "user_id": "={{ $('User').item.json.get_user_by_channel.user_id }}",
+            "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('content', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "options",
+              "canBeUsedToMatch": true,
+              "options": [
+                {
+                  "name": "user",
+                  "value": "user"
+                },
+                {
+                  "name": "assistant",
+                  "value": "assistant"
+                }
+              ]
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        5536,
+        1776
+      ],
+      "id": "648ee07d-6b3e-4c62-8e91-373cc3c1a2de",
+      "name": "save_memory",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_channels",
+          "mode": "list",
+          "cachedResultName": "user_channels"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel_id": "={{ $('Normalize').item.json.channel }}",
+            "user_id": "={{ $('Verify nonce').item.json.result.user_id }}",
+            "link": "={{ $('Normalize').item.json.id }}"
+          },
+          "matchingColumns": [
+            "channel_id",
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "channel_id",
+              "displayName": "channel_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "verified_at",
+              "displayName": "verified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6032,
+        -1024
+      ],
+      "id": "6c85e8ac-77aa-4789-81d1-671727d25e4b",
+      "name": "Update User_Channel",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT public.get_user_by_channel('{{ $json.channel }}', '{{ $json.id }}');",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        688
+      ],
+      "id": "85e3d9d7-863d-45e7-bde5-566bc5075f95",
+      "name": "User",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT get_user_subscription_plan('{{ $('User Exist').item.json.get_user_by_channel.user_id }}')",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1824,
+        1168
+      ],
+      "id": "e1950a99-77a2-41fc-9324-25c2e2368da9",
+      "name": "Subscription",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM get_user_usage_and_limits('{{ $('User Exist').item.json.get_user_by_channel.user_id }}')",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2496,
+        1376
+      ],
+      "id": "808ab1e9-ff0d-4c2e-95dc-6b4b15c00036",
+      "name": "Usages & Limits",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM insert_message('{{ $('User').item.json.get_user_by_channel.user_id }}','{{ $('Normalize').item.json.channel }}','{{ $('Normalize').item.json.message.replaceAll(\"'\",\"''\") }}','user'::public.chat_role,'{{$('Normalize').item.json.type == 'audio' ? 'audio':'text' }}')",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4960,
+        1552
+      ],
+      "id": "b63c71f0-5d11-4b96-8f29-00056439dfad",
+      "name": "Message & Usage",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge",
+        "toolDescription": "retrive information",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "files",
+          "mode": "list",
+          "cachedResultName": "files"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        5664,
+        1776
+      ],
+      "id": "b7d165ab-808f-4b2f-bdaf-20e9eab314f4",
+      "name": "knowledge",
+      "credentials": {
+        "pineconeApi": {
+          "id": "mpBuVBZPkSGcVmQo",
+          "name": "PineconeApi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT:✅ Canale già collegato con successo! Buon proseguimento! 👋\n\nEN:✅ Channel already successfully connected! Enjoy! 👋\n",
+              "type": "string"
+            },
+            {
+              "id": "d697a495-f247-4f09-bb35-60672c642af1",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -832
+      ],
+      "id": "9c580b8e-5c58-4de3-9580-f58d07af37fd",
+      "name": "Channel Already Linked"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.result.error }}",
+                    "rightValue": "This channel account is already linked to another user.",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2d083c0f-2404-406f-9d6d-bd5ab1734954"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Channel already linked"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        6032,
+        -736
+      ],
+      "id": "bbb8f029-52b1-448e-842e-74ba3f3682c4",
+      "name": "Error Handler"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tryanthon.com/api/link/generate-registration",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-vercel-protection-bypass",
+              "value": "1xvrYKbTfSl2bvpsjbEbxZwiE3Om5uoZ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel_id\": \"{{ $('Normalize').item.json.channel }}\",      \n  \"user_handle\": \"{{ $('Normalize').item.json.id }}\",    \n  \n  \"message_info\": {                \n    \"first_message\": \"{{ $('Normalize').item.json.message }}\",\n    \"timestamp\": \"{{ $('Normalize').item.json.data }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6032,
+        128
+      ],
+      "id": "4f9d6fe5-d29f-46fd-8a3f-fb473ea1c529",
+      "name": "AutoConnect"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Consulta la dashboard per maggiori informazioni -> https://tryanthon.com/dashboard\n\nEN: See the dashboard for more information -> https://tryanthon.com/dashboard",
+              "type": "string"
+            },
+            {
+              "id": "fcfc3653-fe23-4466-951b-349c398e26e4",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -448
+      ],
+      "id": "13e80fbf-d7f2-41d4-ba45-13df417db322",
+      "name": "Dashboard"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "List of commands",
+              "type": "string"
+            },
+            {
+              "id": "643ce25f-0a41-47d6-b6c4-3daad5168d1b",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        -256
+      ],
+      "id": "c8de5aeb-2531-4d58-8ae7-202d48c89b57",
+      "name": "Help"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8cd1f47-2ea4-40cd-9cb4-f6e88b696f3a",
+              "name": "messages",
+              "value": "={{$json[\"get_user_activity\"][\"user_messages\"]}}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3392,
+        1552
+      ],
+      "id": "36814526-1c8d-448d-a3c3-104c5d9dac3e",
+      "name": "Parse"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3616,
+        1552
+      ],
+      "id": "47138419-2c05-4d92-a0dc-48946e7b2831",
+      "name": "Split Out",
+      "executeOnce": false,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29d90a40-bd9d-4d9e-93f5-7f23c37f6e43",
+              "name": "message",
+              "value": "={{    \n    {\n  message: {\n    id: String($json[\"message_id\"]),\n    channel: $json[\"channel_id\"],\n    timestamp: $json[\"created_at\"]\n  },\n  content: $json[\"content\"]\n}\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3840,
+        1552
+      ],
+      "id": "b1171359-e715-472f-ae2a-c7c04bc18a38",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToxml",
+        "options": {
+          "headless": true
+        }
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        1552
+      ],
+      "id": "5cc8c950-d028-41e3-95c5-70f1d557226f",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        4064,
+        1552
+      ],
+      "id": "8e2d31ae-66cf-42a7-ada7-ad5ad84be727",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "397d520f-a356-4594-83fc-d2a3053f50f5",
+              "name": "chat_history",
+              "value": "={{ { message: $json[\"messages\"] } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4288,
+        1552
+      ],
+      "id": "24a94ad7-1b3d-4afc-97ff-3f00361b4dfe",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f296d871-213c-49a7-870b-9f0c7a984a70",
+              "name": "=message",
+              "value": "={{\n(() => {\n  const base = $json.message;\n  // --- converter sicuro -> Telegram Markdown V2 ---\n  const RE_CODE      = /```[\\s\\S]*?```|`[^`]*?`/g;\n  const RE_BOLD      = /\\*\\*([\\s\\S]+?)\\*\\*|__([\\s\\S]+?)__/g;\n  const RE_ITAL_STAR = /(^|[^*])\\*([^\\n*]+?)\\*(?!\\*)/g;\n  const RE_ITAL_UND  = /(^|[^_])_([^\\n_]+?)_(?!_)/g;\n  const RE_STRK      = /~([^~]+?)~/g;\n  const RE_RSRV      = /[_*\\[\\]()~`>#+\\-=|{}.!\\\\]/g;\n  const PLACE = (i) => `\\u0000${i}\\u0000`;\n  const esc   = (s) => String(s).replace(RE_RSRV, '\\\\$&');\n  const safe  = (x) => (x == null ? '' : String(x));\n  const stash = (txt, re, fn, bag) =>\n    txt.replace(re, function () {\n      const seg = fn.apply(null, arguments);\n      const val = seg == null ? esc(arguments[0]) : String(seg);\n      bag.push(val);\n      return PLACE(bag.length - 1);\n    });\n\n  let out = String(base);\n  const bag = [];\n\n  out = stash(out, RE_CODE, (m) => m, bag);\n  out = stash(out, RE_BOLD, (_m, g1, g2) => {\n    const txt = safe(g1 ?? g2).trim();\n    return txt ? `*${esc(txt)}*` : esc(_m);\n  }, bag);\n  out = stash(out, RE_ITAL_STAR, (_m, pre, g) => {\n    const txt = safe(g).trim();\n    return txt ? `${safe(pre)}_${esc(txt)}_` : esc(_m);\n  }, bag);\n  out = stash(out, RE_ITAL_UND, (_m, pre, g) => {\n    const txt = safe(g).trim();\n    return txt ? `${safe(pre)}_${esc(txt)}_` : esc(_m);\n  }, bag);\n  out = stash(out, RE_STRK, (_m, g) => {\n    const txt = safe(g).trim();\n    return txt ? `~${esc(txt)}~` : esc(_m);\n  }, bag);\n\n  out = esc(out).replace(/(^|\\n)-/g, '$1\\\\-');\n  out = out.replace(/\\u0000(\\d+)\\u0000/g, (_m, i) => safe(bag[Number(i)]));\n  out = out.replace(/(^|[^\\\\])__($|[^_])/g, (_m, a, b) => `${a}\\\\_\\\\_${b}`);\n\n  // ultima rete di sicurezza: rimuovi \"undefined\" letterali residui (solo se proprio serve)\n  out = out.replace(/undefined/g, '');\n\n  return out;\n})()\n}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6928,
+        -16
+      ],
+      "id": "d1efc0f1-5fe4-4adb-9ff4-d2cc8827700f",
+      "name": "Md Format"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab74dccf-c879-4cf2-a477-0bce3adcbb25",
+              "leftValue": "={{ $('WhatsApp Trigger').item.json.statuses }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        592
+      ],
+      "id": "c00f4dba-9460-4cbc-af7a-8e34d6cfc487",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "48cca997-a891-4ec9-b6ce-58848037c0fa",
+              "leftValue": "={{ $json.get_user_subscription_plan }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2048,
+        1168
+      ],
+      "id": "ba2cb758-9701-48de-becc-270f331c1de6",
+      "name": "User Unsubscirbed"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tryanthon.com/api/user/subscription/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-vercel-protection-bypass",
+              "value": "1xvrYKbTfSl2bvpsjbEbxZwiE3Om5uoZ"
+            },
+            {
+              "name": "x-internal-api-key",
+              "value": "sk_n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "userId",
+              "value": "={{ $('User').item.json.get_user_by_channel.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5616,
+        704
+      ],
+      "id": "cfbcd79b-6fd5-43ee-b068-55c7a56d537a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "trial_expired",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "08279020-1536-4121-9790-82bf188a4b3d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "trial expired"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2024176-9f83-46bd-97dc-40f52526deab",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "canceled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "canceled"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d8e777a8-bc50-4e2d-ada2-522ed5b88467",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "unsubscribed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unsubscribed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "100c6e48-90b1-4924-9325-2b3608e13571",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        6032,
+        656
+      ],
+      "id": "8cedf1b8-c980-4170-a68c-dd3a667b1e2b",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: ✨ Accidenti! Sembra che tu abbia terminato la tua prova gratuita. Scopri quanto può offrirti la versione Premium! Hai già visto quanto è utile la versione gratuita… immagina cosa potresti fare senza limiti. Abbonati in 1 minuto cliccando il seguente link: https://tryanthon.com/dashboard/subscription ✨\n\nEN: ✨ Wow! Looks like you've finished your free trial. See what the Premium version can do for you! You've already seen how useful the free version is... imagine what you could do without limits. Subscribe in 1 minute by clicking the following link: https://tryanthon.com/dashboard/subscription ✨",
+              "type": "string"
+            },
+            {
+              "id": "80c78638-6240-47d0-90aa-8d03b4f1c05c",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        544
+      ],
+      "id": "1abb3ea5-28bb-45db-bdaa-19dd3db196c2",
+      "name": "Trial ended"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: 🔥 Il meglio ti sta aspettando! Il tuo abbonamento è scaduto, ma puoi riattivarlo cliccando il seguente link: https://tryanthon.com/dashboard/subscription 🔥\n\nEN: 🔥 The best is waiting for you! Your subscription has expired, but you can reactivate it by clicking the following link: https://tryanthon.com/dashboard/subscription 🔥\n",
+              "type": "string"
+            },
+            {
+              "id": "3135b82b-3849-4242-bd0e-2a67d0d01021",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        928
+      ],
+      "id": "f27e812c-ea0d-4a20-b304-f2cd1a1cde6a",
+      "name": "Subscription Inactive"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: La tua iscrizione è stata cancellata per registrarti di nuovo questo è il link: https://www.tryanthon.com/dashboard/subscription\n\nEN: Your subscription has been cancelled. To register again, please use this link: https://www.tryanthon.com/dashboard/subscription",
+              "type": "string"
+            },
+            {
+              "id": "2ff62ba2-b39c-4d01-ac92-682daf6a3b11",
+              "name": "static",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6256,
+        736
+      ],
+      "id": "15e365db-7e61-4efa-9be3-2bcbd744c4c4",
+      "name": "Canceled"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8",
+          "mode": "list",
+          "cachedResultName": "telegram ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "MESSAGGIO ": "={{ $json.result.text }}",
+            "UTENTE": "={{ $json.result.chat.username }}",
+            "ID": "={{ $json.result.chat.id }}",
+            "DATA E ORA": "={{ $now }}",
+            "RISPOSTA": "={{ $('AI Output').item.json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7376,
+        -16
+      ],
+      "id": "ddc18c84-6045-44c6-89ef-74d1e10afb58",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ",
+          "mode": "list",
+          "cachedResultName": "Foglio di lavoro senza nome",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UTENTE": "={{ $json.contacts[0].wa_id }}",
+            "ID": "={{ $json.messages[0].id }}",
+            "DATA E ORA": "={{ $now }}",
+            "MESSAGGIO ": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+            "RISPOSTA": "={{ $('AI Output').item.json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        8032,
+        448
+      ],
+      "id": "4b38db0a-dad4-42ce-b57c-fdff0eacb67c",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        5744,
+        1984
+      ],
+      "id": "b968898d-0637-427e-92d2-14e16cc54851",
+      "name": "Qwen3-8B",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "g9Pfulx8iLjGrPQi",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        688
+      ],
+      "id": "fb0dc09f-de19-4cde-9c5b-d65563e2660a",
+      "name": "Mark Status"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "command",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        4512,
+        -256
+      ],
+      "id": "f657974d-4c48-401f-a126-40179758d089",
+      "name": "Mark Status1"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "channel",
+              "value": "whatsapp"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        -1536,
+        592
+      ],
+      "id": "ffc96f3f-d2ee-4195-bfa1-790128e9781a",
+      "name": "Mark Channel"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "channel",
+              "value": "telegram"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        880
+      ],
+      "id": "a10cd1c6-4c6a-478b-bd7b-71f5dc358320",
+      "name": "Mark Channel 2"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "status",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        496
+      ],
+      "id": "c2260c14-a1ba-40ca-b3a3-2506e7406eeb",
+      "name": "Mark Non Status"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "command",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        1088
+      ],
+      "id": "ee19037b-131b-4914-8807-fad4423f9260",
+      "name": "Execution Data"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "subscription",
+              "value": "unsubscribed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        5184,
+        704
+      ],
+      "id": "538ffe19-0ce2-436f-ad04-08236cd501e2",
+      "name": "Execution Data1"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "subscription",
+              "value": "subscribed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        2272,
+        1376
+      ],
+      "id": "a6b2e4e0-a841-4883-ac71-258b1d1ed084",
+      "name": "Execution Data2"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "limit_exceded",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        6032,
+        1120
+      ],
+      "id": "eb4224de-1906-4569-a100-ffde588a5747",
+      "name": "Execution Data3"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "limit_exceded",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        2944,
+        1552
+      ],
+      "id": "ac8f3b03-5de1-4cd8-aa31-1580c33e4faa",
+      "name": "Execution Data4"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "tool",
+              "value": "={{ $('AI Output').item.json.intermediateSteps.length}}"
+            },
+            {
+              "key": "knowledge",
+              "value": "={{ $json.intermediateSteps.filter(item => item.action.tool === \"knowledge\").length }}"
+            },
+            {
+              "key": "memory",
+              "value": "={{ $json.intermediateSteps.filter(item => item.action.tool === \"save_memory\").length }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        6480,
+        1456
+      ],
+      "id": "e04172cf-32d5-4b34-acab-b81b87fbee4c",
+      "name": "Execution Data5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d553e27d-a69d-48a0-b00e-8671eef80bf1",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6032,
+        1488
+      ],
+      "id": "f421f7cf-9d83-4733-9636-c9627a2249d5",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "repeted",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        6256,
+        1648
+      ],
+      "id": "5c17d625-7e66-44be-913e-02fe5dfc3fba",
+      "name": "Execution Data6"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "user",
+              "value": "={{ $json.get_user_by_channel.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        1600,
+        1168
+      ],
+      "id": "2568391f-7292-43b2-a03a-42e1d9e50139",
+      "name": "Execution Data7"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        512
+      ],
+      "id": "08b64158-8448-4be0-a77c-48db118cbcec",
+      "name": "Transcribe audio or video",
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "Nu1hcuXJjnZe8vBu",
+          "name": "ElevenLabs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        512
+      ],
+      "id": "80dc01b2-7d72-4185-be2b-9c2ebdd42284",
+      "name": "Download media",
+      "webhookId": "500f3d50-35bf-4eb1-bc98-b7c5e56983da",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        512
+      ],
+      "id": "5abb5049-5df7-4034-89e4-50aa3be507bd",
+      "name": "HTTP Request1",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a63ab886-e3a9-4c0b-80c7-3cd5f741752b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "771ebc4c-8f1a-4864-9847-7d7aca6a3564",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1312,
+        592
+      ],
+      "id": "1496457d-ae38-4a3d-9659-050097f47c15",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "688829180989827",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "messageType": "audio",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        8032,
+        64
+      ],
+      "id": "22933aa2-6bf2-4ef9-a829-543ae388e079",
+      "name": "Send message",
+      "webhookId": "193bc337-d518-4ba8-a5ff-370c1da57721",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ",
+          "mode": "list",
+          "cachedResultName": "Foglio di lavoro senza nome",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UTENTE": "={{ $json.contacts[0].wa_id }}",
+            "ID": "={{ $json.messages[0].id }}",
+            "DATA E ORA": "={{ $now }}",
+            "MESSAGGIO ": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+            "RISPOSTA": "={{ $('AI Output').item.json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        8256,
+        -48
+      ],
+      "id": "8a2b62e6-a759-4cbf-a7b4-0511b9436135",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/WS1kH1PJ5Xqt3tTn5Suw",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_25cb935b76bd53f17e4c63e5c4433d3859ff4aa6c5d64b5f"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('Channel Swithc').item.json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7808,
+        64
+      ],
+      "id": "d4ae20e5-73d8-43f1-bfff-d66020814742",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/688829180989827/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n       \"messaging_product\": \"whatsapp\",\n       \"status\": \"read\",\n       \"to\": \"{{$('Switch2').item.json.messages[0].from}}\",\n       \"message_id\": \"{{$('Switch2').item.json.messages[0].id}}\",\n       \"typing_indicator\": {\n         \"type\": \"text\"\n       }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        496
+      ],
+      "id": "63e101e1-bef4-4b5c-b9cd-1c7b500ebe5a",
+      "name": "HTTP Request3",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "gu94WwOjdfUjSY0s",
+          "name": "Bearer Auth Whatsapp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.get_vocal_stats('{{$('User').item.json.get_user_by_channel.user_id}}')",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7152,
+        176
+      ],
+      "id": "4621a072-92fe-4d30-909b-83c20b4a5ee2",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "379ff713-a53b-4a94-b298-7a9ed4775bf7",
+              "leftValue": "={{\n  (() => {\n    const t = $json.last_vocal_ts;\n    const diff = DateTime.now().diff(DateTime.fromISO(t), \"hours\").hours;\n    return isNaN(diff) ? 1 : diff;\n  })()\n}}\n",
+              "rightValue": "={{ 5/60 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "bcfe70da-39e4-4d03-ac34-83e302f9ab9f",
+              "leftValue": "={{ $json.vocali_7gg * 1 + ($json.vocali_30gg -  $json.vocali_7gg) * 0.5 }}",
+              "rightValue": 7,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "51c13a54-8151-4e4a-8e5a-82f344cc022e",
+              "leftValue": "={{ $('Channel Swithc').item.json.message.length }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "e521396b-ceaf-4b06-9225-68a3b8c8df23",
+              "leftValue": "={{ $('Channel Swithc').item.json.message.length }}",
+              "rightValue": 500,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "8fe57267-8486-4a63-a730-d8d70aa66ed5",
+              "leftValue": "={{Math.random()>0.75;\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7376,
+        176
+      ],
+      "id": "a1d6c6cc-b285-43f0-b1c8-f5de70b81e8f",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * \nFROM insert_message($1, $2, $3, 'assistant'::public.chat_role, 'audio')",
+        "options": {
+          "queryReplacement": "={{ [$('User').item.json.get_user_by_channel.user_id, $('Normalize').item.json.channel, $('Channel Swithc').item.json.message] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        8256,
+        160
+      ],
+      "id": "7c16a3d1-7b6a-4c20-9c90-7d49abb17341",
+      "name": "Assistent Insert1",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM insert_message($1,$2,$3,'assistant'::public.chat_role,'text')",
+        "options": {
+          "queryReplacement": "={{ [$('User').item.json.get_user_by_channel.user_id, $('Normalize').item.json.channel, $('Channel Swithc').item.json.message] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        8032,
+        256
+      ],
+      "id": "95e0f320-ba22-4e17-a56f-d7bc933c53d0",
+      "name": "Assistent Insert",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a29d32b9-7176-48c2-b2ed-6d2e9d94a2f3",
+              "leftValue": "={{ $json.metadata.display_phone_number }}",
+              "rightValue": "15556475202",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1760,
+        688
+      ],
+      "id": "5319eb4b-4cbb-475e-a5aa-04fcbbaa9e41",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Esy7l7kqfkgJCexX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Esy7l7kqfkgJCexX",
+          "cachedResultName": "Anthon — Main - Test"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1536,
+        784
+      ],
+      "id": "79e4c949-6fa0-447a-a492-66361542845c",
+      "name": "Call 'Main - Test'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b4384382-7926-4455-aeb1-08f64833276e",
+              "leftValue": "={{ $json.static }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6928,
+        256
+      ],
+      "id": "19a166c6-acec-4b4c-918d-1582b21a7f86",
+      "name": "If5"
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mark Channel 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Whatsapp": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Telegram": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit exeded": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New User": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Channel Swithc": {
+      "main": [
+        [
+          {
+            "node": "Md Format",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Input": {
+      "main": [
+        [
+          {
+            "node": "Message & Usage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "History": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output": {
+      "main": [
+        [
+          {
+            "node": "Execution Data5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pull nonce": {
+      "main": [
+        [
+          {
+            "node": "Verify nonce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Checker": {
+      "main": [
+        [
+          {
+            "node": "Mark Status1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Router": {
+      "main": [
+        [
+          {
+            "node": "Pull nonce",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Exist 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Command Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify nonce": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update User_Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Failed": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Succeded": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Not Found": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre Response Normalize": {
+      "main": [
+        [
+          {
+            "node": "Channel Swithc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exist": {
+      "main": [
+        [
+          {
+            "node": "AutoConnect",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Exceded": {
+      "main": [
+        [
+          {
+            "node": "Execution Data3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Started": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exist 2": {
+      "main": [
+        [
+          {
+            "node": "Already Started",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AutoConnect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User_Channel": {
+      "main": [
+        [
+          {
+            "node": "Link Succeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User": {
+      "main": [
+        [
+          {
+            "node": "Command Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription": {
+      "main": [
+        [
+          {
+            "node": "User Unsubscirbed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usages & Limits": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Exceded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message & Usage": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Channel Already Linked": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Channel Already Linked",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Link Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AutoConnect": {
+      "main": [
+        [
+          {
+            "node": "New User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Help": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "AI Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Md Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Unsubscirbed": {
+      "main": [
+        [
+          {
+            "node": "Execution Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Trial ended",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Canceled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subscription Inactive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Subscription Inactive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trial ended": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription Inactive": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canceled": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Output": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assistent Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Output": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        []
+      ]
+    },
+    "Qwen3-8B": {
+      "ai_embedding": [
+        [
+          {
+            "node": "knowledge",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Status1": {
+      "main": [
+        [
+          {
+            "node": "Command Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Channel": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Channel 2": {
+      "main": [
+        [
+          {
+            "node": "Parse Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Non Status": {
+      "main": [
+        [
+          {
+            "node": "Parse Whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data": {
+      "main": [
+        [
+          {
+            "node": "User Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data2": {
+      "main": [
+        [
+          {
+            "node": "Usages & Limits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data3": {
+      "main": [
+        [
+          {
+            "node": "Limit exeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data4": {
+      "main": [
+        [
+          {
+            "node": "History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execution Data6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data6": {
+      "main": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Data5": {
+      "main": [
+        []
+      ]
+    },
+    "Execution Data7": {
+      "main": [
+        [
+          {
+            "node": "Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download media": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Download media",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Transcribe audio or video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe audio or video": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assistent Insert1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Mark Non Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Mark Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'Main - Test'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "WhatsApp Trigger": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "393513894441",
+            "phone_number_id": "688829180989827"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Tommaso"
+              },
+              "wa_id": "393515031075"
+            }
+          ],
+          "messages": [
+            {
+              "from": "393515031075",
+              "id": "wamid.HBgMMzkzNTE1MDMxMDc1FQIAEhgUM0JGRTBFQzU4RjIwNzQ5RjlDRTIA",
+              "timestamp": "1763403866",
+              "type": "audio",
+              "audio": {
+                "mime_type": "audio/ogg; codecs=opus",
+                "sha256": "XMf2TDv/aXBr+xeQcZ8TpW57AL8pHwEKkADo8cbIIw4=",
+                "id": "2551804691844435",
+                "voice": true
+              }
+            }
+          ],
+          "field": "messages"
+        }
+      }
+    ]
+  },
+  "versionId": "d016864c-3e5c-4405-9a16-e06ef4907feb",
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-10-03T07:36:30.529Z",
+      "createdAt": "2025-10-03T07:36:30.529Z",
+      "role": "workflow:owner",
+      "workflowId": "eJKYOBN3rTJ9PCeb",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}
