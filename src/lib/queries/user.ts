@@ -4,31 +4,7 @@ import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 
 // Type aliases for better readability
 type User = PublicDatabase["public"]["Tables"]["users"]["Row"];
-type UserInsert = PublicDatabase["public"]["Tables"]["users"]["Insert"];
 type UserUpdate = PublicDatabase["public"]["Tables"]["users"]["Update"];
-
-/**
- * Fetches the user data for a given user ID.
- */
-export async function getUserData(userId: string): Promise<User> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  if (error) {
-    console.error("USER_DATA_FETCH:", {
-      error: error.message,
-      userId,
-    });
-    throw error;
-  }
-
-  return data;
-}
 
 /**
  * Updates user data for a given user ID.
@@ -51,29 +27,6 @@ export async function updateUserData(
       error: error.message,
       userId,
       updates,
-    });
-    throw error;
-  }
-
-  return data;
-}
-
-/**
- * Creates a new user record.
- */
-export async function createUser(userData: UserInsert): Promise<User> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("users")
-    .insert(userData)
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("USER_CREATE:", {
-      error: error.message,
-      userData,
     });
     throw error;
   }
@@ -108,7 +61,7 @@ export async function linkChannelToUserSecure(
     error: verificationError?.message,
     verificationUserId: verification?.user_id,
     expiresAt: verification?.expires_at,
-    isExpired: verification ? verification.expires_at <= currentTime : null
+    isExpired: verification ? verification.expires_at <= currentTime : null,
   });
 
   if (verificationError || !verification) {
@@ -118,7 +71,7 @@ export async function linkChannelToUserSecure(
       channelId,
       userId,
       currentTime,
-      verificationFound: !!verification
+      verificationFound: !!verification,
     });
     throw new Error("Link di verifica non valido o scaduto");
   }
@@ -130,14 +83,14 @@ export async function linkChannelToUserSecure(
       nonce: nonce.substring(0, 8) + "...",
       userId,
       userHandle: verification.user_handle?.substring(0, 5) + "...",
-      isRegistration: true
+      isRegistration: true,
     });
   } else if (verification.user_id !== userId) {
     // È un nonce esistente - deve corrispondere l'user_id
     console.error("NONCE_USER_MISMATCH:", {
       expectedUserId: verification.user_id,
       actualUserId: userId,
-      isRegistration: false
+      isRegistration: false,
     });
     throw new Error("Nonce non associato a questo utente");
   } else {
@@ -145,7 +98,7 @@ export async function linkChannelToUserSecure(
     console.info("EXISTING_NONCE_ACCEPTED:", {
       nonce: nonce.substring(0, 8) + "...",
       userId,
-      isRegistration: false
+      isRegistration: false,
     });
   }
 
@@ -172,7 +125,7 @@ export async function linkChannelToUserSecure(
     p_nonce: nonce,
     p_link: verification.user_handle || "", // Il vero handle dal bot
   });
-  
+
   if (error) {
     console.error("CHANNEL_LINK_FINALIZE_ERROR:", {
       error: error.message,
@@ -182,26 +135,32 @@ export async function linkChannelToUserSecure(
     });
     throw error;
   }
-  
+
   // 4.a Fire a webhook to notify external service that the channel was validated.
   // Include the channel (e.g., "telegram"/"whatsapp") and a best-effort chat id:
   // prefer verification.user_handle (set for registrations), otherwise look into chat_metadata.
   try {
-    const chatMetadata = verification.chat_metadata as Record<string, unknown> | null | undefined;
+    const chatMetadata = verification.chat_metadata as
+      | Record<string, unknown>
+      | null
+      | undefined;
     let chatIdFromMetadata: string | null = null;
     if (chatMetadata) {
-      const possible = (chatMetadata as Record<string, unknown>)["chat_id"] ?? (chatMetadata as Record<string, unknown>)["chatId"] ?? (chatMetadata as Record<string, unknown>)["id"];
+      const possible =
+        (chatMetadata as Record<string, unknown>)["chat_id"] ??
+        (chatMetadata as Record<string, unknown>)["chatId"] ??
+        (chatMetadata as Record<string, unknown>)["id"];
       if (typeof possible === "string" || typeof possible === "number") {
         chatIdFromMetadata = String(possible);
       }
     }
     const chatId = verification.user_handle ?? chatIdFromMetadata ?? null;
-  
+
     const payload = {
       channel: verification.channel_id,
       chatid: chatId,
     };
-  
+
     // Use the global fetch available in Node 18+/Next.js server runtime.
     // We await the request but do not fail the main flow if the webhook fails.
     const webhookRes = await fetch(
@@ -212,7 +171,7 @@ export async function linkChannelToUserSecure(
         body: JSON.stringify(payload),
       }
     );
-  
+
     if (!webhookRes.ok) {
       console.warn("CHANNEL_VALIDATED_WEBHOOK_FAILED", {
         status: webhookRes.status,
@@ -232,13 +191,13 @@ export async function linkChannelToUserSecure(
       channelId,
     });
   }
-  
+
   console.info("Channel linked securely", {
     userId,
     channelId,
     userHandle: verification.user_handle?.substring(0, 5) + "...", // Privacy
     nonce: nonce.substring(0, 8) + "...", // Log parziale per sicurezza
-    isRegistration: verification.user_id === null
+    isRegistration: verification.user_id === null,
   });
 }
 
@@ -246,11 +205,11 @@ export async function linkChannelToUserSecure(
 const getServiceRoleClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY!;
-  
+
   if (!supabaseUrl || !supabaseSecretKey) {
     throw new Error("Missing Supabase secret key configuration");
   }
-  
+
   return createSupabaseClient(supabaseUrl, supabaseSecretKey);
 };
 
@@ -269,14 +228,18 @@ interface ChannelVerification {
 export async function validateChannelLinkNonce(
   nonce: string,
   channelId: string
-): Promise<{ isValid: boolean; verification?: ChannelVerification; isRegistration?: boolean }> {
+): Promise<{
+  isValid: boolean;
+  verification?: ChannelVerification;
+  isRegistration?: boolean;
+}> {
   if (!nonce || !channelId) {
     return { isValid: false };
   }
 
   // Usa service role client per leggere anche record con user_id=null
   const supabase = getServiceRoleClient();
-  
+
   const { data: verification, error } = await supabase
     .from("channel_verifications")
     .select("*")
@@ -294,41 +257,12 @@ export async function validateChannelLinkNonce(
     channelId,
     isValid,
     isRegistration,
-    error: error?.message
+    error: error?.message,
   });
 
   return {
     isValid,
     verification: verification || undefined,
-    isRegistration
+    isRegistration,
   };
-}
-
-// Manteniamo anche la funzione legacy per retrocompatibilità (ma deprecata)
-/** @deprecated Use linkChannelToUserSecure instead */
-export async function linkChannelToUser(
-  userId: string,
-  channelId: string,
-  link: string
-): Promise<void> {
-  console.warn("DEPRECATED: linkChannelToUser called - use linkChannelToUserSecure");
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("user_channels")
-    .insert({
-      user_id: userId,
-      channel_id: channelId,
-      link,
-      verified_at: new Date(),
-    });
-
-  if (error) {
-    console.error("USER_CHANNEL_LINK:", {
-      error: error.message,
-      userId,
-      channelId,
-    });
-    throw error;
-  }
 }

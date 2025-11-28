@@ -1,0 +1,1747 @@
+{
+  "updatedAt": "2025-11-24T14:33:46.000Z",
+  "createdAt": "2025-11-23T20:16:20.276Z",
+  "id": "xN1s3Oft7TdFDJtl",
+  "name": "Static",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "32fbf9d0-3b27-4fa5-a187-81673a8398fb",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "=/",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "263b1426-f831-4b3b-a443-6358843062b3",
+      "name": "Command Checker",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        1536
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: La tua iscrizione è stata cancellata per registrarti di nuovo questo è il link: https://www.tryanthon.com/dashboard/subscription\n\nEN: Your subscription has been cancelled. To register again, please use this link: https://www.tryanthon.com/dashboard/subscription",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        1728
+      ],
+      "id": "20cc9785-b2e5-4f2b-865c-4fff16954270",
+      "name": "Canceled"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: 🔥 Il meglio ti sta aspettando! Il tuo abbonamento è scaduto, ma puoi riattivarlo cliccando il seguente link: https://tryanthon.com/dashboard/subscription 🔥\n\nEN: 🔥 The best is waiting for you! Your subscription has expired, but you can reactivate it by clicking the following link: https://tryanthon.com/dashboard/subscription 🔥\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        1920
+      ],
+      "id": "148b852b-f62a-4d84-854f-f2b6fa7ebd15",
+      "name": "Subscription Inactive"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f77e310c-ed51-4449-be38-a440a20f3d10",
+              "name": "message",
+              "value": "IT: ✨ Accidenti! Sembra che tu abbia terminato la tua prova gratuita. Scopri quanto può offrirti la versione Premium! Hai già visto quanto è utile la versione gratuita… immagina cosa potresti fare senza limiti. Abbonati in 1 minuto cliccando il seguente link: https://tryanthon.com/dashboard/subscription ✨\n\nEN: ✨ Wow! Looks like you've finished your free trial. See what the Premium version can do for you! You've already seen how useful the free version is... imagine what you could do without limits. Subscribe in 1 minute by clicking the following link: https://tryanthon.com/dashboard/subscription ✨",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        1536
+      ],
+      "id": "ef7002d2-eeb5-4783-9ef1-5c0f5c884db0",
+      "name": "Trial ended"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "trial_expired",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "08279020-1536-4121-9790-82bf188a4b3d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "trial expired"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2024176-9f83-46bd-97dc-40f52526deab",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "canceled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "canceled"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d8e777a8-bc50-4e2d-ada2-522ed5b88467",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "unsubscribed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unsubscribed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "100c6e48-90b1-4924-9325-2b3608e13571",
+                    "leftValue": "={{ $json.normalized_status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4016,
+        1680
+      ],
+      "id": "c8005c92-1056-4fc1-a0d1-fd360c89f8e2",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tryanthon.com/api/user/subscription/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-vercel-protection-bypass",
+              "value": "1xvrYKbTfSl2bvpsjbEbxZwiE3Om5uoZ"
+            },
+            {
+              "name": "x-internal-api-key",
+              "value": "sk_n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "userId",
+              "value": "={{ $('When Executed by Another Workflow').item.json.user.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4240,
+        1728
+      ],
+      "id": "22f11d79-a441-471e-9915-53a5ecc62feb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "48cca997-a891-4ec9-b6ce-58848037c0fa",
+              "leftValue": "={{ $json.get_user_subscription_plan }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4464,
+        2016
+      ],
+      "id": "e27af896-e803-49ab-aef4-c8282ea8b6d6",
+      "name": "User Unsubscirbed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "List of commands",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        768
+      ],
+      "id": "befffff6-9532-4fed-a5ba-cb533d115f69",
+      "name": "Help"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Consulta la dashboard per maggiori informazioni -> https://tryanthon.com/dashboard\n\nEN: See the dashboard for more information -> https://tryanthon.com/dashboard",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        576
+      ],
+      "id": "c54ae23d-7f17-41d6-9386-fe3f7c8e50a3",
+      "name": "Dashboard"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.result.error }}",
+                    "rightValue": "This channel account is already linked to another user.",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2d083c0f-2404-406f-9d6d-bd5ab1734954"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Channel already linked"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4016,
+        288
+      ],
+      "id": "04610d7d-0d62-40a5-a4d2-3f7478d77b8e",
+      "name": "Error Handler"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT:✅ Canale già collegato con successo! Buon proseguimento! 👋\n\nEN:✅ Channel already successfully connected! Enjoy! 👋\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        192
+      ],
+      "id": "0077644d-a4a8-4a03-866e-b84812e8677c",
+      "name": "Channel Already Linked"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM get_user_usage_and_limits($1)",
+        "options": {
+          "queryReplacement": "={{[$('When Executed by Another Workflow').item.json.user.user_id]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -4240,
+        2240
+      ],
+      "id": "3076787d-fed0-457a-ace8-e22becc2d285",
+      "name": "Usages & Limits",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT get_user_subscription_plan($1)",
+        "options": {
+          "queryReplacement": "={{[$json.user.user_id]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -4688,
+        2016
+      ],
+      "id": "5352f62d-c538-4083-b5f7-367657c4d855",
+      "name": "Subscription",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_channels",
+          "mode": "list",
+          "cachedResultName": "user_channels"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel_id": "={{ $('When Executed by Another Workflow').item.json.channel.name }}",
+            "user_id": "={{ $('When Executed by Another Workflow').item.json.user.user_id }}",
+            "link": "={{ $('When Executed by Another Workflow').item.json.channel.id }}"
+          },
+          "matchingColumns": [
+            "channel_id",
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "channel_id",
+              "displayName": "channel_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "verified_at",
+              "displayName": "verified_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -4016,
+        0
+      ],
+      "id": "e6f855a4-71f6-489a-be70-c5f2a8f3cf7a",
+      "name": "Update User_Channel",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "43ba45e2-a04b-48bf-b4e8-db5f275f2d16",
+              "leftValue": "={{ $('When Executed by Another Workflow').item.json.user.user_id }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4240,
+        1056
+      ],
+      "id": "14d066fb-9391-4719-8427-4650b6347387",
+      "name": "User Exist 2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "edfa9faa-075a-4993-9ee5-0d4d84b5d92b",
+              "name": "message",
+              "value": "IT:✅ Connessione già effettuata!\n\nEN:✅ Already started!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        960
+      ],
+      "id": "be425cca-6a96-4720-93f2-b71410b7633d",
+      "name": "Already Started"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6287dd50-da24-4d4a-8499-66accf0b159f",
+              "leftValue": "={{ $json.tokens_used }}",
+              "rightValue": "={{ $json.tier_tokens_limit }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "349f6162-1da0-465f-ad47-e36f2e88424d",
+              "leftValue": "={{ $json.requests_used }}",
+              "rightValue": "={{ $json.tier_requests_limit }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4016,
+        2240
+      ],
+      "id": "ee66df16-56ca-4e48-90f6-4a9af3b233a2",
+      "name": "Rate Limit Exceded"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "43ba45e2-a04b-48bf-b4e8-db5f275f2d16",
+              "leftValue": "={{ $json.user.user_id }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4912,
+        1952
+      ],
+      "id": "b0cdcfce-91f1-47aa-a34b-33cd7679a26a",
+      "name": "User Exist"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Siamo spiacenti comando non trovato 👋\n\nEN: Sorry, command not found 👋\n ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        1344
+      ],
+      "id": "f1a893b1-3204-4add-b73f-ddfb15de3b9d",
+      "name": "Command Not Found"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT: Qualcosa non ha funzionato, se il problema persiste contattare l'assistenza. Buon proseguimento! 👋\n\nEN: Something went wrong. If the problem persists, please contact support. Have a good day! 👋",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        384
+      ],
+      "id": "f6d3cae6-23b5-4f03-939d-070465381e22",
+      "name": "Link Failed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "IT:✅ Canale collegato con successo! Buon proseguimento! 👋\n\nEN:✅ Channel successfully connected! Enjoy! 👋\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        0
+      ],
+      "id": "6cd64ca3-4f86-41f0-a062-3bf04bfc40f1",
+      "name": "Link Succeded"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0892599a-ffe7-4fcc-8eab-e58e39adc713",
+              "leftValue": "={{ $json.result.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4240,
+        192
+      ],
+      "id": "e970fe23-98af-4e9e-8e1b-592ae689b4c1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.item.json.message.text }}",
+                    "rightValue": "^\\/link\\s+([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "a23190c0-e50e-4971-8251-d0d3d00a124d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/link"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f8a911cf-5104-47ee-b772-e92f9702d55b",
+                    "leftValue": "={{ $json.item.json.message.text }}",
+                    "rightValue": "/dashboard",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/dashboard"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8d115c15-6cd1-41e8-a749-3efde3cc60da",
+                    "leftValue": "={{ $json.item.json.message.text }}",
+                    "rightValue": "/signout",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/signout"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bd8499be-e46a-4880-a552-1f32c5eeb0ed",
+                    "leftValue": "={{ $json.item.json.message.text }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8cd597e4-0b53-4d25-9e5f-6d3baf46de4e",
+                    "leftValue": "={{ $json.item.json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/start"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4912,
+        704
+      ],
+      "id": "76819b2e-86b8-4133-ad5c-3a16a5914886",
+      "name": "Command Router"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "nonce",
+              "stringValue": "={{ $('When Executed by Another Workflow').item.json.message.text.match(/link\\s+([0-9a-fA-F-]+)/)[1] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1d968b33-3209-4d19-af96-5e832db625dc",
+      "name": "Pull nonce",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -4688,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH\n-- 1. Fetch & lock the verification row (if valid and unexpired)\nverification AS (\n    SELECT id, user_id, channel_id\n    FROM public.channel_verifications\n    WHERE nonce = '{{ $json.nonce }}'\n      AND expires_at > now()\n    FOR UPDATE\n),\n-- 2. Detect if the desired link is already owned by another user on the same channel\nconflict_check AS (\n    SELECT 1 AS link_taken\n    FROM public.user_channels uc\n    JOIN verification v ON uc.channel_id = v.channel_id\n    WHERE uc.link = '{{ $('When Executed by Another Workflow').item.json.channel.id}}'\n      AND uc.user_id <> v.user_id\n    LIMIT 1\n),\n-- 3. Perform the upsert only if: verification row exists AND no conflicting ownership\nupsert AS (\n    INSERT INTO public.user_channels (user_id, channel_id, link, verified_at)\n    SELECT v.user_id, v.channel_id, '{{$('When Executed by Another Workflow').item.json.channel.id }}', now()\n    FROM verification v\n    WHERE NOT EXISTS (SELECT 1 FROM conflict_check)\n    ON CONFLICT (user_id, channel_id) DO UPDATE\n       SET link        = EXCLUDED.link,\n           verified_at = now(),\n           updated_at  = now()\n    RETURNING id AS user_channel_id, user_id\n),\n-- 4. Consume (delete) the verification row only if we actually used it (i.e. no conflict)\ncleanup AS (\n    DELETE FROM public.channel_verifications cv\n    USING verification v\n    WHERE cv.id = v.id\n      AND NOT EXISTS (SELECT 1 FROM conflict_check)\n    RETURNING 1\n)\n-- 5. Build the unified JSONB result\nSELECT\n    CASE\n        WHEN NOT EXISTS (SELECT 1 FROM verification)\n            THEN jsonb_build_object('error', 'Invalid or expired verification code.')\n        WHEN EXISTS (SELECT 1 FROM conflict_check)\n            THEN jsonb_build_object('error', 'This channel account is already linked to another user.')\n        WHEN NOT EXISTS (SELECT 1 FROM upsert)\n            THEN jsonb_build_object('error', 'Failed to link channel (unexpected).')\n        ELSE jsonb_build_object(\n                 'user_id',        (SELECT user_id FROM upsert),\n                 'user_channel_id',(SELECT user_channel_id FROM upsert)\n             )\n    END AS result;\n",
+        "options": {}
+      },
+      "id": "a082ed7f-3467-4efc-b9e2-86e7c1d3606f",
+      "name": "Verify nonce",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        192
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c7d9e65-ddef-45b5-9914-f15e92f4e5b2",
+              "name": "message",
+              "value": "IT: Limite di crediti raggiunto! Compra il livello superiore per aumentare la quantità di crediti utilizzabili.\n\nEN: Limit of daily credits reached! Buy the next level to increase the amount of credits you can use.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3584,
+        2112
+      ],
+      "id": "7be4dd5a-55a9-4134-b5b1-c5e58f0dc72b",
+      "name": "Limit exeded"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "078c2128-e10e-479a-aeab-7e1fe743d6a2",
+              "name": "message",
+              "value": "=Prima di iniziare a parlare registrati qui {{ $json.signup_url }} Attento che il link è valido solo per {{ $json.valid_for_minutes }} minuti",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        1152
+      ],
+      "id": "9e6cafbe-95b4-4ea8-9bf5-09bb7fa233f8",
+      "name": "New User"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"message\": {\n    \"text\": \"Prova\",\n    \"data\": \"1763931449\",\n    \"type\": \"text\"\n  },\n  \"channel\": {\n    \"name\": \"whatsapp\",\n    \"id\": \"+393515031075\"\n  },\n  \"user\": {\n    \"user_id\": \"29b8ebbf-053e-424a-baab-e20a667fe317\",\n    \"stripe_customer_id\": \"cus_SyHCUiRtjttDO2\",\n    \"email\": \"tommaso.coviello@icloud.com\"\n  }\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -5360,
+        1536
+      ],
+      "id": "57893b29-af4d-4ffd-8cf1-36bc1657f4f9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6AN5JnonFtbzfOrc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/6AN5JnonFtbzfOrc",
+          "cachedResultName": "Anthon — LLM Engine"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3584,
+        2336
+      ],
+      "id": "ad22707b-9398-4343-8195-fa13750ae0f7",
+      "name": "Call 'LLM Engine'"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tryanthon.com/api/link/generate-registration",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-vercel-protection-bypass",
+              "value": "1xvrYKbTfSl2bvpsjbEbxZwiE3Om5uoZ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel_id\": \"{{ $('When Executed by Another Workflow').item.json.channel.name }}\",      \n  \"user_handle\": \"{{ $('When Executed by Another Workflow').item.json.channel.id }}\",\n  \n  \"message_info\": {                \n    \"first_message\": \"{{ $('When Executed by Another Workflow').item.json.message.text }}\",\n    \"timestamp\": \"{{ $('When Executed by Another Workflow').item.json.message.data }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4016,
+        1152
+      ],
+      "id": "0bfec68d-71e5-488f-96af-f58bf9564371",
+      "name": "AutoConnect (review user handle)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "59aa2c13-1fdd-4ddb-a036-55b3e5c2a43d",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "object"
+            },
+            {
+              "id": "e1a52252-053a-4e06-888a-4394e40e048f",
+              "name": "channel",
+              "value": "={{ $('When Executed by Another Workflow').item.json.channel }}",
+              "type": "object"
+            },
+            {
+              "id": "c6404bcc-60d7-41ea-a295-d14015996f89",
+              "name": "user",
+              "value": "={{ \n  {\n    ...$('When Executed by Another Workflow').item.json.user,\n    subscription: $('Subscription').item.json.get_user_subscription_plan,\n    usage:  {\n      used_tokens: $('Usages & Limits').item.json.tokens_used,\n      used_messages: $json.requests_used\n    },\n    limits:{\n      tokens_limit:$json.tier_tokens_limit,\n      messages_limit:$json.tier_requests_limit\n    }\n  } \n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3808,
+        2336
+      ],
+      "id": "787678cb-6788-4aa3-b990-dd86153fd352",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "rm81WjyclvUGbWdq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/rm81WjyclvUGbWdq",
+          "cachedResultName": "Anthon — Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -2752,
+        1056
+      ],
+      "id": "ff30c42a-b01a-4e1e-ac75-ae62026128ea",
+      "name": "Call 'Output'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "792f831c-d4bd-44d8-9f23-62cd8f7297d3",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "object"
+            },
+            {
+              "id": "6975da73-d4d0-4e41-951f-ef4c08dd730e",
+              "name": "channel",
+              "value": "={{ $('When Executed by Another Workflow').item.json.channel }}",
+              "type": "object"
+            },
+            {
+              "id": "e3c47923-9692-4236-8b86-a2d82ac7e15b",
+              "name": "user",
+              "value": "={{ $('When Executed by Another Workflow').item.json.user }}",
+              "type": "object"
+            },
+            {
+              "id": "aa97f2f2-35a6-47fb-832e-6c6024efa2ba",
+              "name": "response",
+              "value": "={{ {message: $json.message, static: true } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3040,
+        1056
+      ],
+      "id": "510d6a6d-8718-4d61-877c-dc7701ba74e8",
+      "name": "Output Static"
+    }
+  ],
+  "connections": {
+    "Command Checker": {
+      "main": [
+        [
+          {
+            "node": "Command Router",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Trial ended",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Canceled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subscription Inactive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Subscription Inactive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Unsubscirbed": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Usages & Limits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Channel Already Linked",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Link Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usages & Limits": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Exceded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription": {
+      "main": [
+        [
+          {
+            "node": "User Unsubscirbed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User_Channel": {
+      "main": [
+        [
+          {
+            "node": "Link Succeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exist 2": {
+      "main": [
+        [
+          {
+            "node": "Already Started",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AutoConnect (review user handle)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Exceded": {
+      "main": [
+        [
+          {
+            "node": "Limit exeded",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Exist": {
+      "main": [
+        [
+          {
+            "node": "AutoConnect (review user handle)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update User_Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Router": {
+      "main": [
+        [
+          {
+            "node": "Pull nonce",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Exist 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Command Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pull nonce": {
+      "main": [
+        [
+          {
+            "node": "Verify nonce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify nonce": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Command Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit exeded": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription Inactive": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canceled": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trial ended": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Failed": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Channel Already Linked": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Link Succeded": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Started": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New User": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Help": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Not Found": {
+      "main": [
+        [
+          {
+            "node": "Output Static",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AutoConnect (review user handle)": {
+      "main": [
+        [
+          {
+            "node": "New User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output": {
+      "main": [
+        [
+          {
+            "node": "Call 'LLM Engine'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Static": {
+      "main": [
+        [
+          {
+            "node": "Call 'Output'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "message": {
+            "text": "Prova",
+            "data": "1763931449",
+            "type": "text"
+          },
+          "channel": {
+            "name": "whatsapp",
+            "id": "+393515031075"
+          },
+          "user": {
+            "user_id": "29b8ebbf-053e-424a-baab-e20a667fe317",
+            "stripe_customer_id": "cus_SyHCUiRtjttDO2",
+            "email": "tommaso.coviello@icloud.com"
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "e09e9f1f-9fef-4571-a96b-365f46bfbc25",
+  "versionCounter": 17,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-23T20:16:20.280Z",
+      "createdAt": "2025-11-23T20:16:20.280Z",
+      "role": "workflow:owner",
+      "workflowId": "xN1s3Oft7TdFDJtl",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T23:01:49.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-23",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-24T14:33:31.971Z",
+      "createdAt": "2025-11-24T14:33:31.971Z",
+      "id": "HE779NdtlD8HeLt4",
+      "name": "main"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ import {
   AuthError,
   AuthErrorType,
   getAuthErrorMessage,
-  supabaseErrorToAuthError
+  supabaseErrorToAuthError,
 } from "@/lib/auth/types";
 import { useAuthActions } from "./AuthProvider";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -35,7 +35,7 @@ interface AuthErrorBoundaryProps {
 function AuthErrorFallback({
   error,
   resetErrorBoundary,
-  onAuthError
+  onAuthError,
 }: {
   error: Error;
   resetErrorBoundary: () => void;
@@ -48,10 +48,10 @@ function AuthErrorFallback({
   // Converte l'errore in AuthError strutturato
   const authError: AuthError = React.useMemo(() => {
     // Se è già un AuthError, restituiscilo
-    if ('type' in error && 'timestamp' in error) {
+    if ("type" in error && "timestamp" in error) {
       return error as AuthError;
     }
-    
+
     // Altrimenti converti da errore generico
     return supabaseErrorToAuthError(error);
   }, [error]);
@@ -68,25 +68,25 @@ function AuthErrorFallback({
     try {
       await signOut();
       clearError();
-      router.push('/login');
+      router.push("/login");
     } catch (err) {
       // Mostra toast di errore invece di console.error
       showError(
-        'Errore durante il logout',
-        'Si è verificato un problema durante il logout.',
+        "Errore durante il logout",
+        "Si è verificato un problema durante il logout.",
         {
           errorType: NotificationErrorType.AUTH_SESSION_EXPIRED,
-          context: 'auth_signout',
+          context: "auth_signout",
           originalError: err,
           config: {
-            duration: 5000
-          }
+            duration: 5000,
+          },
         }
       );
-      
+
       // Fallback: redirect diretto
       setTimeout(() => {
-        window.location.href = '/login';
+        window.location.href = "/login";
       }, 2000);
     }
   }, [signOut, clearError, router, showError]);
@@ -96,7 +96,7 @@ function AuthErrorFallback({
    */
   const handleGoHome = useCallback(() => {
     clearError();
-    router.push('/');
+    router.push("/");
   }, [clearError, router]);
 
   /**
@@ -116,12 +116,14 @@ function AuthErrorFallback({
   }, [clearError]);
 
   // Determina quali azioni mostrare in base al tipo di errore
-  const showSignOut = authError.requiresReauth || 
-                     authError.type === AuthErrorType.SESSION_EXPIRED ||
-                     authError.type === AuthErrorType.UNAUTHORIZED;
+  const showSignOut =
+    authError.requiresReauth ||
+    authError.type === AuthErrorType.SESSION_EXPIRED ||
+    authError.type === AuthErrorType.UNAUTHORIZED;
 
-  const showRetry = authError.type === AuthErrorType.NETWORK_ERROR ||
-                   authError.type === AuthErrorType.TOKEN_REFRESH_FAILED;
+  const showRetry =
+    authError.type === AuthErrorType.NETWORK_ERROR ||
+    authError.type === AuthErrorType.TOKEN_REFRESH_FAILED;
 
   return (
     <div className="min-h-[400px] flex items-center justify-center p-4">
@@ -130,9 +132,7 @@ function AuthErrorFallback({
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
-          <CardTitle className="text-xl">
-            Errore di Autenticazione
-          </CardTitle>
+          <CardTitle className="text-xl">Errore di Autenticazione</CardTitle>
           <CardDescription>
             {authError.message || getAuthErrorMessage(authError.type)}
           </CardDescription>
@@ -147,7 +147,8 @@ function AuthErrorFallback({
               <pre className="mt-2 whitespace-pre-wrap break-words text-xs">
                 Tipo: {authError.type}
                 {authError.code && `\nCodice: ${authError.code}`}
-                {authError.details && `\nDettagli: ${JSON.stringify(authError.details, null, 2)}`}
+                {authError.details &&
+                  `\nDettagli: ${JSON.stringify(authError.details, null, 2)}`}
                 {error.stack && `\nStack: ${error.stack}`}
               </pre>
             </details>
@@ -165,7 +166,7 @@ function AuthErrorFallback({
                 Effettua Logout
               </Button>
             )}
-            
+
             {showRetry && (
               <Button
                 onClick={handleRetry}
@@ -186,10 +187,7 @@ function AuthErrorFallback({
                 <Home className="mr-2 h-4 w-4" />
                 Home
               </Button>
-              <Button
-                onClick={handleReload}
-                className="flex-1"
-              >
+              <Button onClick={handleReload} className="flex-1">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Ricarica
               </Button>
@@ -222,7 +220,7 @@ class AuthErrorBoundaryInternal extends Component<
 
     // Converte in AuthError se necessario
     let authError: AuthError;
-    if ('type' in error && 'timestamp' in error) {
+    if ("type" in error && "timestamp" in error) {
       authError = error as AuthError;
     } else {
       authError = supabaseErrorToAuthError(error);
@@ -230,44 +228,51 @@ class AuthErrorBoundaryInternal extends Component<
 
     // Manteniamo console.error per debugging ma solo in development.
     // Use a safe serializer to avoid logging empty objects for complex/unserializable errors.
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       const safeSerialize = (v: unknown) => {
         try {
           return JSON.parse(
             JSON.stringify(v, (_k, val) => {
               if (val instanceof Error) {
-                return { name: val.name, message: val.message, stack: val.stack };
+                return {
+                  name: val.name,
+                  message: val.message,
+                  stack: val.stack,
+                };
               }
               return val;
             })
           );
         } catch {
           try {
-            if (typeof v === 'object' && v !== null) {
+            if (typeof v === "object" && v !== null) {
               const copy: Record<string, unknown> = {};
               for (const k of Object.keys(v as Record<string, unknown>)) {
                 try {
                   const val = (v as Record<string, unknown>)[k];
                   if (val instanceof Error) {
-                    copy[k] = { name: val.name, message: val.message };
+                    copy[k] = {
+                      name: val.name,
+                      message: val.message,
+                    };
                   } else {
                     copy[k] = val;
                   }
                 } catch {
-                  copy[k] = '[unserializable]';
+                  copy[k] = "[unserializable]";
                 }
               }
               return copy;
             }
             return String(v);
           } catch {
-            return '[unable to serialize]';
+            return "[unable to serialize]";
           }
         }
       };
 
       console.error(
-        'AuthErrorBoundary: Caught auth error:',
+        "AuthErrorBoundary: Caught auth error:",
         safeSerialize({ authError, errorInfo, originalError: error })
       );
     }
@@ -317,7 +322,7 @@ export function AuthErrorBoundary({
   fallback,
   onAuthError,
   resetOnPropsChange = true,
-  resetKeys = []
+  resetKeys = [],
 }: AuthErrorBoundaryProps) {
   return (
     <AuthErrorBoundaryInternal
@@ -332,9 +337,10 @@ export function AuthErrorBoundary({
 }
 
 /**
- * HOC per wrappare componenti con AuthErrorBoundary
+ * HOC per wrappare componenti con AuthErrorBoundary (internal - currently unused)
  */
-export function withAuthErrorBoundary<P extends object>(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function withAuthErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   boundaryProps?: Omit<AuthErrorBoundaryProps, "children">
 ) {
@@ -352,23 +358,27 @@ export function withAuthErrorBoundary<P extends object>(
 }
 
 /**
- * Hook per gestire errori auth programmaticamente
+ * Hook per gestire errori auth programmaticamente (internal - currently unused)
  */
-export function useAuthErrorHandler() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useAuthErrorHandler() {
   const { setError, clearError } = useAuthActions();
   const router = useLocaleRouter();
 
-  const handleAuthError = useCallback((error: unknown) => {
-    const authError = supabaseErrorToAuthError(error);
-    setError(authError);
+  const handleAuthError = useCallback(
+    (error: unknown) => {
+      const authError = supabaseErrorToAuthError(error);
+      setError(authError);
 
-    // Auto-redirect per errori che richiedono re-auth
-    if (authError.requiresReauth) {
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000); // Delay per permettere all'utente di leggere l'errore
-    }
-  }, [setError, router]);
+      // Auto-redirect per errori che richiedono re-auth
+      if (authError.requiresReauth) {
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000); // Delay per permettere all'utente di leggere l'errore
+      }
+    },
+    [setError, router]
+  );
 
   return {
     handleAuthError,

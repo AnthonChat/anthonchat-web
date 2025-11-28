@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2025-11-17T18:25:27.000Z",
+  "updatedAt": "2025-11-23T20:57:45.000Z",
   "createdAt": "2025-10-03T07:36:30.525Z",
   "id": "eJKYOBN3rTJ9PCeb",
   "name": "Main",
@@ -4271,8 +4271,8 @@
       }
     ]
   },
-  "versionId": "d016864c-3e5c-4405-9a16-e06ef4907feb",
-  "versionCounter": 13,
+  "versionId": "1b7a8f6d-b1d0-4510-bbf2-42ad895f2cf8",
+  "versionCounter": 18,
   "triggerCount": 1,
   "shared": [
     {
@@ -4299,7 +4299,7 @@
             "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
             "projectId": "w51XaKZpdbYjr1WH",
             "user": {
-              "updatedAt": "2025-11-23T09:33:30.000Z",
+              "updatedAt": "2025-11-23T23:01:49.000Z",
               "createdAt": "2025-05-13T16:58:19.526Z",
               "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
               "email": "matteoscarselletta5@gmail.com",
@@ -4322,7 +4322,7 @@
               },
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-11-22",
+              "lastActiveAt": "2025-11-23",
               "isPending": false
             }
           }

@@ -117,7 +117,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
-              <CardTitle className="text-lg sm:text-xl">Something went wrong</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">
+                Something went wrong
+              </CardTitle>
               <CardDescription>
                 We encountered an unexpected error. Please try refreshing the
                 page or contact support if the problem persists.
@@ -162,9 +164,10 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 /**
- * Hook version of ErrorBoundary for functional components
+ * Hook version of ErrorBoundary for functional components (internal - currently unused)
  */
-export function withErrorBoundary<P extends object>(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   errorBoundaryProps?: Omit<Props, "children">
 ) {

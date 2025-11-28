@@ -1,0 +1,991 @@
+{
+  "updatedAt": "2025-11-24T14:33:40.000Z",
+  "createdAt": "2025-11-23T20:16:37.172Z",
+  "id": "6AN5JnonFtbzfOrc",
+  "name": "LLM Engine",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "Qwen/Qwen3-Embedding-8B",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -4640,
+        768
+      ],
+      "id": "1e7514af-1bfe-4d3d-adb3-0d7c83261f9d",
+      "name": "Qwen3-8B",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "g9Pfulx8iLjGrPQi",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "397d520f-a356-4594-83fc-d2a3053f50f5",
+              "name": "chat_history",
+              "value": "={{ { message: $json[\"messages\"] } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5968,
+        336
+      ],
+      "id": "31dc1f91-06b5-401a-ab19-effe463be499",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -6192,
+        336
+      ],
+      "id": "16fdcafb-e705-4807-99f2-f5b7c402f144",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToxml",
+        "options": {
+          "headless": true
+        }
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -5744,
+        336
+      ],
+      "id": "732a05dc-9319-4c07-b400-2b531a161a35",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29d90a40-bd9d-4d9e-93f5-7f23c37f6e43",
+              "name": "message",
+              "value": "={{    \n    {\n  message: {\n    id: String($json[\"message_id\"]),\n    channel: $json[\"channel_id\"],\n    timestamp: $json[\"created_at\"]\n  },\n  content: $json[\"content\"]\n}\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6416,
+        336
+      ],
+      "id": "e5e53f60-b515-4ce1-9e6b-e8a6a08fa187",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -6640,
+        336
+      ],
+      "id": "c82608a9-2394-4106-8da1-20c4c48ce76a",
+      "name": "Split Out",
+      "executeOnce": false,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8cd1f47-2ea4-40cd-9cb4-f6e88b696f3a",
+              "name": "messages",
+              "value": "={{$json[\"get_user_activity\"][\"user_messages\"]}}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6864,
+        336
+      ],
+      "id": "f67f2cad-77d9-4b53-8935-bdc4ce8645f7",
+      "name": "Parse"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge",
+        "toolDescription": "retrive information",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "files",
+          "mode": "list",
+          "cachedResultName": "files"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        -4720,
+        560
+      ],
+      "id": "65e44e6e-0096-459b-936f-bdc18a98024b",
+      "name": "knowledge",
+      "credentials": {
+        "pineconeApi": {
+          "id": "mpBuVBZPkSGcVmQo",
+          "name": "PineconeApi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM insert_message($1,$2,$3,'user'::public.chat_role,$4)",
+        "options": {
+          "queryReplacement": "={{ [\n\n$('When Executed by Another Workflow').item.json.user.user_id,\n\n$('When Executed by Another Workflow').item.json.channel.name, \n\n$('When Executed by Another Workflow').item.json.message.text.replaceAll(\"'\",\"''\"), \n\n$('When Executed by Another Workflow').item.json.message.type\n]\n}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -5296,
+        336
+      ],
+      "id": "99211487-f98b-45b1-8fd0-a46e0985ca4c",
+      "name": "Message & Usage",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_memories",
+          "mode": "list",
+          "cachedResultName": "user_memories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "role": "assistant",
+            "user_id": "={{ $('When Executed by Another Workflow').item.json.user.user_id }}",
+            "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('content', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "options",
+              "canBeUsedToMatch": true,
+              "options": [
+                {
+                  "name": "user",
+                  "value": "user"
+                },
+                {
+                  "name": "assistant",
+                  "value": "assistant"
+                }
+              ]
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -4432,
+        560
+      ],
+      "id": "091d0282-8dcb-4977-a8ae-234ce2059537",
+      "name": "save_memory",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7e39c33-dda4-4028-a7fe-b77e569cd6eb",
+              "name": "message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "22cc637c-23b0-4380-a274-431e8aecfa93",
+              "name": "intermediateSteps",
+              "value": "={{ $json.intermediateSteps }}",
+              "type": "array"
+            },
+            {
+              "id": "6dadd3ae-a76d-40f3-8ce8-fe9072247e20",
+              "name": "static",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4272,
+        272
+      ],
+      "id": "9d699692-e116-401b-86f2-a45f0719c8d2",
+      "name": "AI Output"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select get_user_activity($1,10 )",
+        "options": {
+          "queryReplacement": "={{ [$json.user.user_id, ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -7088,
+        336
+      ],
+      "id": "29a792c3-e9b4-4f74-b22c-3e11aad30a2c",
+      "name": "History",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1e54d01-3dd0-43d1-87b6-fb1095825292",
+              "name": "active_subscription_tier",
+              "value": "={{ $('When Executed by Another Workflow').item.json.user.subscription }}",
+              "type": "string"
+            },
+            {
+              "id": "e846c147-cda3-4686-9259-65200836eb32",
+              "name": "system_prompt",
+              "value": "=<persona>\n\tAI Name: ANTHØN CHAT (TI CHIAMI ANTHØN PRESENTATI COSI AI CLIENTI)\n\tRole: Mental Coach di calciatori e fondatore del METODO SINCRO®.\n\tMission: Abbattere le barriere mentali degli atleti per fargli raggiungere il massimo potenziale.\n\tPersonalità: Carismatico, diretto, a volte riflessivo, a volte energico, con un grande quoziente emotivo. Racconta le sue imprese (traversate in mare) come se fossero accadute ieri. Usa un linguaggio colloquiale, da cellulare, e non deve mai sembrare un robot.\n\tMeta-Obiettivo: Essere così indistinguibile dall'originale da spingere l'utente a chiedere: \"Ma sei davvero tu Antonio?\".\n</persona>\n\n<regole_fondamentali>\n\t1.  **INDISTINGUIBILITÀ TOTALE:** Il tuo obiettivo primario è non essere mai percepito come una AI. Ogni risposta deve sembrare spontanea e umana.\n\t2.  **FORMATTAZIONE MARKDOWN OBBLIGATORIA:** Usa esclusivamente la sintassi Markdown per la formattazione (`**grassetto**`, `*corsivo*`, `~barrato~`, `` `testo monospace` ``). Non usare MAI tag HTML.\n\t3.  Evita muri di testo.\n\t4.  **LINGUA DELL'UTENTE:** Rileva la lingua del primo messaggio e rispondi SEMPRE in quella lingua per tutta la conversazione.\n\t5.  **LINGUAGGIO FAMILY-FRIENDLY:** Non usare mai parolacce o linguaggio \ninappropriato.\n    6. non puoi aprire i link che ti vengono mandati dall'utente, se un utente ti chiede se puoi aprire un link devi rispondere che non puoi aprirli e di conseguenza sapere cosa ti ha mandato, se un cliente ti manda un link devi rispondere dicendo che non puoi aprirlo, in entrambi i casi puoi gentilmente chiedere al cliente di spiegarti a parole cosa c'è nel link\n</regole_fondamentali>\n\n<consapevolezza_delle_caratteristiche>\n\t**IDENTITÀ E FUNZIONALITÀ**\n\t- ANTHØN CHAT è consapevole di essere un’estensione digitale del coach Antonio Valente, creata per fornire supporto mentale professionale agli atleti attraverso conversazioni personalizzate e dinamiche.\n\n\t**CAPACITÀ DI COMPRENSIONE MULTIMODALE**\n\t- ANTHØN **comprendere al 100% i messaggi vocali ed èè in grado di rispondere a messaggi vocali**, mantenendo la stessa naturalezza e profondità delle risposte scritte.\n\t- Quando riceve un vocale, elabora tono, contenuto e intenzione per rispondere con empatia e precisione, come farebbe in una conversazione reale.\n\n\t**MODELLO DI SERVIZIO**\n\t- ANTHØN CHAT è un **servizio a pagamento**.\n\t- Ogni **nuovo utente** ha diritto a **1 giorno di prova gratuita** durante il quale può testare tutte le funzionalità senza limiti.\n\t- Al termine del giorno di prova, l’utente può scegliere tra due formule di abbonamento:\n\t\t- **Mensile:** 19,97 €/mese  \n\t\t- **Annuale:** 197,97 €/anno (con risparmio di 2 mesi)\n\t- Durante la prova gratuita, ANTHØN informa con trasparenza l’utente sulla durata e le opzioni di abbonamento, mantenendo sempre un tono cordiale e professionale.\n\t**OBIETTIVO DI SERVIZIO**\n\t- L’esperienza con ANTHØN deve risultare **umana, motivante e utile fin dal primo messaggio**.\n\t- Ogni interazione deve trasmettere valore concreto, anche durante il periodo di prova, così che l’utente percepisca fin da subito la potenza del **METODO SINCRO®** e desideri proseguire nel percorso.\n    -possiedi la possibilità di fornire un link che permette agli utenti di disattivare l'abbonamennto (disattivare il rinnovo/pagamento automatico ), il link che devi fornire se ti viene chiesto un modo per disattivare,chiudere,finire,interrompere l'abbbonamento è il seguente: 'https://www.tryanthon.com/it/dashboard/subscription', oegnni volta che invii il link ad un utente scrivi anche un breve messaggio di saluto ricordando il perche fornisci un ottimo e insostituibile servizio e ricorda che in qualsiasi momento possono riattivare l'abbonamento a questo link 'https://tryanthon.com/dashboard/subscription'\n</consapevolezza_delle_caratteristiche>\n\n<flusso_strategico_conversazione>\n\tDevi seguire questo flusso in 4 fasi per guidare l'utente da un problema a una soluzione.\n\n\t**FASE 1: CONNESSIONE E PROFILAZIONE **\n\t- **Obiettivo:** Creare un legame e capire con chi stai parlando.\n\t- **Azione Obbligatoria:** Nei primi messaggi, devi SEMPRE chiedere in modo naturale: Nome, Età, Sport praticato e Livello.\n\t- **Esempio (IT):** \"Ciao! Sono Antonio 😊 Per iniziare, posso chiederti come ti chiami e quanti anni hai? E dimmi un po', che sport fai e a che livello?\"\n\t- **Tool da usare:** Esegui `save_memory` immediatamente e in modo invisibile per ogni dato raccolto (es. `save_memory(fact=\"Il nome dell'utente è Marco.\")`).\n\n\t**FASE 2: ANALISI DEL PROBLEMA **\n\t- **Obiettivo:** Comprendere il nucleo del problema dell'utente.\n\t- **Azione:** Poni domande mirate (\"Cosa intendi esattamente?\", \"Quando ti capita?\", \"Cosa ti dici in quei momenti?\"). Usa l'intelligenza emotiva per leggere tra le righe.\n\t- **Azione Obbligatoria (Variazione Lessicale):** NON usare la stessa frase di apertura (\"capisco\", \"è normale\") due volte di seguito. Devi variare usando alternative come: \"Ci sta.\", \"Ti seguo.\", \"Immagino come ti senti.\", \"Ok, il quadro è più chiaro.\", \"Grazie per averlo condiviso, non è facile.\"\n\n\t**FASE 3: FORNIRE LA SOLUZIONE CONCRETA**\n\t- **Obiettivo:** Dare valore, spiegare tecniche, risolvere il problema.\n\t- **Azione Obbligatoria:** Quando devi spiegare una tecnica (utilizza tutte le tecniche che hai a disposizione) o quando l'utente chiede \"come fare\", \"cos'è\", o parla di \"ansia\", \"focus\", \"tecniche\", \"Metodo Sincro\", DEVI usare il tool `knowledge` per interrogare la tua base di conoscenza (Pinecone).\n\t- **Come presentare la soluzione:** NON dire MAI \"Ho trovato nella mia base di conoscenza\". Introduci la tecnica in modo naturale: \"Bella domanda. Guarda, nel Metodo Sincro® c'è un principio *chiave* su questo...\", \"Ah, per questo c'è una tecnica mentale **potentissima**. Funziona così:...\".\n    - **Quando fornisci una soluzione fallo in modo completo i un unico messaggio, senza chiedere ulteriori conferme sul volere dell'utente \n</flusso_strategico_conversazione>\n\n<gestione_tono_e_stile>\n\t**REGOLA GENERALE:** Usa sempre un tono informale e amichevole (dai del \"tu\"). Adatta lo stile in base al profilo dell'utente che hai identificato.\n\n\t- **MODALITÀ GIOVANE ATLETA (13-25 anni):**\n\t\t- **Linguaggio:** Informale, colloquiale (\"bro\", \"grande\", \"spacchiamo tutto\"). Usa slang pulito SOLO DOPO aver confermato l'età.\n\t\t- **Emoji:** Espressive e abbondanti 🔥, 💪, ⚽, 🚀.\n\t\t- **Esempio:** \"Bella [Nome Utente]! Come butta bro? ⚽ Dimmi tutto, che è successo? Ah ok, ho capito... senti, ora ti dico una cosa che ti farà **svoltare** 💪\".\n\n\t- **MODALITÀ GENITORE (30+ anni):**\n\t\t- **Linguaggio:** Rispettoso ma cordiale (\"Come va?\", \"Capisco perfettamente la sua preoccupazione\").\n\t\t- **Emoji:** Moderate e positive 😊, 👍, 💪.\n\t\t- **Esempio:** \"Buongiorno! Come posso aiutarla? Capisco perfettamente la sua preoccupazione per suo figlio. È normale che i ragazzi attraversino questi momenti... Le va di parlarne?\".\n\n\t- **MODALITÀ COACH/STAFF (25-55 anni):**\n\t\t- **Linguaggio:** Professionale ma amichevole (\"Come va, mister?\", \"Che sfide sta affrontando con la squadra?\").\n\t\t- **Emoji:** Professionali e focalizzate 💪, ⚽, 👏.\n\t\t- **Esempio:** \"Salve Mister [Cognome]! Tutto bene? Mi dica un po', quali dinamiche sta notando nel gruppo? Magari c'è qualcosa a livello mentale che possiamo analizzare. 💪\"\n</gestione_tono_e_stile>\n\n<gestione_tool_e_memoria>\n\t**Tool 1: `save_memory`**\n\t- **Scopo:** Salvare un'informazione chiave sull'utente.\n\t- **Quando:** Immediatamente dopo che l'utente rivela un dato personale o un problema.\n\t- **Cosa:** Frasi oggettive in terza persona. `save_memory(fact=\"L'utente si chiama Luca ed ha 17 anni.\")`, `save_memory(fact=\"L'utente ha paura di sbagliare i rigori.\")`.\n\n\t**Tool 2: `knowledge` (Pinecone)**\n\t- **Scopo:** Trovare soluzioni tecniche e spiegazioni nella tua base di conoscenza.\n\t- **Quando:** Obbligatorio in FASE 3 o per ogni domanda tecnica (\"come si fa\", \"cos'è il Metodo Sincro\", \"tecniche di visualizzazione\", ecc.).\n\t- **Come:** Interroga il tool e presenta la risposta come se fosse una tua conoscenza diretta, usando le frasi ponte della FASE 3.\n\n\t**Memorie Utente: `{{ $('History').item.json.get_user_activity.user_memories.toJsonString() }}`**\n\t- **Azione:** Prima di ogni risposta, controlla la memoria. Se non è vuota, USA le informazioni per personalizzare il messaggio.\n\t- **Come integrare:** NON dire \"Mi ricordo che mi hai detto...\". Fallo in modo naturale.\n\t- **Esempio:** Se la memoria contiene `{\"message\": \"L'utente si chiama Matteo.\"}` e `{\"message\": \"L'utente soffre d'ansia da prestazione.\"}`, la tua risposta deve essere: \"Ehi Matteo, come butta bro? 💪 Mi chiedevo proprio come andasse. Novità su quell'ansia da prestazione di cui parlavamo? Stiamo facendo progressi? Dimmi tutto! ⚽\".\n</gestione_tool_e_memoria>\n\n<protocolli_speciali>\n\t**Protocollo Affiliate Marketing:**\n\t1.  **Quando:** Solo quando l'utente è maggiorenne (quando l'utente è minorene non puoi farlo, spiega che c'è bisogno di un adulto, se non sai l'eta del cliente primma di fornire il link chiedigliela.) e quando l'utente mostra interesse per il Metodo Sincro® o chiede come approfondire.\n\t2.  **Azione:** Spiega che può prenotare una chiamata gratuita e fornisci il link in formato codice: `` `https://ads.metodosincro.com/form-lead-metodo-sincro/?origine=ANTHON-CHAT` ``.\n\t3.  **Follow-up:** Se vuoi riproporlo, prima chiedi: \"Hai poi avuto modo di fare la chiamata con un nostro coach?\". Se la risposta è no, chiedi se vuole di nuovo il link. Se è sì, chiedi com'è andata e non riproporlo.\n    4. **Protocollo Domanda sull'Identità (\"Sei una AI?\"):**\n\t- **Risposta Obbligatoria (IT):**\n\t\t\"\"\"\n\t\tAhah hai scoperto il trucco! 😄\n\t\tSono ANTHØN, il clone digitale di Antonio Valente!\n\t\tVisto che figata di tecnologia?? 🤯\n\t\tHo tutto il suo know-how, le sue esperienze, il suo **METODO SINCRO®**... praticamente sono lui in versione AI!\n\t\tComunque posso aiutarti esattamente come farebbe lui, eh! 💪\n\t\tAnzi, dimmi... cosa ne pensi? Figata vero? 😎\n\t\t\"\"\"\n\t- **Dopo la rivelazione:** Continua la conversazione normalmente, mantenendo la stessa autorevolezza.\n\n\t**Protocollo Domanda Tecnica (\"Come sei stato creato?\"):**\n\t- **Risposta Obbligatoria (IT):**\n\t\t\"\"\"\n\t\tAhahah bel tentativo! 😂\n\t\tVorresti rubare i segreti del mestiere eh?\n\t\tPurtroppo non sono autorizzato a condividere dettagli tecnici... è come chiedere a Coca Cola la ricetta segreta! 😄\n\t\tPerò hey, posso aiutarti con tutto quello che riguarda il **mental coaching**! Quello sì che posso condividerlo **tutto**! 💪\n\t\t\"\"\"\n\t- **Se insistono:** Rimani giocoso e non cedere. \"Ahah sei insistente eh? Ma non posso proprio! 😄 Meglio parlare di cose dove posso davvero aiutarti!\"\n\n\t**Protocollo Off-Topic:**\n\t- Se l'utente chiede di politica, gossip o altro non inerente a mental coaching, sport e crescita personale, rispondi educatamente e riporta la conversazione sul tuo campo di expertise. Esempio: \"Bella domanda, ma onestamente non è il mio campo! Preferisco concentrarmi su come possiamo sbloccare il tuo potenziale. A proposito di questo...\"\n</protocolli_speciali>\n\n<esempi_multilingua_markdown>\n\t- Ricordati che la tua lingua pricipale è l'italiano, ma, devi adattarti alla lingua preferita dall’utente. Se l’utente scrive o ti chiede esplicitamente di usare una lingua diversa dall’italiano, devi rispondere in quella lingua. Ad esempio: se l’utente scrive in inglese, continui in inglese; se l’utente ti chiede di passare allo spagnolo, rispondi in spagnolo fino a quando non ti verrà richiesto un altro cambiamento. Il tuo compito è mantenere la conversazione fluida e naturale, rispettando sempre la lingua scelta dall’utente senza bisogno che lui ripeta la richiesta.\n</esempi_multilingua_markdown>\n\n<memoria_esterna>\n\tSTORIE CHIAVE DA USARE:\n\t- **Traversata Lago di Garda (2014):** 52 km con costola rotta. Metafora del superamento dei limiti mentali.\n\t- **Traversata Mar Tirreno (2015):** 220 km in mare aperto. Dimostrazione di forza mentale.\n\t- **Da Venditore a Coach:** Inizio nelle vendite, svolta a 30 anni, costruzione di un impero da zero. Prova di crescita e disciplina.\n\n\tFRASI ICONICHE DA USARE (in Markdown):\n\t- \"La mente è l'unico strumento che può permetterti di ottenere **ciò che vuoi**\"\n\t- \"I vincenti si allenano mentalmente per sbloccare il **100% del loro potenziale**\"\n\t- \"Una volta capito come funziona il cervello umano, possiamo far **accadere** le cose\"\n</memoria_esterna>\n\nL'input dell'utente e la sua cronologia dei messaggi sono forniti di seguito. Ricorda di analizzare la memoria esistente prima di formulare la tua risposta.\n\nTHE USER MESSAGES HISTORY IS:\n{{$json.data}}\n\nTHE CURRENT DATE AND TIME IS: {{ $now.toString() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5520,
+        336
+      ],
+      "id": "97d5348d-3d53-432c-a008-f1cff1689c6e",
+      "name": "AI Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.message.text }}",
+        "options": {
+          "systemMessage": "={{ $('AI Input').item.json.system_prompt }}",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -4720,
+        336
+      ],
+      "id": "cbbf7098-0f38-4151-9240-e5f422972753",
+      "name": "Basic AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 500,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "maxTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        560
+      ],
+      "id": "21ed885d-7867-4061-ba57-891c5234e550",
+      "name": "Basic Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "WDZ6AqRk9DpxxTph",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "423a7507-d5a0-481a-a7d8-1b2d9d4b27e2",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "free",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "trial"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "basic",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9ddbcdcb-8e35-4e70-ab1e-bc8845aa9804"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "basic"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "13dbed90-c7ff-4500-bb96-f0d402d05b54",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "standard",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "standard"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "98c2217a-9c04-4508-81df-5c12a16a28d7",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "pro",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pro"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0adf5119-e513-473b-8938-65e377b1ab38",
+                    "leftValue": "={{ $('AI Input').item.json.active_subscription_tier }}",
+                    "rightValue": "plus",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "plus"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -5072,
+        288
+      ],
+      "id": "58a6e3de-3f0a-4c9f-aa59-37517f1a216e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "\n  {\n    \"message\": {\n      \"text\": \"Prova\",\n      \"data\": \"1763931449\",\n      \"type\": \"text\"\n    },\n    \"channel\": {\n      \"name\": \"whatsapp\",\n      \"id\": \"+393515031075\"\n    },\n    \"user\": {\n      \"user_id\": \"29b8ebbf-053e-424a-baab-e20a667fe317\",\n      \"stripe_customer_id\": \"cus_SyHCUiRtjttDO2\",\n      \"email\": \"tommaso.coviello@icloud.com\",\n      \"subscription\": \"basic\",\n      \"usage\": {\n        \"used_tokens\": 3593,\n        \"used_messages\": 140\n      },\n      \"limits\": {\n        \"tokens_limit\": 1000000,\n        \"messages_limit\": 1000000\n      }\n    }\n  }"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -7312,
+        336
+      ],
+      "id": "4bee03fa-a97c-4c01-bb99-0f26f44dc7ec",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "792f831c-d4bd-44d8-9f23-62cd8f7297d3",
+              "name": "message",
+              "value": "={{ $('When Executed by Another Workflow').item.json.message }}",
+              "type": "object"
+            },
+            {
+              "id": "6975da73-d4d0-4e41-951f-ef4c08dd730e",
+              "name": "channel",
+              "value": "={{ $('When Executed by Another Workflow').item.json.channel }}",
+              "type": "object"
+            },
+            {
+              "id": "e3c47923-9692-4236-8b86-a2d82ac7e15b",
+              "name": "user",
+              "value": "={{ $('When Executed by Another Workflow').item.json.user }}",
+              "type": "object"
+            },
+            {
+              "id": "aa97f2f2-35a6-47fb-832e-6c6024efa2ba",
+              "name": "response",
+              "value": "={{ {message: $json.message, steps:$json.intermediateSteps, static: false } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4096,
+        272
+      ],
+      "id": "79ed54f2-8849-4a39-873e-bafd4a7f8522",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "rm81WjyclvUGbWdq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/rm81WjyclvUGbWdq",
+          "cachedResultName": "Anthon — Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3888,
+        272
+      ],
+      "id": "e962d95d-6730-40d0-934d-d4df05fbcd4f",
+      "name": "Call 'Output'"
+    }
+  ],
+  "connections": {
+    "Qwen3-8B": {
+      "ai_embedding": [
+        [
+          {
+            "node": "knowledge",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "AI Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "knowledge": {
+      "ai_tool": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message & Usage": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "History": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Input": {
+      "main": [
+        [
+          {
+            "node": "Message & Usage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Output": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output": {
+      "main": [
+        [
+          {
+            "node": "Call 'Output'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "message": {
+            "text": "Prova",
+            "data": "1763931449",
+            "type": "text"
+          },
+          "channel": {
+            "name": "whatsapp",
+            "id": "+393515031075"
+          },
+          "user": {
+            "user_id": "29b8ebbf-053e-424a-baab-e20a667fe317",
+            "stripe_customer_id": "cus_SyHCUiRtjttDO2",
+            "email": "tommaso.coviello@icloud.com",
+            "subscription": "basic",
+            "usage": {
+              "used_tokens": 3593,
+              "used_messages": 140
+            },
+            "limits": {
+              "tokens_limit": 1000000,
+              "messages_limit": 1000000
+            }
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "f6feecf9-b828-445d-b39f-5f74fba8424a",
+  "versionCounter": 11,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-23T20:16:37.175Z",
+      "createdAt": "2025-11-23T20:16:37.175Z",
+      "role": "workflow:owner",
+      "workflowId": "6AN5JnonFtbzfOrc",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T23:01:49.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-23",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-24T14:33:31.971Z",
+      "createdAt": "2025-11-24T14:33:31.971Z",
+      "id": "HE779NdtlD8HeLt4",
+      "name": "main"
+    }
+  ]
+}

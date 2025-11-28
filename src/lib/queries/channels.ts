@@ -1,13 +1,7 @@
 // lib/queries/channels.ts
 
 import { createClient } from "@/lib/db/server";
-import type {
-  Channel,
-  UserChannel,
-  UserChannelInsert,
-  UserChannelUpdate,
-  UserChannelWithChannel,
-} from "@/lib/types/channels";
+import type { Channel, UserChannelWithChannel } from "@/lib/types/channels";
 
 /**
  * Fetches the channels a user is connected to, along with details
@@ -67,36 +61,11 @@ export async function getAllChannels(): Promise<Channel[]> {
     .eq("is_active", true);
 
   if (error) {
-    console.error("Error fetching all channels", { error, });
+    console.error("Error fetching all channels", { error });
     throw error;
   }
 
   return data || [];
-}
-
-/**
- * Checks if a specific user is connected to a specific channel.
- */
-export async function getChannelConnectionStatus(
-  userId: string,
-  channelId: string
-): Promise<Pick<UserChannel, "id" | "verified_at"> | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("user_channels")
-    .select("id, verified_at") // Selecting specific columns is better than '*'
-    .eq("user_id", userId)
-    .eq("channel_id", channelId)
-    .single();
-
-  if (error && error.code !== "PGRST116") {
-    // PGRST116 means 'no rows found', which is a valid result here.
-    console.error("Error getting channel connection status", { error, channelId, userId });
-    throw error;
-  }
-
-  return data;
 }
 
 /**
@@ -115,62 +84,13 @@ export async function deleteUserChannel(
     .eq("user_id", userId); // Ensure user can only delete their own channels
 
   if (error) {
-    console.error("Error deleting user channel", { error, userChannelId, userId });
+    console.error("Error deleting user channel", {
+      error,
+      userChannelId,
+      userId,
+    });
     throw error;
   }
 
   console.info("User channel deleted successfully", { userChannelId, userId });
-}
-
-/**
- * Creates a new user channel connection.
- */
-export async function createUserChannel(
-  userChannelData: UserChannelInsert
-): Promise<UserChannel> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("user_channels")
-    .insert(userChannelData)
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("Error creating user channel", {
-      error,
-      userChannelData,
-    });
-    throw error;
-  }
-
-  return data;
-}
-
-/**
- * Updates a user channel connection.
- */
-export async function updateUserChannel(
-  userChannelId: string,
-  updates: UserChannelUpdate
-): Promise<UserChannel> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("user_channels")
-    .update(updates)
-    .eq("id", userChannelId)
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("Error updating user channel", {
-      error,
-      userChannelId,
-      updates,
-    });
-    throw error;
-  }
-
-  return data;
 }

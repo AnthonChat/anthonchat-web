@@ -25,7 +25,7 @@ export type CurrentUser = {
  * Get the current authenticated user from Supabase (server-side).
  * Returns null if not authenticated.
  */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+async function getCurrentUser(): Promise<CurrentUser | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.getUser();
@@ -40,12 +40,14 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
  * By default uses a normal server client (subject to RLS). If RLS is not yet configured,
  * you can temporarily set useServiceRole = true.
  */
-export async function isAdmin(
+async function isAdmin(
   userId: string,
   options?: { useServiceRole?: boolean }
 ): Promise<boolean> {
   const useServiceRole = options?.useServiceRole === true;
-  const supabase = useServiceRole ? createServiceRoleClient() : await createClient();
+  const supabase = useServiceRole
+    ? createServiceRoleClient()
+    : await createClient();
 
   const { data, error } = await supabase
     .from("admins")
@@ -83,10 +85,16 @@ export async function requireAdmin(locale?: string): Promise<CurrentUser> {
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
     if (user.email && envList.includes(user.email.toLowerCase())) {
-      console.warn("[ADMIN:requireAdmin] allowed via ADMIN_EMAILS fallback", { userId: user.id, email: user.email });
+      console.warn("[ADMIN:requireAdmin] allowed via ADMIN_EMAILS fallback", {
+        userId: user.id,
+        email: user.email,
+      });
       return user;
     }
-    console.warn("[ADMIN:requireAdmin] not admin", { userId: user.id, email: user.email });
+    console.warn("[ADMIN:requireAdmin] not admin", {
+      userId: user.id,
+      email: user.email,
+    });
     // Hide existence of admin resources
     notFound();
   }

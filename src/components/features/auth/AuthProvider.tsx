@@ -2,16 +2,13 @@
 
 import React, { createContext, useContext, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import type {
-  AuthContextValue,
-  AuthError
-} from "@/lib/auth/types";
+import type { AuthContextValue, AuthError } from "@/lib/auth/types";
 
 // Import delle utility functions e enums dai tipi
 import {
   AuthErrorType,
   createAuthError as createError,
-  supabaseErrorToAuthError as convertSupabaseError
+  supabaseErrorToAuthError as convertSupabaseError,
 } from "@/lib/auth/types";
 
 /**
@@ -47,18 +44,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const structuredError: AuthError | null = useMemo(() => {
     if (!hookError) return null;
-    
+
     // Se è già un AuthError strutturato, restituiscilo
-    if (typeof hookError === 'object' && 'type' in hookError) {
+    if (typeof hookError === "object" && "type" in hookError) {
       return hookError as AuthError;
     }
-    
+
     // Converte errore string in AuthError strutturato
-    return createError(
-      AuthErrorType.UNKNOWN_ERROR,
-      hookError,
-      { details: { source: 'useAuth_hook' } }
-    );
+    return createError(AuthErrorType.UNKNOWN_ERROR, hookError, {
+      details: { source: "useAuth_hook" },
+    });
   }, [hookError]);
 
   /**
@@ -69,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await hookSignOut();
     } catch (error) {
       // L'errore è già gestito dal hook, ma possiamo aggiungere logging
-      console.error('AuthProvider: SignOut error:', error);
+      console.error("AuthProvider: SignOut error:", error);
       throw convertSupabaseError(error);
     }
   }, [hookSignOut]);
@@ -81,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       return await hookRefreshSession();
     } catch (error) {
-      console.error('AuthProvider: RefreshSession error:', error);
+      console.error("AuthProvider: RefreshSession error:", error);
       throw convertSupabaseError(error);
     }
   }, [hookRefreshSession]);
@@ -90,7 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Funzione per settare errore strutturato (placeholder per future implementazioni)
    */
   const setError = useCallback((error: AuthError) => {
-    console.error('AuthProvider: Manual error set:', error);
+    console.error("AuthProvider: Manual error set:", error);
     // Per ora loggiamo, in futuro potremmo estendere useAuth per supportare questo
   }, []);
 
@@ -113,7 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated,
       error: structuredError,
       isInitialized: !isLoading, // Considera inizializzato quando non è in loading
-      
+
       // Actions
       signOut,
       refreshSession,
@@ -134,26 +129,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
 /**
- * Hook per accedere al context di autenticazione
+ * Hook per accedere al context di autenticazione (internal)
  * @returns AuthContextValue con state e actions
  * @throws Error se usato fuori da AuthProvider
  */
-export function useAuthContext(): AuthContextValue {
+function useAuthContext(): AuthContextValue {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error(
-      'useAuthContext deve essere usato all\'interno di un AuthProvider'
+      "useAuthContext deve essere usato all'interno di un AuthProvider"
     );
   }
-  
+
   return context;
 }
 
@@ -162,15 +155,9 @@ export function useAuthContext(): AuthContextValue {
  * Utile per componenti che hanno solo bisogno di leggere lo stato
  */
 export function useAuthState() {
-  const { 
-    user, 
-    session, 
-    isLoading, 
-    isAuthenticated, 
-    error, 
-    isInitialized 
-  } = useAuthContext();
-  
+  const { user, session, isLoading, isAuthenticated, error, isInitialized } =
+    useAuthContext();
+
   return {
     user,
     session,
@@ -186,13 +173,8 @@ export function useAuthState() {
  * Utile per componenti che hanno solo bisogno di eseguire azioni
  */
 export function useAuthActions() {
-  const { 
-    signOut, 
-    refreshSession, 
-    clearError, 
-    setError 
-  } = useAuthContext();
-  
+  const { signOut, refreshSession, clearError, setError } = useAuthContext();
+
   return {
     signOut,
     refreshSession,
@@ -202,22 +184,23 @@ export function useAuthActions() {
 }
 
 /**
- * HOC per proteggere componenti che richiedono autenticazione
+ * HOC per proteggere componenti che richiedono autenticazione (internal - currently unused)
  * @param Component - Componente da proteggere
  * @returns Componente wrappato con protezione auth
  */
-export function withAuth<P extends object>(Component: React.ComponentType<P>) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function withAuth<P extends object>(Component: React.ComponentType<P>) {
   return function AuthProtectedComponent(props: P) {
     const { isAuthenticated, isLoading } = useAuthState();
-    
+
     if (isLoading) {
       return <div>Caricamento...</div>;
     }
-    
+
     if (!isAuthenticated) {
       return <div>Accesso richiesto</div>;
     }
-    
+
     return <Component {...props} />;
   };
 }

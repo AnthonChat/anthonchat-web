@@ -2,14 +2,14 @@
  * Redirect helper utilities for preserving parameters across navigation
  */
 
-import { buildUrlWithParams } from './url-params';
-import { sanitizeChannelLinkingParams } from './sanitization';
+import { buildUrlWithParams } from "./url-params";
+import { sanitizeChannelLinkingParams } from "./sanitization";
 
 /**
  * Supported locales in the application
  */
-const SUPPORTED_LOCALES = ['en', 'it'] as const;
-type SupportedLocale = typeof SUPPORTED_LOCALES[number];
+const SUPPORTED_LOCALES = ["en", "it"] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 /**
  * Check if a locale is supported
@@ -36,7 +36,7 @@ export function buildRedirectUrl(
     locale?: string;
   } = {}
 ): string {
-  const { baseUrl = '', preserveEmpty = false, locale } = options;
+  const { baseUrl = "", preserveEmpty = false, locale } = options;
 
   // Sanitize parameters
   const sanitizedParams = sanitizeChannelLinkingParams(params);
@@ -46,12 +46,16 @@ export function buildRedirectUrl(
   if (locale && isSupportedLocale(locale)) {
     // Ensure path starts with locale
     if (!targetPath.startsWith(`/${locale}`)) {
-      fullPath = `/${locale}${targetPath.startsWith('/') ? '' : '/'}${targetPath}`;
+      fullPath = `/${locale}${
+        targetPath.startsWith("/") ? "" : "/"
+      }${targetPath}`;
     }
   }
 
   // Combine base URL with path
-  const fullUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}${fullPath}` : fullPath;
+  const fullUrl = baseUrl
+    ? `${baseUrl.replace(/\/$/, "")}${fullPath}`
+    : fullPath;
 
   // Add parameters
   return buildUrlWithParams(fullUrl, sanitizedParams, {
@@ -61,14 +65,11 @@ export function buildRedirectUrl(
 }
 
 /**
- * Preserve specific parameters across redirects
- * @param currentParams - Current URL parameters
- * @param paramsToPreserve - List of parameter names to preserve
- * @returns Filtered parameters object
+ * Preserve specific parameters across redirects (internal helper)
  */
-export function preserveParams(
+function preserveParams(
   currentParams: Record<string, string | null | undefined>,
-  paramsToPreserve: string[] = ['link', 'channel', 'message']
+  paramsToPreserve: string[] = ["link", "channel", "message"]
 ): Record<string, string | null | undefined> {
   const preserved: Record<string, string | null | undefined> = {};
 
@@ -82,50 +83,15 @@ export function preserveParams(
 }
 
 /**
- * Get locale-aware redirect path
- * @param path - Base path
- * @param locale - Target locale
- * @param options - Path options
- * @returns Locale-aware path
- */
-export function getRedirectPath(
-  path: string,
-  locale?: string,
-  options: {
-    fallbackLocale?: string;
-    removeLocaleFromPath?: boolean;
-  } = {}
-): string {
-  const { fallbackLocale = 'en', removeLocaleFromPath = false } = options;
-
-  // Remove existing locale from path if requested
-  if (removeLocaleFromPath) {
-    const pathWithoutLocale = path.replace(/^\/[a-z]{2}(\/|$)/, '/');
-    path = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
-  }
-
-  // Determine target locale
-  const targetLocale = locale && isSupportedLocale(locale) ? locale : fallbackLocale;
-
-  // Add locale to path
-  if (path === '/') {
-    return `/${targetLocale}`;
-  }
-
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `/${targetLocale}${cleanPath}`;
-}
-
-/**
  * Common redirect destinations for the application
  */
 export const REDIRECT_PATHS = {
-  LOGIN: '/login',
-  SIGNUP: '/signup',
-  SIGNUP_COMPLETE: '/signup/complete',
-  DASHBOARD: '/dashboard',
-  CHANNELS: '/dashboard/channels',
-  HOME: '/',
+  LOGIN: "/login",
+  SIGNUP: "/signup",
+  SIGNUP_COMPLETE: "/signup/complete",
+  DASHBOARD: "/dashboard",
+  CHANNELS: "/dashboard/channels",
+  HOME: "/",
 } as const;
 
 /**
@@ -162,11 +128,11 @@ export function buildDashboardRedirectUrl(
   } = {},
   locale?: string
 ): string {
-  const redirectParams = { ...preserveParams(params, ['channel']) };
+  const redirectParams = { ...preserveParams(params, ["channel"]) };
 
   // Add context parameters
   if (context.channelLinked) {
-    redirectParams.channel_linked = 'true';
+    redirectParams.channel_linked = "true";
   }
 
   if (context.error) {
@@ -177,7 +143,9 @@ export function buildDashboardRedirectUrl(
     redirectParams.success = context.success;
   }
 
-  return buildRedirectUrl(REDIRECT_PATHS.DASHBOARD, redirectParams, { locale });
+  return buildRedirectUrl(REDIRECT_PATHS.DASHBOARD, redirectParams, {
+    locale,
+  });
 }
 
 /**
@@ -196,7 +164,7 @@ export function buildLoginRedirectUrl(
   if (params.channel) {
     redirectParams.channel = params.channel;
   }
-  
+
   if (params.link) {
     redirectParams.link = params.link;
   }
@@ -229,94 +197,18 @@ export function buildSignupCompleteRedirectUrl(
 
   // Add context parameters
   if (context.skipOnboarding) {
-    redirectParams.skip_onboarding = 'true';
+    redirectParams.skip_onboarding = "true";
   }
 
   if (context.channelLinkingError) {
-    redirectParams.channel_error = 'true';
+    redirectParams.channel_error = "true";
   }
 
   if (context.fallbackOptions) {
-    redirectParams.show_fallback = 'true';
+    redirectParams.show_fallback = "true";
   }
 
-  return buildRedirectUrl(REDIRECT_PATHS.SIGNUP_COMPLETE, redirectParams, { locale });
-}
-
-/**
- * Extract locale from current path
- * @param path - Current path
- * @returns Extracted locale or null
- */
-export function extractLocaleFromPath(path: string): string | null {
-  const match = path.match(/^\/([a-z]{2})(\/|$)/);
-  if (match && isSupportedLocale(match[1])) {
-    return match[1];
-  }
-  return null;
-}
-
-/**
- * Build cross-page navigation URL with parameter preservation
- * @param fromPath - Current path
- * @param toPath - Target path
- * @param params - Parameters to preserve
- * @returns Navigation URL with preserved parameters
- */
-export function buildCrossPageUrl(
-  fromPath: string,
-  toPath: string,
-  params: Record<string, string | null | undefined> = {}
-): string {
-  // Extract locale from current path
-  const currentLocale = extractLocaleFromPath(fromPath);
-  
-  // Preserve channel linking parameters
-  const preservedParams = preserveParams(params);
-
-  return buildRedirectUrl(toPath, preservedParams, { locale: currentLocale || undefined });
-}
-
-/**
- * Validate redirect URL for security
- * @param url - URL to validate
- * @param allowedDomains - Allowed domains for external redirects
- * @returns True if safe to redirect, false otherwise
- */
-export function isValidRedirectUrl(
-  url: string,
-  allowedDomains: string[] = []
-): boolean {
-  try {
-    const parsedUrl = new URL(url);
-    
-    // Allow relative URLs (same origin)
-    if (!parsedUrl.host) {
-      return true;
-    }
-
-    // Check if domain is in allowed list
-    return allowedDomains.includes(parsedUrl.hostname);
-  } catch {
-    // If URL parsing fails, only allow if it looks like a relative path
-    return url.startsWith('/') && !url.startsWith('//');
-  }
-}
-
-/**
- * Create a safe redirect function that validates URLs
- * @param url - Target URL
- * @param fallbackUrl - Fallback URL if target is invalid
- * @param allowedDomains - Allowed domains for external redirects
- * @returns Safe redirect URL
- */
-export function createSafeRedirect(
-  url: string,
-  fallbackUrl: string = '/',
-  allowedDomains: string[] = []
-): string {
-  if (isValidRedirectUrl(url, allowedDomains)) {
-    return url;
-  }
-  return fallbackUrl;
+  return buildRedirectUrl(REDIRECT_PATHS.SIGNUP_COMPLETE, redirectParams, {
+    locale,
+  });
 }

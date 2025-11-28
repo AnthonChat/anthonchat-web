@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  },
+  "tags": ["-lintignore"],
+  "entry": ["src/i18n/request.ts"],
+  "ignore": [
+    "scripts/backfill.ts",
+    "scripts/stripe-sync-engine.ts",
+    "src/components/ui/**",
+    "src/lib/db/schemas/**",
+    "src/components/features/accessibility/index.ts",
+    "src/lib/stripe.ts",
+    "src/lib/types/**"
+  ],
+  "ignoreDependencies": [
+    "eslint",
+    "eslint-config-next",
+    "@supabase/stripe-sync-engine",
+    "server-only"
+  ],
+  "ignoreBinaries": ["supabase", "tree"]
+}

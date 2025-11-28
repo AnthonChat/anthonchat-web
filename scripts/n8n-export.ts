@@ -109,6 +109,12 @@ async function exportWorkflows() {
 				await fs.mkdir(outputDir, { recursive: true });
 			}
 
+			const hasMainTag = tags.some((t: any) => t.name === "main");
+			if (hasMainTag) {
+				outputDir = path.join(n8nDir, "Main");
+				await fs.mkdir(outputDir, { recursive: true });
+			}
+
 			const filePath = path.join(outputDir, filename);
 
 			await fs.writeFile(filePath, JSON.stringify(fullWorkflow, null, 2));

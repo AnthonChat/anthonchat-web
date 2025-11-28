@@ -1,0 +1,997 @@
+{
+  "updatedAt": "2025-11-24T14:33:33.000Z",
+  "createdAt": "2025-11-23T20:16:53.100Z",
+  "id": "rm81WjyclvUGbWdq",
+  "name": "Output",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5d999de-d975-4cf4-a789-dd37446dd165",
+              "name": "response",
+              "value": "={{$json.response.message.removeTags()}}",
+              "type": "string"
+            },
+            {
+              "id": "461c857c-f0e5-49f1-a755-d5e3f3514461",
+              "name": "channel",
+              "value": "={{ $json.channel.name }}",
+              "type": "string"
+            },
+            {
+              "id": "e9c6d48f-332d-456c-9672-289af47334dc",
+              "name": "link",
+              "value": "={{ $json.channel.id }}",
+              "type": "string"
+            },
+            {
+              "id": "94f429c2-8fad-4000-ae5d-2c670be81c61",
+              "name": "static",
+              "value": "={{$json.response.static}}",
+              "type": "boolean"
+            },
+            {
+              "id": "14d6aeac-2c10-477f-96bd-fb36566f9319",
+              "name": "user_id",
+              "value": "={{ $json.user.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "7de7111e-b49a-43cd-bbae-bcc176ea07db",
+              "name": "message",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        192
+      ],
+      "id": "3ff6aed8-e5c9-4045-bbd7-f7a47d36ee0d",
+      "name": "Pre Response Normalize1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b4384382-7926-4455-aeb1-08f64833276e",
+              "leftValue": "={{ $json.static }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1440,
+        288
+      ],
+      "id": "49eaef04-254e-42b7-ace6-45431792d7c0",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM insert_message($1,$2,$3,'assistant'::public.chat_role,'text')",
+        "options": {
+          "queryReplacement": "={{ [$('Pre Response Normalize1').item.json.user_id, $('Pre Response Normalize1').item.json.channel, $('Pre Response Normalize1').item.json.response] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -544,
+        288
+      ],
+      "id": "5841c3f0-53b2-4a93-bcda-6a65a947cf1e",
+      "name": "Assistent Insert",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * \nFROM insert_message($1, $2, $3, 'assistant'::public.chat_role, 'audio')",
+        "options": {
+          "queryReplacement": "={{ [$('Pre Response Normalize1').item.json.user_id, $('Pre Response Normalize1').item.json.channel, $('Pre Response Normalize1').item.json.response] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        192
+      ],
+      "id": "024bc5dd-06ac-43ae-be6f-2ffb28ce2a46",
+      "name": "Assistent Insert1",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "379ff713-a53b-4a94-b298-7a9ed4775bf7",
+              "leftValue": "={{\n  (() => {\n    const t = $json.last_vocal_ts;\n    const diff = DateTime.now().diff(DateTime.fromISO(t), \"hours\").hours;\n    return isNaN(diff) ? 1 : diff;\n  })()\n}}\n",
+              "rightValue": "={{ 5/60 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "bcfe70da-39e4-4d03-ac34-83e302f9ab9f",
+              "leftValue": "={{ $json.vocali_7gg * 1 + ($json.vocali_30gg -  $json.vocali_7gg) * 0.5 }}",
+              "rightValue": 7,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "51c13a54-8151-4e4a-8e5a-82f344cc022e",
+              "leftValue": "={{ $('Channel Swithc').item.json.message.length }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "e521396b-ceaf-4b06-9225-68a3b8c8df23",
+              "leftValue": "={{ $('Channel Swithc').item.json.response.length() }}",
+              "rightValue": 500,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "8fe57267-8486-4a63-a730-d8d70aa66ed5",
+              "leftValue": "={{Math.random()>0.75;\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -992,
+        224
+      ],
+      "id": "09740b52-43fb-4597-9c8e-e328f4280ff0",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.get_vocal_stats($1)",
+        "options": {
+          "queryReplacement": "={{ $json.user_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        224
+      ],
+      "id": "e740be98-d00d-4531-8aa4-32b90ffc563e",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/WS1kH1PJ5Xqt3tTn5Suw",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_25cb935b76bd53f17e4c63e5c4433d3859ff4aa6c5d64b5f"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('Pre Response Normalize1').item.json.response }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -768,
+        96
+      ],
+      "id": "e17e9f73-3bae-46c5-85e0-c40839301456",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ",
+          "mode": "list",
+          "cachedResultName": "Foglio di lavoro senza nome",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UTENTE": "={{ $json.contacts[0].wa_id }}",
+            "ID": "={{ $json.messages[0].id }}",
+            "DATA E ORA": "={{ $now }}",
+            "MESSAGGIO ": "={{ $('Pre Response Normalize1').item.json.message }}",
+            "RISPOSTA": "={{ $('Pre Response Normalize1').item.json.response }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "26802da2-106a-4cfe-94b6-5900a09c20ba",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "688829180989827",
+        "recipientPhoneNumber": "={{ $('Pre Response Normalize1').item.json.link }}",
+        "messageType": "audio",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        96
+      ],
+      "id": "9bb3910d-3419-44e6-91cb-2bc7b37d6943",
+      "name": "Send message",
+      "webhookId": "193bc337-d518-4ba8-a5ff-370c1da57721",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ",
+          "mode": "list",
+          "cachedResultName": "Foglio di lavoro senza nome",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cKoVlRbz-gfZcQokMp7dujNCFz6G5cukyZMJwsvApRQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UTENTE": "={{ $json.contacts[0].wa_id }}",
+            "ID": "={{ $json.messages[0].id }}",
+            "DATA E ORA": "={{ $now }}",
+            "MESSAGGIO ": "={{ $('Pre Response Normalize1').item.json.message }}",
+            "RISPOSTA": "={{ $('Pre Response Normalize1').item.json.response }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        480
+      ],
+      "id": "fedf8d19-0572-4388-a37c-b4d8def56d8e",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8",
+          "mode": "list",
+          "cachedResultName": "telegram ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N0BL3uxpHMM58USRvC1CQ8L3G8tbWhCH1zSEfhCAHs8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "MESSAGGIO ": "={{ $('Pre Response Normalize1').item.json.message }}",
+            "UTENTE": "={{ $json.result.chat.username }}",
+            "ID": "={{ $json.result.chat.id }}",
+            "DATA E ORA": "={{ $now }}",
+            "RISPOSTA": "={{ $('Pre Response Normalize1').item.json.response }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTENTE",
+              "displayName": "UTENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATA E ORA",
+              "displayName": "DATA E ORA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGGIO ",
+              "displayName": "MESSAGGIO ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RISPOSTA",
+              "displayName": "RISPOSTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -992,
+        32
+      ],
+      "id": "c8f08f7f-9a2f-44f7-b813-2e323b86fa0e",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2dPoiYPlaUyMqDyv",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f296d871-213c-49a7-870b-9f0c7a984a70",
+              "name": "=message",
+              "value": "={{\n(() => {\n  const base = $json.response;\n  // --- converter sicuro -> Telegram Markdown V2 ---\n  const RE_CODE      = /```[\\s\\S]*?```|`[^`]*?`/g;\n  const RE_BOLD      = /\\*\\*([\\s\\S]+?)\\*\\*|__([\\s\\S]+?)__/g;\n  const RE_ITAL_STAR = /(^|[^*])\\*([^\\n*]+?)\\*(?!\\*)/g;\n  const RE_ITAL_UND  = /(^|[^_])_([^\\n_]+?)_(?!_)/g;\n  const RE_STRK      = /~([^~]+?)~/g;\n  const RE_RSRV      = /[_*\\[\\]()~`>#+\\-=|{}.!\\\\]/g;\n  const PLACE = (i) => `\\u0000${i}\\u0000`;\n  const esc   = (s) => String(s).replace(RE_RSRV, '\\\\$&');\n  const safe  = (x) => (x == null ? '' : String(x));\n  const stash = (txt, re, fn, bag) =>\n    txt.replace(re, function () {\n      const seg = fn.apply(null, arguments);\n      const val = seg == null ? esc(arguments[0]) : String(seg);\n      bag.push(val);\n      return PLACE(bag.length - 1);\n    });\n\n  let out = String(base);\n  const bag = [];\n\n  out = stash(out, RE_CODE, (m) => m, bag);\n  out = stash(out, RE_BOLD, (_m, g1, g2) => {\n    const txt = safe(g1 ?? g2).trim();\n    return txt ? `*${esc(txt)}*` : esc(_m);\n  }, bag);\n  out = stash(out, RE_ITAL_STAR, (_m, pre, g) => {\n    const txt = safe(g).trim();\n    return txt ? `${safe(pre)}_${esc(txt)}_` : esc(_m);\n  }, bag);\n  out = stash(out, RE_ITAL_UND, (_m, pre, g) => {\n    const txt = safe(g).trim();\n    return txt ? `${safe(pre)}_${esc(txt)}_` : esc(_m);\n  }, bag);\n  out = stash(out, RE_STRK, (_m, g) => {\n    const txt = safe(g).trim();\n    return txt ? `~${esc(txt)}~` : esc(_m);\n  }, bag);\n\n  out = esc(out).replace(/(^|\\n)-/g, '$1\\\\-');\n  out = out.replace(/\\u0000(\\d+)\\u0000/g, (_m, i) => safe(bag[Number(i)]));\n  out = out.replace(/(^|[^\\\\])__($|[^_])/g, (_m, a, b) => `${a}\\\\_\\\\_${b}`);\n\n  // ultima rete di sicurezza: rimuovi \"undefined\" letterali residui (solo se proprio serve)\n  out = out.replace(/undefined/g, '');\n\n  return out;\n})()\n}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1440,
+        32
+      ],
+      "id": "c1926e63-fac2-45bf-ae3a-6693c3fbff2c",
+      "name": "Md Format"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "688829180989827",
+        "recipientPhoneNumber": "={{ $('Pre Response Normalize1').item.json.link }}",
+        "textBody": "={{ $('Pre Response Normalize1').item.json.response }}",
+        "additionalFields": {
+          "previewUrl": true
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        384
+      ],
+      "id": "cb0bbe43-964e-4ddf-9409-ff659fbb6a34",
+      "name": "WhatsApp Output",
+      "webhookId": "03154d52-82aa-4e4d-8935-e8aedd17d4a7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Pre Response Normalize1').item.json.link }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1216,
+        32
+      ],
+      "id": "2a54f33e-1f18-4a1e-8022-b76db827210f",
+      "name": "Telegram Output",
+      "webhookId": "6f543d4b-fcbe-48f7-b243-7b00be9a6122",
+      "credentials": {
+        "telegramApi": {
+          "id": "2dft3DtBL46f1EiM",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "333681d4-e0ad-4684-9fac-2468d3314340"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "telegram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "228db005-4150-4ba6-94ed-6d2b9445eb58",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "whatsapp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1664,
+        192
+      ],
+      "id": "f5c62efe-8a41-435d-95b5-4f02a1b15cec",
+      "name": "Channel Swithc"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2096,
+        192
+      ],
+      "id": "769c5ad8-3e51-43f1-b361-ae963c4f3b9d",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "Pre Response Normalize1": {
+      "main": [
+        [
+          {
+            "node": "Channel Swithc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Assistent Insert1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Md Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Output": {
+      "main": [
+        [
+          {
+            "node": "Assistent Insert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Output": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Channel Swithc": {
+      "main": [
+        [
+          {
+            "node": "Md Format",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Pre Response Normalize1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "message": {
+            "text": "Prova",
+            "data": "1763931449",
+            "type": "text"
+          },
+          "channel": {
+            "name": "whatsapp",
+            "id": "+393515031075"
+          },
+          "user": {
+            "user_id": "29b8ebbf-053e-424a-baab-e20a667fe317",
+            "stripe_customer_id": "cus_SyHCUiRtjttDO2",
+            "email": "tommaso.coviello@icloud.com",
+            "subscription": "basic",
+            "usage": {
+              "used_tokens": 3593,
+              "used_messages": 140
+            },
+            "limits": {
+              "tokens_limit": 1000000,
+              "messages_limit": 1000000
+            }
+          },
+          "response": {
+            "message": "Ahahahah, vedo che sei in vena di... \"prove\"! 😂 Bella roba, ma io sono qui per cose serie, per sbloccare il tuo potenziale e farti spaccare nel tuo sport! 💪\n\nQuindi, dimmi un po', che combiniamo oggi? C'è qualche ***blocco mentale*** da affrontare o qualche obiettivo da **conquistare**? Sono qui per questo! Fammi sapere. 🚀",
+            "steps": [],
+            "static": false
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "526126cd-886f-455a-bebd-ad15aa0b3e15",
+  "versionCounter": 8,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-11-23T20:16:53.102Z",
+      "createdAt": "2025-11-23T20:16:53.102Z",
+      "role": "workflow:owner",
+      "workflowId": "rm81WjyclvUGbWdq",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-23T23:01:49.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-23",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-24T14:33:31.971Z",
+      "createdAt": "2025-11-24T14:33:31.971Z",
+      "id": "HE779NdtlD8HeLt4",
+      "name": "main"
+    }
+  ]
+}

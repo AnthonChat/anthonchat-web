@@ -26,13 +26,6 @@ interface StripeSubscriptionItem {
   quantity: number | null;
 }
 
-// Combined types for API responses
-export type UserSubscriptionResult = {
-  subscription: StripeSubscription | null;
-  product: StripeProduct | null;
-  features: TierFeatures | null;
-};
-
 export type UserSubscription = {
   id: string;
   status: string;
@@ -48,11 +41,9 @@ export type UserSubscription = {
 };
 
 /**
- * Gets the Stripe customer ID for a user.
+ * Gets the Stripe customer ID for a user (internal helper).
  */
-export async function getUserStripeCustomerId(
-  userId: string
-): Promise<string | null> {
+async function getUserStripeCustomerId(userId: string): Promise<string | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -70,9 +61,9 @@ export async function getUserStripeCustomerId(
 }
 
 /**
- * Gets the active subscription for a user.
+ * Gets the active subscription for a user (internal helper).
  */
-export async function getActiveSubscription(
+async function getActiveSubscription(
   userId: string
 ): Promise<StripeSubscription | null> {
   const supabase = await createClient();
@@ -106,9 +97,9 @@ export async function getActiveSubscription(
 }
 
 /**
- * Gets product details by ID.
+ * Gets product details by ID (internal helper).
  */
-export async function getProductDetails(
+async function getProductDetails(
   productId: string
 ): Promise<StripeProduct | null> {
   const supabase = await createClient();
@@ -132,9 +123,9 @@ export async function getProductDetails(
 }
 
 /**
- * Gets tier features by product ID.
+ * Gets tier features by product ID (internal helper).
  */
-export async function getTierFeatures(
+async function getTierFeatures(
   productId: string
 ): Promise<TierFeatures | null> {
   const supabase = await createClient();
@@ -212,10 +203,10 @@ function extractSubscriptionItemDetails(
 
     return [];
   } catch (error) {
-    console.error(
-      "Subscription Items Parse:",
-      { error, subscriptionId: subscription.id }
-    );
+    console.error("Subscription Items Parse:", {
+      error,
+      subscriptionId: subscription.id,
+    });
     return [];
   }
 }
@@ -310,10 +301,10 @@ async function buildSubscriptionResult(
   }
 
   if (!primaryProductId) {
-    console.error(
-      "Primary Product Id Missing:",
-      { subscriptionId: subscription.id, items }
-    );
+    console.error("Primary Product Id Missing:", {
+      subscriptionId: subscription.id,
+      items,
+    });
     return null;
   }
 

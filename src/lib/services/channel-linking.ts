@@ -45,15 +45,6 @@ export interface CompleteLinkingResult {
 }
 
 /**
- * Security context for operations
- */
-export interface SecurityContext {
-  ip?: string;
-  userAgent?: string;
-  timestamp: Date;
-}
-
-/**
  * Main service class for channel linking operations
  */
 export class ChannelLinkingService {
@@ -197,8 +188,3 @@ export class ChannelLinkingService {
     };
   }
 }
-
-/**
- * Default export for the service
- */
-export default ChannelLinkingService;

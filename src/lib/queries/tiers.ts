@@ -6,8 +6,6 @@ import type { Database as StripeDatabase } from "@/lib/db/schemas/stripe";
 
 // Type aliases for better readability
 type TierFeatures = PublicDatabase["public"]["Tables"]["tiers_features"]["Row"];
-type TierFeaturesInsert =
-  PublicDatabase["public"]["Tables"]["tiers_features"]["Insert"];
 type StripePrice = StripeDatabase["stripe"]["Tables"]["prices"]["Row"];
 
 // Combined tier interface that includes both Stripe product data and features
@@ -181,103 +179,4 @@ export async function getTierBySlug(
     features: featuresData || null,
     prices: pricesData || [],
   };
-}
-
-/**
- * Gets all active tiers (products with features).
- */
-export async function getAllActiveTiers(): Promise<TierWithFeatures[]> {
-  const supabase = await createClient();
-
-  // Get all active products
-  const { data: productsData, error: productsError } = await supabase
-    .schema("stripe")
-    .from("products")
-    .select("*")
-    .eq("active", true);
-
-  if (productsError) {
-    console.error("ACTIVE_PRODUCTS_FETCH", {
-      error: productsError,
-    });
-    return [];
-  }
-
-  if (!productsData) {
-    return [];
-  }
-
-  // Get features for all products
-  const { data: featuresData, error: featuresError } = await supabase
-    .from("tiers_features")
-    .select("*");
-
-  if (featuresError) {
-    console.error("ALL_TIER_FEATURES_FETCH", {
-      error: featuresError,
-    });
-  }
-
-  // Get all prices
-  const { data: pricesData, error: pricesError } = await supabase
-    .schema("stripe")
-    .from("prices")
-    .select("*")
-    .eq("active", true);
-
-  if (pricesError) {
-    console.error("ALL_PRICES_FETCH", {
-      error: pricesError,
-    });
-  }
-
-  // Combine data
-  const tiers: TierWithFeatures[] = productsData.map((product) => {
-    const features = featuresData?.find((f) => f.id === product.id) || null;
-    const prices = pricesData?.filter((p) => p.product === product.id) || [];
-
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      metadata: product.metadata,
-      active: product.active,
-      features,
-      prices,
-    };
-  });
-
-  // Sort by tokens limit (ascending)
-  return tiers.sort((a, b) => {
-    const aTokens = a.features?.tokens_limit || 0;
-    const bTokens = b.features?.tokens_limit || 0;
-    return aTokens - bTokens;
-  });
-}
-
-/**
- * Creates or updates tier features for a product.
- */
-export async function upsertTierFeatures(
-  productId: string,
-  features: Omit<TierFeaturesInsert, "id">
-): Promise<TierFeatures> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("tiers_features")
-    .upsert({ id: productId, ...features })
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("TIER_FEATURES_UPSERT", {
-      error,
-      productId,
-      features,
-    });
-    throw error;
-  }
-
-  return data;
 }

@@ -3,20 +3,23 @@
  */
 
 /**
- * Extract URL parameters from a URL string or URLSearchParams object
- * @param source - URL string, URLSearchParams, or Request object
- * @returns Object with extracted parameters
+ * Extract URL parameters from a URL string or URLSearchParams object (internal helper - currently unused)
  */
-export function extractUrlParams(source: string | URLSearchParams | Request): Record<string, string> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function extractUrlParams(
+  source: string | URLSearchParams | Request
+): Record<string, string> {
   let searchParams: URLSearchParams;
 
-  if (typeof source === 'string') {
+  if (typeof source === "string") {
     try {
       const url = new URL(source);
       searchParams = url.searchParams;
     } catch {
       // If it's not a valid URL, treat it as a query string
-      searchParams = new URLSearchParams(source.startsWith('?') ? source.slice(1) : source);
+      searchParams = new URLSearchParams(
+        source.startsWith("?") ? source.slice(1) : source
+      );
     }
   } else if (source instanceof URLSearchParams) {
     searchParams = source;
@@ -36,12 +39,9 @@ export function extractUrlParams(source: string | URLSearchParams | Request): Re
 }
 
 /**
- * Validate a URL parameter value
- * @param value - Parameter value to validate
- * @param options - Validation options
- * @returns True if valid, false otherwise
+ * Validate a URL parameter value (internal helper)
  */
-export function validateUrlParam(
+function validateUrlParam(
   value: string | null | undefined,
   options: {
     required?: boolean;
@@ -51,15 +51,21 @@ export function validateUrlParam(
     allowedValues?: string[];
   } = {}
 ): boolean {
-  const { required = false, minLength, maxLength, pattern, allowedValues } = options;
+  const {
+    required = false,
+    minLength,
+    maxLength,
+    pattern,
+    allowedValues,
+  } = options;
 
   // Check if required
-  if (required && (!value || value.trim() === '')) {
+  if (required && (!value || value.trim() === "")) {
     return false;
   }
 
   // If not required and empty, it's valid
-  if (!value || value.trim() === '') {
+  if (!value || value.trim() === "") {
     return !required;
   }
 
@@ -106,14 +112,16 @@ export function buildUrlWithParams(
 
   try {
     // Handle relative URLs by using a dummy base
-    const isRelative = !baseUrl.includes('://');
-    const urlToUse = isRelative ? `https://dummy.com${baseUrl.startsWith('/') ? '' : '/'}${baseUrl}` : baseUrl;
-    
+    const isRelative = !baseUrl.includes("://");
+    const urlToUse = isRelative
+      ? `https://dummy.com${baseUrl.startsWith("/") ? "" : "/"}${baseUrl}`
+      : baseUrl;
+
     const url = new URL(urlToUse);
-    
+
     // If not preserving existing, clear current params
     if (!preserveExisting) {
-      url.search = '';
+      url.search = "";
     }
 
     // Add new parameters
@@ -126,35 +134,38 @@ export function buildUrlWithParams(
       }
 
       const stringValue = String(value);
-      if (removeEmpty && stringValue.trim() === '') {
+      if (removeEmpty && stringValue.trim() === "") {
         url.searchParams.delete(key);
       } else {
         url.searchParams.set(key, stringValue);
       }
     });
 
-    const finalUrl = isRelative ? url.pathname + url.search + url.hash : url.toString();
+    const finalUrl = isRelative
+      ? url.pathname + url.search + url.hash
+      : url.toString();
     return finalUrl;
   } catch (error) {
     // If URL construction fails, return the base URL
-    console.error('Failed to build URL with params:', error);
+    console.error("Failed to build URL with params:", error);
     return baseUrl;
   }
 }
 
 /**
- * Common parameter validation patterns
+ * Common parameter validation patterns (internal)
  */
-export const URL_PARAM_PATTERNS = {
+const URL_PARAM_PATTERNS = {
   // Channel ID: alphanumeric with underscores and hyphens
   CHANNEL_ID: /^[a-zA-Z0-9_-]+$/,
-  
+
   // Nonce: supports both UUID format and base64url pattern
-  NONCE: /^([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}|[a-zA-Z0-9_-]+)$/,
-  
+  NONCE:
+    /^([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}|[a-zA-Z0-9_-]+)$/,
+
   // Email: basic email validation
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  
+
   // Locale: two-letter language code
   LOCALE: /^[a-z]{2}$/,
 } as const;
@@ -182,40 +193,46 @@ export function validateChannelLinkingParams(params: {
 
   // Validate link (nonce)
   if (params.link) {
-    if (validateUrlParam(params.link, {
-      required: true,
-      minLength: 8,
-      maxLength: 128,
-      pattern: URL_PARAM_PATTERNS.NONCE,
-    })) {
+    if (
+      validateUrlParam(params.link, {
+        required: true,
+        minLength: 8,
+        maxLength: 128,
+        pattern: URL_PARAM_PATTERNS.NONCE,
+      })
+    ) {
       validParams.link = params.link.trim();
     } else {
-      errors.push('Invalid link parameter format');
+      errors.push("Invalid link parameter format");
     }
   }
 
   // Validate channel
   if (params.channel) {
-    if (validateUrlParam(params.channel, {
-      required: true,
-      minLength: 1,
-      maxLength: 64,
-      pattern: URL_PARAM_PATTERNS.CHANNEL_ID,
-    })) {
+    if (
+      validateUrlParam(params.channel, {
+        required: true,
+        minLength: 1,
+        maxLength: 64,
+        pattern: URL_PARAM_PATTERNS.CHANNEL_ID,
+      })
+    ) {
       validParams.channel = params.channel.trim();
     } else {
-      errors.push('Invalid channel parameter format');
+      errors.push("Invalid channel parameter format");
     }
   }
 
   // Validate message (optional, just length check)
   if (params.message) {
-    if (validateUrlParam(params.message, {
-      maxLength: 500,
-    })) {
+    if (
+      validateUrlParam(params.message, {
+        maxLength: 500,
+      })
+    ) {
       validParams.message = params.message.trim();
     } else {
-      errors.push('Message parameter too long');
+      errors.push("Message parameter too long");
     }
   }
 

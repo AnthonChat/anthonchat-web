@@ -113,24 +113,6 @@ export interface NotificationData {
 }
 
 /**
- * Stato del sistema di notifiche
- */
-export interface NotificationState {
-  /** Toast attivi */
-  activeToasts: Map<string, NotificationData>;
-  /** Coda delle notifiche */
-  queue: NotificationData[];
-  /** Configurazione globale */
-  globalConfig: NotificationConfig;
-  /** Statistiche per analytics */
-  stats: {
-    totalShown: number;
-    totalDismissed: number;
-    totalActioned: number;
-  };
-}
-
-/**
  * Opzioni per la creazione di toast di errore
  */
 export interface ErrorNotificationOptions {
@@ -146,69 +128,4 @@ export interface ErrorNotificationOptions {
   config?: Partial<NotificationConfig>;
   /** Suggerimenti per l'utente */
   userSuggestion?: string;
-}
-
-/**
- * Risultato dell'operazione di retry
- */
-export interface RetryResult {
-  success: boolean;
-  error?: unknown;
-  retryCount: number;
-  nextRetryIn?: number;
-}
-
-/**
- * Stati del processo di verifica
- */
-export enum VerificationStatus {
-  IDLE = 'idle',
-  STARTING = 'starting',
-  POLLING = 'polling',
-  SUCCESS = 'success',
-  FAILED = 'failed',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled'
-}
-
-/**
- * Dati della verifica in corso
- */
-export interface VerificationData {
-  /** ID del canale */
-  channelId: string;
-  /** Nome del canale */
-  channelName: string;
-  /** Nonce per il polling */
-  nonce: string;
-  /** Stato attuale */
-  status: VerificationStatus;
-  /** Timestamp di inizio */
-  startedAt: Date;
-  /** Numero di tentativi di polling */
-  pollAttempts: number;
-  /** URL di deep link */
-  deepLink?: string;
-  /** Comando da inviare */
-  command?: string;
-  /** Link finale di verifica */
-  link?: string;
-  /** Ultimo errore */
-  lastError?: unknown;
-}
-
-/**
- * Configurazione per il polling di verifica
- */
-export interface VerificationPollingConfig {
-  /** Intervallo di polling in ms */
-  intervalMs: number;
-  /** Timeout totale in ms */
-  timeoutMs: number;
-  /** Massimo numero di tentativi */
-  maxAttempts: number;
-  /** Backoff esponenziale */
-  exponentialBackoff: boolean;
-  /** Fattore di backoff */
-  backoffFactor: number;
 }

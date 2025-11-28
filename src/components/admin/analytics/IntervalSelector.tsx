@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * IntervalSelector — small client component that writes a global `interval`
  * search param (e.g. ?interval=3h). Used in the analytics header.
  */
-export function IntervalSelector({
+export default function IntervalSelector({
   paramKey = "interval",
   defaultValue = "3h",
   className,
@@ -46,5 +46,3 @@ export function IntervalSelector({
     </div>
   );
 }
-
-export default IntervalSelector;

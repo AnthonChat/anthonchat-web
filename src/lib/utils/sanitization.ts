@@ -3,12 +3,12 @@
  */
 
 /**
- * Sanitize channel ID by removing invalid characters and normalizing format
- * @param channelId - Raw channel ID input
- * @returns Sanitized channel ID or null if invalid
+ * Sanitize channel ID by removing invalid characters and normalizing format (internal helper)
  */
-export function sanitizeChannelId(channelId: string | null | undefined): string | null {
-  if (!channelId || typeof channelId !== 'string') {
+function sanitizeChannelId(
+  channelId: string | null | undefined
+): string | null {
+  if (!channelId || typeof channelId !== "string") {
     return null;
   }
 
@@ -21,7 +21,7 @@ export function sanitizeChannelId(channelId: string | null | undefined): string 
   }
 
   // Remove any characters that aren't alphanumeric, underscore, or hyphen
-  const sanitized = cleaned.replace(/[^a-z0-9_-]/g, '');
+  const sanitized = cleaned.replace(/[^a-z0-9_-]/g, "");
 
   // Check length constraints (1-64 characters)
   if (sanitized.length < 1 || sanitized.length > 64) {
@@ -29,19 +29,17 @@ export function sanitizeChannelId(channelId: string | null | undefined): string 
   }
 
   // Ensure it doesn't start or end with special characters
-  const normalized = sanitized.replace(/^[-_]+|[-_]+$/g, '');
+  const normalized = sanitized.replace(/^[-_]+|[-_]+$/g, "");
 
   return normalized || null;
 }
 
 /**
- * Sanitize nonce by validating format and removing invalid characters
+ * Sanitize nonce by validating format and removing invalid characters (internal helper)
  * Supports both UUID format (with hyphens) and base64url format
- * @param nonce - Raw nonce input
- * @returns Sanitized nonce or null if invalid
  */
-export function sanitizeNonce(nonce: string | null | undefined): string | null {
-  if (!nonce || typeof nonce !== 'string') {
+function sanitizeNonce(nonce: string | null | undefined): string | null {
+  if (!nonce || typeof nonce !== "string") {
     return null;
   }
 
@@ -54,7 +52,8 @@ export function sanitizeNonce(nonce: string | null | undefined): string | null {
   }
 
   // Check for UUID format (8-4-4-4-12 hexadecimal digits with hyphens)
-  const uuidPattern = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
+  const uuidPattern =
+    /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
   if (uuidPattern.test(cleaned)) {
     return cleaned.toLowerCase(); // Normalize to lowercase
   }
@@ -72,34 +71,31 @@ export function sanitizeNonce(nonce: string | null | undefined): string | null {
 }
 
 /**
- * Escape HTML characters to prevent XSS attacks
- * @param input - Raw string input
- * @returns HTML-escaped string
+ * Escape HTML characters to prevent XSS attacks (internal helper - currently unused)
  */
-export function escapeHtml(input: string | null | undefined): string {
-  if (!input || typeof input !== 'string') {
-    return '';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function escapeHtml(input: string | null | undefined): string {
+  if (!input || typeof input !== "string") {
+    return "";
   }
 
   const htmlEscapeMap: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
   };
 
   return input.replace(/[&<>"'/]/g, (char) => htmlEscapeMap[char] || char);
 }
 
 /**
- * Sanitize email address by normalizing format and validating
- * @param email - Raw email input
- * @returns Sanitized email or null if invalid
+ * Sanitize email address by normalizing format and validating (internal helper)
  */
-export function sanitizeEmail(email: string | null | undefined): string | null {
-  if (!email || typeof email !== 'string') {
+function sanitizeEmail(email: string | null | undefined): string | null {
+  if (!email || typeof email !== "string") {
     return null;
   }
 
@@ -126,16 +122,13 @@ export function sanitizeEmail(email: string | null | undefined): string | null {
 }
 
 /**
- * Sanitize message content by removing dangerous characters and limiting length
- * @param message - Raw message input
- * @param maxLength - Maximum allowed length (default: 500)
- * @returns Sanitized message or null if invalid
+ * Sanitize message content by removing dangerous characters and limiting length (internal helper)
  */
-export function sanitizeMessage(
+function sanitizeMessage(
   message: string | null | undefined,
   maxLength: number = 500
 ): string | null {
-  if (!message || typeof message !== 'string') {
+  if (!message || typeof message !== "string") {
     return null;
   }
 
@@ -153,18 +146,16 @@ export function sanitizeMessage(
   }
 
   // Remove control characters but keep printable characters and common whitespace
-  const sanitized = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  const sanitized = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 
   return sanitized || null;
 }
 
 /**
- * Sanitize locale code by validating format
- * @param locale - Raw locale input
- * @returns Sanitized locale or null if invalid
+ * Sanitize locale code by validating format (internal helper)
  */
-export function sanitizeLocale(locale: string | null | undefined): string | null {
-  if (!locale || typeof locale !== 'string') {
+function sanitizeLocale(locale: string | null | undefined): string | null {
+  if (!locale || typeof locale !== "string") {
     return null;
   }
 
@@ -186,16 +177,14 @@ export function sanitizeLocale(locale: string | null | undefined): string | null
 }
 
 /**
- * Sanitize URL by validating format and removing dangerous protocols
- * @param url - Raw URL input
- * @param allowedProtocols - Allowed protocols (default: ['http:', 'https:'])
- * @returns Sanitized URL or null if invalid
+ * Sanitize URL by validating format and removing dangerous protocols (internal helper - currently unused)
  */
-export function sanitizeUrl(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function sanitizeUrl(
   url: string | null | undefined,
-  allowedProtocols: string[] = ['http:', 'https:']
+  allowedProtocols: string[] = ["http:", "https:"]
 ): string | null {
-  if (!url || typeof url !== 'string') {
+  if (!url || typeof url !== "string") {
     return null;
   }
 
@@ -209,7 +198,7 @@ export function sanitizeUrl(
 
   try {
     const parsedUrl = new URL(cleaned);
-    
+
     // Check if protocol is allowed
     if (!allowedProtocols.includes(parsedUrl.protocol)) {
       return null;

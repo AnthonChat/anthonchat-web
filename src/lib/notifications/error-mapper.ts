@@ -3,17 +3,17 @@
  * Implementa l'architettura definita in TOAST_SYSTEM_ARCHITECTURE_DESIGN.md
  */
 
-import { 
-  NotificationErrorType, 
+import {
+  NotificationErrorType,
   NotificationAction,
-  ErrorNotificationOptions 
-} from './types';
-import { getErrorMessage } from './config';
+  ErrorNotificationOptions,
+} from "./types";
+import { getErrorMessage } from "./config";
 
 /**
- * Mappa errori comuni ai loro tipi di notifica
+ * Mappa errori comuni ai loro tipi di notifica (internal helper)
  */
-export function mapErrorToNotificationType(error: unknown): NotificationErrorType {
+function mapErrorToNotificationType(error: unknown): NotificationErrorType {
   if (!error) return NotificationErrorType.UNKNOWN_ERROR;
 
   // Gestione oggetti Response (fetch API)
@@ -42,54 +42,60 @@ export function mapErrorToNotificationType(error: unknown): NotificationErrorTyp
   const lowerError = errorStr.toLowerCase();
 
   // Errori di verifica
-  if (lowerError.includes('nonce') && lowerError.includes('expired')) {
+  if (lowerError.includes("nonce") && lowerError.includes("expired")) {
     return NotificationErrorType.VERIFICATION_EXPIRED;
   }
-  if (lowerError.includes('nonce') && lowerError.includes('invalid')) {
+  if (lowerError.includes("nonce") && lowerError.includes("invalid")) {
     return NotificationErrorType.NONCE_INVALID;
   }
-  if (lowerError.includes('verification') && lowerError.includes('polling')) {
+  if (lowerError.includes("verification") && lowerError.includes("polling")) {
     return NotificationErrorType.VERIFICATION_POLLING_ERROR;
   }
-  if (lowerError.includes('verification') && lowerError.includes('timeout')) {
+  if (lowerError.includes("verification") && lowerError.includes("timeout")) {
     return NotificationErrorType.VERIFICATION_TIMEOUT;
   }
 
   // Errori di rete
-  if (lowerError.includes('network') || lowerError.includes('fetch failed')) {
+  if (lowerError.includes("network") || lowerError.includes("fetch failed")) {
     return NotificationErrorType.NETWORK_ERROR;
   }
-  if (lowerError.includes('connectivity') || lowerError.includes('offline')) {
+  if (lowerError.includes("connectivity") || lowerError.includes("offline")) {
     return NotificationErrorType.CONNECTIVITY_LOST;
   }
-  if (lowerError.includes('cors') || lowerError.includes('connection')) {
+  if (lowerError.includes("cors") || lowerError.includes("connection")) {
     return NotificationErrorType.NETWORK_ERROR;
   }
 
   // Errori di auth
-  if (lowerError.includes('session') && lowerError.includes('expired')) {
+  if (lowerError.includes("session") && lowerError.includes("expired")) {
     return NotificationErrorType.AUTH_SESSION_EXPIRED;
   }
-  if (lowerError.includes('unauthorized') || lowerError.includes('403')) {
+  if (lowerError.includes("unauthorized") || lowerError.includes("403")) {
     return NotificationErrorType.AUTH_UNAUTHORIZED;
   }
-  if (lowerError.includes('token') && lowerError.includes('refresh')) {
+  if (lowerError.includes("token") && lowerError.includes("refresh")) {
     return NotificationErrorType.AUTH_TOKEN_REFRESH_FAILED;
   }
-  if (lowerError.includes('jwt') && lowerError.includes('expired')) {
+  if (lowerError.includes("jwt") && lowerError.includes("expired")) {
     return NotificationErrorType.AUTH_SESSION_EXPIRED;
   }
 
   // Errori server
-  if (lowerError.includes('500') || lowerError.includes('internal server error')) {
+  if (
+    lowerError.includes("500") ||
+    lowerError.includes("internal server error")
+  ) {
     return NotificationErrorType.SERVER_ERROR;
   }
-  if (lowerError.includes('503') || lowerError.includes('service unavailable')) {
+  if (
+    lowerError.includes("503") ||
+    lowerError.includes("service unavailable")
+  ) {
     return NotificationErrorType.SERVER_ERROR;
   }
 
   // Errori API generici
-  if (lowerError.includes('api') || lowerError.includes('request failed')) {
+  if (lowerError.includes("api") || lowerError.includes("request failed")) {
     return NotificationErrorType.API_ERROR;
   }
 
@@ -97,9 +103,10 @@ export function mapErrorToNotificationType(error: unknown): NotificationErrorTyp
 }
 
 /**
- * Mappa i codici di stato HTTP ai tipi di errore
+ * Mappa i codici di stato HTTP ai tipi di errore (internal helper - currently unused)
  */
-export function mapHttpStatusToErrorType(status: number): NotificationErrorType {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function mapHttpStatusToErrorType(status: number): NotificationErrorType {
   switch (status) {
     case 400:
       return NotificationErrorType.API_ERROR;
@@ -128,9 +135,9 @@ export function mapHttpStatusToErrorType(status: number): NotificationErrorType 
 }
 
 /**
- * Genera azioni contestuali automatiche basate sul tipo di errore
+ * Genera azioni contestuali automatiche basate sul tipo di errore (internal helper)
  */
-export function generateContextualActions(
+function generateContextualActions(
   errorType: NotificationErrorType,
   customCallbacks?: {
     onRetry?: () => void | Promise<void>;
@@ -145,9 +152,9 @@ export function generateContextualActions(
     case NotificationErrorType.VERIFICATION_POLLING_ERROR:
       if (customCallbacks?.onRetry) {
         actions.push({
-          label: 'Riprova verifica',
+          label: "Riprova verifica",
           onClick: customCallbacks.onRetry,
-          variant: 'default'
+          variant: "default",
         });
       }
       break;
@@ -156,9 +163,9 @@ export function generateContextualActions(
     case NotificationErrorType.VERIFICATION_EXPIRED:
       if (customCallbacks?.onRetry) {
         actions.push({
-          label: 'Nuova verifica',
+          label: "Nuova verifica",
           onClick: customCallbacks.onRetry,
-          variant: 'default'
+          variant: "default",
         });
       }
       break;
@@ -167,15 +174,15 @@ export function generateContextualActions(
     case NotificationErrorType.CONNECTIVITY_LOST:
       if (customCallbacks?.onRetry) {
         actions.push({
-          label: 'Riprova',
+          label: "Riprova",
           onClick: customCallbacks.onRetry,
-          variant: 'default'
+          variant: "default",
         });
       }
       actions.push({
-        label: 'Ricarica pagina',
+        label: "Ricarica pagina",
         onClick: customCallbacks?.onRefresh || (() => window.location.reload()),
-        variant: 'outline'
+        variant: "outline",
       });
       break;
 
@@ -184,9 +191,9 @@ export function generateContextualActions(
     case NotificationErrorType.AUTH_TOKEN_REFRESH_FAILED:
       if (customCallbacks?.onSignOut) {
         actions.push({
-          label: 'Effettua logout',
+          label: "Effettua logout",
           onClick: customCallbacks.onSignOut,
-          variant: 'destructive'
+          variant: "destructive",
         });
       }
       break;
@@ -194,16 +201,16 @@ export function generateContextualActions(
     case NotificationErrorType.SERVER_ERROR:
       if (customCallbacks?.onRetry) {
         actions.push({
-          label: 'Riprova',
+          label: "Riprova",
           onClick: customCallbacks.onRetry,
-          variant: 'default'
+          variant: "default",
         });
       }
       if (customCallbacks?.onGoHome) {
         actions.push({
-          label: 'Torna alla home',
+          label: "Torna alla home",
           onClick: customCallbacks.onGoHome,
-          variant: 'outline'
+          variant: "outline",
         });
       }
       break;
@@ -211,9 +218,9 @@ export function generateContextualActions(
     case NotificationErrorType.API_ERROR:
       if (customCallbacks?.onRetry) {
         actions.push({
-          label: 'Riprova',
+          label: "Riprova",
           onClick: customCallbacks.onRetry,
-          variant: 'default'
+          variant: "default",
         });
       }
       break;
@@ -222,9 +229,9 @@ export function generateContextualActions(
       // Per errori non gestiti, offri un'azione generica
       if (customCallbacks?.onRefresh) {
         actions.push({
-          label: 'Ricarica',
+          label: "Ricarica",
           onClick: customCallbacks.onRefresh,
-          variant: 'outline'
+          variant: "outline",
         });
       }
       break;
@@ -247,69 +254,74 @@ export function createErrorNotificationOptions(
   }
 ): ErrorNotificationOptions {
   const errorType = mapErrorToNotificationType(error);
-  const actions = customActions || generateContextualActions(errorType, customCallbacks);
+  const actions =
+    customActions || generateContextualActions(errorType, customCallbacks);
 
   return {
     errorType,
     originalError: error,
     customActions: actions.length > 0 ? actions : undefined,
-    userSuggestion: getErrorMessage(errorType).userSuggestion
+    userSuggestion: getErrorMessage(errorType).userSuggestion,
   };
 }
 
 /**
- * Utility per determinare se un errore è di tipo network/connectivity
+ * Utility per determinare se un errore è di tipo network/connectivity (internal - currently unused)
  */
-export function isNetworkError(error: unknown): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isNetworkError(error: unknown): boolean {
   const errorType = mapErrorToNotificationType(error);
   return [
     NotificationErrorType.NETWORK_ERROR,
     NotificationErrorType.CONNECTIVITY_LOST,
-    NotificationErrorType.API_ERROR
+    NotificationErrorType.API_ERROR,
   ].includes(errorType);
 }
 
 /**
- * Utility per determinare se un errore è di tipo auth
+ * Utility per determinare se un errore è di tipo auth (internal - currently unused)
  */
-export function isAuthError(error: unknown): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isAuthError(error: unknown): boolean {
   const errorType = mapErrorToNotificationType(error);
   return [
     NotificationErrorType.AUTH_SESSION_EXPIRED,
     NotificationErrorType.AUTH_UNAUTHORIZED,
-    NotificationErrorType.AUTH_TOKEN_REFRESH_FAILED
+    NotificationErrorType.AUTH_TOKEN_REFRESH_FAILED,
   ].includes(errorType);
 }
 
 /**
- * Utility per determinare se un errore è di tipo verification
+ * Utility per determinare se un errore è di tipo verification (internal - currently unused)
  */
-export function isVerificationError(error: unknown): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isVerificationError(error: unknown): boolean {
   const errorType = mapErrorToNotificationType(error);
   return [
     NotificationErrorType.VERIFICATION_POLLING_ERROR,
     NotificationErrorType.VERIFICATION_TIMEOUT,
     NotificationErrorType.VERIFICATION_EXPIRED,
-    NotificationErrorType.NONCE_INVALID
+    NotificationErrorType.NONCE_INVALID,
   ].includes(errorType);
 }
 
 /**
- * Utility per estrarre dettagli utili dall'errore per debugging
+ * Utility per estrarre dettagli utili dall'errore per debugging (internal - currently unused)
  */
-export function extractErrorDetails(error: unknown): Record<string, unknown> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function extractErrorDetails(error: unknown): Record<string, unknown> {
   const details: Record<string, unknown> = {};
 
   if (error instanceof Response) {
     details.status = error.status;
     details.statusText = error.statusText;
     details.url = error.url;
-    details.type = 'Response';
+    details.type = "Response";
   } else if (error instanceof Error) {
     details.name = error.name;
     details.message = error.message;
     details.stack = error.stack;
-    details.type = 'Error';
+    details.type = "Error";
   } else {
     details.value = error;
     details.type = typeof error;

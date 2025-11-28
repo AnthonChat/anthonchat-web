@@ -9,7 +9,7 @@ function toISO(date: Date): string {
   return new Date(date.getTime()).toISOString();
 }
 
-export function resolveRange(preset: TimePreset, now = new Date()): DateRange {
+function resolveRange(preset: TimePreset, now = new Date()): DateRange {
   const end = toISO(now);
   const d = new Date(now.getTime());
 
@@ -43,14 +43,15 @@ export function resolvePresetOrRange(
   return { start, end };
 }
 
-export function parseDateOnlyToIsoStart(d: string): string | null {
+function parseDateOnlyToIsoStart(d: string): string | null {
   if (!d) return null;
   const m = /^\d{4}-\d{2}-\d{2}$/.exec(d);
   if (!m) return null;
   return new Date(d + "T00:00:00.000Z").toISOString();
 }
 
-export function parseDateOnlyToIsoEndExclusive(d: string): string | null {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function parseDateOnlyToIsoEndExclusive(d: string): string | null {
   const startIso = parseDateOnlyToIsoStart(d);
   if (!startIso) return null;
   const t = new Date(startIso).getTime() + 24 * 60 * 60 * 1000;
@@ -88,7 +89,8 @@ interface SupabaseQueryBuilder<T = unknown> {
   lt(column: string, value: string): T;
 }
 
-export function rangeFilter<T extends SupabaseQueryBuilder<T>>(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function rangeFilter<T extends SupabaseQueryBuilder<T>>(
   q: T,
   column: string,
   range: DateRange

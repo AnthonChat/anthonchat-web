@@ -3,10 +3,10 @@ import { getPathWithLocale, type Locale } from "@/i18n/routing";
 
 /**
  * Locale-aware redirect function for server components
- * 
+ *
  * @param path - The path to redirect to (without locale prefix)
  * @param locale - The current locale
- * 
+ *
  * @example
  * localeRedirect("/dashboard", "en") // redirects to /en/dashboard
  */
@@ -16,12 +16,13 @@ export function localeRedirect(path: string, locale: Locale): never {
 }
 
 /**
- * Get locale-aware path for use in server components
- * 
+ * Get locale-aware path for use in server components (internal - currently unused)
+ *
  * @param path - The path to make locale-aware
  * @param locale - The current locale
  * @returns The path with locale prefix
  */
-export function getLocalePath(path: string, locale: Locale): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getLocalePath(path: string, locale: Locale): string {
   return getPathWithLocale(path, locale);
 }

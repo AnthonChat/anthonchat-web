@@ -55,13 +55,10 @@ export interface ValidationError {
   message: string;
 }
 
-
-
 /**
- * Schema di validazione per l'email
- * Pattern regex per validare formato email
+ * Schema di validazione per l'email (internal - used by validation functions)
  */
-export const EMAIL_VALIDATION = {
+const EMAIL_VALIDATION = {
   /** Regex pattern per validazione email */
   pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   /** Messaggio di errore per email non valida */
@@ -84,22 +81,6 @@ export const PASSWORD_VALIDATION = {
   /** Messaggio di errore per password mancante */
   required: "La password è richiesta",
 } as const;
-
-/**
- * Tipi di errore per categorizzare gli errori durante il signup
- */
-export enum SignupErrorType {
-  /** Errore di validazione input */
-  VALIDATION = "VALIDATION",
-  /** Errore di autenticazione Supabase */
-  AUTH = "AUTH",
-  /** Errore di creazione customer Stripe */
-  STRIPE = "STRIPE",
-  /** Errore di sincronizzazione database */
-  SYNC = "SYNC",
-  /** Errore interno del server */
-  INTERNAL = "INTERNAL",
-}
 
 /**
  * Tipi di errore per la gestione unificata degli errori di autenticazione
@@ -164,7 +145,10 @@ export interface AuthActions {
   /** Funzione di logout */
   signOut: () => Promise<void>;
   /** Funzione di refresh sessione */
-  refreshSession: () => Promise<{ user: unknown | null; session: unknown | null }>;
+  refreshSession: () => Promise<{
+    user: unknown | null;
+    session: unknown | null;
+  }>;
   /** Funzione per pulire errori */
   clearError: () => void;
   /** Funzione per settare errore strutturato */
@@ -186,10 +170,8 @@ export const SIGNUP_CONFIG = {
   /** Intervallo di check per la sincronizzazione (in ms) */
   STRIPE_SYNC_INTERVAL: 100,
   /** URL di redirect dopo signup completato */
-  COMPLETION_REDIRECT: '/signup/complete',
+  COMPLETION_REDIRECT: "/signup/complete",
 } as const;
-
-
 
 /**
  * Enhanced validation result for signup with channel linking
@@ -208,9 +190,11 @@ export interface EnhancedValidationResult {
  * @param formData - FormData to validate
  * @returns Enhanced validation result with channel parameters
  */
-export function validateEnhancedSignupFormData(formData: FormData): EnhancedValidationResult {
+export function validateEnhancedSignupFormData(
+  formData: FormData
+): EnhancedValidationResult {
   const errors: ValidationError[] = [];
-  
+
   // Extract and clean basic data
   const email = formData.get("email")?.toString()?.trim();
   const password = formData.get("password")?.toString();
@@ -252,8 +236,9 @@ export function validateEnhancedSignupFormData(formData: FormData): EnhancedVali
   // Extract additional channel linking parameters
   const channel = formData.get("channel")?.toString()?.trim();
   const link = formData.get("link")?.toString()?.trim();
-  const userExistsOverride = formData.get("userExistsOverride")?.toString() === 'true';
-  const skipOnboarding = formData.get("skipOnboarding")?.toString() === 'true';
+  const userExistsOverride =
+    formData.get("userExistsOverride")?.toString() === "true";
+  const skipOnboarding = formData.get("skipOnboarding")?.toString() === "true";
 
   return {
     isValid: true,
@@ -286,15 +271,10 @@ export function createErrorFormState(
 }
 
 /**
- * Funzione di utilità per creare FormState di successo
- * @param message - Messaggio di successo
- * @param userId - ID utente creato (opzionale)
- * @returns FormState con successo
+ * Funzione di utilità per creare FormState di successo (internal - currently unused)
  */
-export function createSuccessFormState(
-  message: string,
-  userId?: string
-): FormState {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function createSuccessFormState(message: string, userId?: string): FormState {
   return {
     message,
     success: true,
@@ -420,16 +400,28 @@ export function supabaseErrorToAuthError(error: unknown): AuthError {
     const details = { originalError: serialize(error) };
     // Heuristic mappings
     if (/invalid login credentials/i.test(msg)) {
-      return createAuthError(AuthErrorType.AUTH_FAILED, "Credenziali di accesso non valide", { details });
+      return createAuthError(
+        AuthErrorType.AUTH_FAILED,
+        "Credenziali di accesso non valide",
+        { details }
+      );
     }
     if (/session_expired|token/i.test(msg)) {
-      return createAuthError(AuthErrorType.SESSION_EXPIRED, "La sessione è scaduta, effettua nuovamente l'accesso", {
-        details,
-        requiresReauth: true,
-      });
+      return createAuthError(
+        AuthErrorType.SESSION_EXPIRED,
+        "La sessione è scaduta, effettua nuovamente l'accesso",
+        {
+          details,
+          requiresReauth: true,
+        }
+      );
     }
     if (/network|fetch/i.test(msg)) {
-      return createAuthError(AuthErrorType.NETWORK_ERROR, "Errore di connessione, riprova", { details });
+      return createAuthError(
+        AuthErrorType.NETWORK_ERROR,
+        "Errore di connessione, riprova",
+        { details }
+      );
     }
     return createAuthError(AuthErrorType.SERVER_ERROR, msg, { details });
   }
@@ -438,10 +430,17 @@ export function supabaseErrorToAuthError(error: unknown): AuthError {
   const obj = error as Record<string, unknown>;
 
   // helper to safely retrieve nested string properties from unknown objects
-  const safeGetString = (o: Record<string, unknown>, path: string[]): string | undefined => {
+  const safeGetString = (
+    o: Record<string, unknown>,
+    path: string[]
+  ): string | undefined => {
     let cur: unknown = o;
     for (const key of path) {
-      if (typeof cur === "object" && cur !== null && key in (cur as Record<string, unknown>)) {
+      if (
+        typeof cur === "object" &&
+        cur !== null &&
+        key in (cur as Record<string, unknown>)
+      ) {
         cur = (cur as Record<string, unknown>)[key];
       } else {
         return undefined;
@@ -459,34 +458,54 @@ export function supabaseErrorToAuthError(error: unknown): AuthError {
   ].filter(Boolean) as string[];
 
   const messageFromObj =
-    (candidates.length > 0 && String(candidates[0])) || JSON.stringify(obj).slice(0, 200) || "Errore di autenticazione";
+    (candidates.length > 0 && String(candidates[0])) ||
+    JSON.stringify(obj).slice(0, 200) ||
+    "Errore di autenticazione";
 
   const details = { originalError: serialize(obj) };
   if (/invalid login credentials/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.AUTH_FAILED, "Credenziali di accesso non valide", { details });
+    return createAuthError(
+      AuthErrorType.AUTH_FAILED,
+      "Credenziali di accesso non valide",
+      { details }
+    );
   }
   if (/session_expired|token/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.SESSION_EXPIRED, "La sessione è scaduta, effettua nuovamente l'accesso", {
-      details,
-      requiresReauth: true,
-    });
+    return createAuthError(
+      AuthErrorType.SESSION_EXPIRED,
+      "La sessione è scaduta, effettua nuovamente l'accesso",
+      {
+        details,
+        requiresReauth: true,
+      }
+    );
   }
   if (/network|fetch/i.test(messageFromObj)) {
-    return createAuthError(AuthErrorType.NETWORK_ERROR, "Errore di connessione, riprova", { details });
+    return createAuthError(
+      AuthErrorType.NETWORK_ERROR,
+      "Errore di connessione, riprova",
+      { details }
+    );
   }
 
-  return createAuthError(AuthErrorType.SERVER_ERROR, messageFromObj, { details });
+  return createAuthError(AuthErrorType.SERVER_ERROR, messageFromObj, {
+    details,
+  });
 }
 
 /**
- * Messaggi di errore localizzati per i tipi di errore
+ * Messaggi di errore localizzati per i tipi di errore (internal)
  */
-export const AUTH_ERROR_MESSAGES: Record<AuthErrorType, string> = {
-  [AuthErrorType.SESSION_EXPIRED]: "La sessione è scaduta, effettua nuovamente l'accesso",
-  [AuthErrorType.UNAUTHORIZED]: "Non hai i permessi per accedere a questa risorsa",
-  [AuthErrorType.AUTH_FAILED]: "Autenticazione fallita, controlla le credenziali",
+const AUTH_ERROR_MESSAGES: Record<AuthErrorType, string> = {
+  [AuthErrorType.SESSION_EXPIRED]:
+    "La sessione è scaduta, effettua nuovamente l'accesso",
+  [AuthErrorType.UNAUTHORIZED]:
+    "Non hai i permessi per accedere a questa risorsa",
+  [AuthErrorType.AUTH_FAILED]:
+    "Autenticazione fallita, controlla le credenziali",
   [AuthErrorType.TOKEN_REFRESH_FAILED]: "Errore nel rinnovo della sessione",
-  [AuthErrorType.NETWORK_ERROR]: "Errore di connessione, controlla la tua connessione",
+  [AuthErrorType.NETWORK_ERROR]:
+    "Errore di connessione, controlla la tua connessione",
   [AuthErrorType.SERVER_ERROR]: "Errore del server, riprova più tardi",
   [AuthErrorType.UNKNOWN_ERROR]: "Si è verificato un errore sconosciuto",
 };
@@ -497,5 +516,8 @@ export const AUTH_ERROR_MESSAGES: Record<AuthErrorType, string> = {
  * @returns Messaggio localizzato
  */
 export function getAuthErrorMessage(type: AuthErrorType): string {
-  return AUTH_ERROR_MESSAGES[type] || AUTH_ERROR_MESSAGES[AuthErrorType.UNKNOWN_ERROR];
+  return (
+    AUTH_ERROR_MESSAGES[type] ||
+    AUTH_ERROR_MESSAGES[AuthErrorType.UNKNOWN_ERROR]
+  );
 }

@@ -1,61 +1,8 @@
 // lib/queries/usage.ts
 
 import { createClient } from "@/lib/db/server";
-import type { Database as PublicDatabase } from "@/lib/db/schemas/public";
 import { getUserSubscription } from "./subscription";
-import type {
-  UserTierAndUsageResult,
-  UsageData,
-  CurrentUsage,
-} from "@/lib/types/usage";
-
-// Type aliases for better readability
-type UsageRecord = PublicDatabase["public"]["Tables"]["usage_records"]["Row"];
-type UsageRecordInsert =
-  PublicDatabase["public"]["Tables"]["usage_records"]["Insert"];
-type UsageRecordUpdate =
-  PublicDatabase["public"]["Tables"]["usage_records"]["Update"];
-
-/**
- * Gets user tier and usage information using the database function.
- */
-export async function getUserTierAndUsage(
-  userId: string
-): Promise<UserTierAndUsageResult | null> {
-  const supabase = await createClient();
-
-  try {
-    const { data, error } = await supabase.rpc("get_user_usage_and_limits", {
-      user_id: userId,
-    });
-
-    if (error) {
-      console.error("Error fetching user tier and usage:", { error, userId });
-      return null;
-    }
-
-    // Fix: The RPC returns an array with one object, so we need to access the first element
-    const usageData = data?.[0];
-
-    if (!usageData) {
-      return null;
-    }
-
-    return {
-      tokens_used: usageData.tokens_used,
-      requests_used: usageData.requests_used,
-      tokens_limit: usageData.tier_tokens_limit,
-      requests_limit: usageData.tier_requests_limit,
-      history_limit: usageData.tier_history_limit,
-    };
-  } catch (error) {
-    console.error(
-      "Error fetching user tier and usage:",
-      { error, userId }
-    );
-    return null;
-  }
-}
+import type { UsageData } from "@/lib/types/usage";
 
 /**
  * Legacy function for compatibility with existing dashboard components.
@@ -74,7 +21,10 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
   const { data: rpcData, error: rpcError } = usageResponse;
 
   if (rpcError) {
-    console.error("Error calling get_user_usage_and_limits RPC:", { error: rpcError.message, userId });
+    console.error("Error calling get_user_usage_and_limits RPC:", {
+      error: rpcError.message,
+      userId,
+    });
     // If the RPC fails, we still return a valid default object to prevent UI crashes.
   }
 
@@ -108,94 +58,4 @@ export async function getUserUsage(userId: string): Promise<UsageData> {
     period_start: periodStart,
     period_end: periodEnd,
   };
-}
-
-/**
- * Gets current usage for a user.
- */
-export async function getCurrentUsage(
-  userId: string
-): Promise<CurrentUsage | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.rpc("get_current_usage", {
-    user_id: userId,
-  });
-
-  if (error) {
-    console.error("Error fetching current usage:", { error, userId });
-    return null;
-  }
-
-  return data;
-}
-
-/**
- * Gets usage records for a specific user and channel.
- */
-export async function getUserChannelUsage(
-  userId: string,
-  channelId: string
-): Promise<UsageRecord[]> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("usage_records")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("channel_id", channelId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching user channel usage:", { error, channelId, userId });
-    return [];
-  }
-
-  return data || [];
-}
-
-/**
- * Creates a new usage record.
- */
-export async function createUsageRecord(
-  usageData: UsageRecordInsert
-): Promise<UsageRecord | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("usage_records")
-    .insert(usageData)
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("Error creating usage record:", { error, usageData });
-    return null;
-  }
-
-  return data;
-}
-
-/**
- * Updates an existing usage record.
- */
-export async function updateUsageRecord(
-  id: string,
-  updates: UsageRecordUpdate
-): Promise<UsageRecord | null> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("usage_records")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-
-  if (error) {
-    console.error("Error updating usage record:", { error, id, updates });
-    return null;
-  }
-
-  return data;
 }
