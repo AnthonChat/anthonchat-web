@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2025-11-19T10:56:18.000Z",
+  "updatedAt": "2025-11-26T17:55:23.000Z",
   "createdAt": "2025-11-15T22:44:46.841Z",
   "id": "UlJp2mQSq3a31PAa",
   "name": "Eval",
@@ -158,10 +158,10 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 1631592354,
+          "value": 888483290,
           "mode": "list",
-          "cachedResultName": "benchmark",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit#gid=1631592354"
+          "cachedResultName": "benchmark v2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1K9TRi-hyDKYheGtzSrvdkY7ZSHnFDtr5OBbLPlPj7Uk/edit#gid=888483290"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -310,8 +310,7 @@
         736
       ],
       "id": "4b422a00-af61-48fe-836c-a4b2e1689d7b",
-      "name": "Call 'glm-4.6'",
-      "disabled": true
+      "name": "Call 'glm-4.6'"
     },
     {
       "parameters": {
@@ -365,8 +364,7 @@
         544
       ],
       "id": "21f019a4-a063-45e3-b87f-2a39939613a2",
-      "name": "Call 'kimi-k2-thinking'",
-      "disabled": true
+      "name": "Call 'kimi-k2-thinking'"
     },
     {
       "parameters": {
@@ -420,8 +418,7 @@
         352
       ],
       "id": "c409aff3-e186-46c7-b540-887866e1a482",
-      "name": "Call 'gpt-5.1-codex-mini'",
-      "disabled": true
+      "name": "Call 'gpt-5.1-codex-mini'"
     },
     {
       "parameters": {
@@ -530,8 +527,7 @@
         928
       ],
       "id": "9ccb91ea-ba03-4f45-bf34-3464331548df",
-      "name": "Call 'gpt-5.1'",
-      "disabled": true
+      "name": "Call 'gpt-5.1'"
     },
     {
       "parameters": {
@@ -585,8 +581,7 @@
         1312
       ],
       "id": "b6e7a541-dbf5-49cb-a105-21cc54b07055",
-      "name": "Call 'grok-4-fast'",
-      "disabled": true
+      "name": "Call 'grok-4-fast'"
     },
     {
       "parameters": {
@@ -640,8 +635,7 @@
         1504
       ],
       "id": "8b198a6b-28b6-495b-bf09-7395189ec833",
-      "name": "Call 'gemini-2.5-flash'",
-      "disabled": true
+      "name": "Call 'gemini-2.5-flash'"
     },
     {
       "parameters": {
@@ -786,58 +780,6 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "fakn3aPaB8SnCgoa",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/fakn3aPaB8SnCgoa",
-          "cachedResultName": "Anthon — claude-sonnet-4.5"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "prompt": "={{ $json.prompt }}",
-            "system": "={{ $json.system }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "prompt",
-              "displayName": "prompt",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "system",
-              "displayName": "system",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        192,
-        1696
-      ],
-      "id": "9ee95bf4-2e9f-4ee9-9916-ee7a89616b11",
-      "name": "Call 'claude-sonnet-4.5'"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
           "value": "t7TpYW1rOwFbCQKv",
           "mode": "list",
           "cachedResultUrl": "/workflow/t7TpYW1rOwFbCQKv",
@@ -922,6 +864,58 @@
       ],
       "id": "ae8c8e02-b698-4f34-9732-460059c09441",
       "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "fakn3aPaB8SnCgoa",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/fakn3aPaB8SnCgoa",
+          "cachedResultName": "Anthon — gemini-3.0-pro"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "system": "={{ $json.system }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "system",
+              "displayName": "system",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        1696
+      ],
+      "id": "9ee95bf4-2e9f-4ee9-9916-ee7a89616b11",
+      "name": "Call 'gemini-3.0-pro'"
     }
   ],
   "connections": {
@@ -1146,7 +1140,7 @@
             "index": 0
           },
           {
-            "node": "Call 'claude-sonnet-4.5'",
+            "node": "Call 'gemini-3.0-pro'",
             "type": "main",
             "index": 0
           }
@@ -1180,17 +1174,6 @@
         []
       ]
     },
-    "Call 'claude-sonnet-4.5'": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 7
-          }
-        ]
-      ]
-    },
     "If": {
       "main": [
         [
@@ -1198,6 +1181,17 @@
             "node": "Loop Over Items",
             "type": "main",
             "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'gemini-3.0-pro'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 7
           }
         ]
       ]
@@ -1211,8 +1205,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "98e0a68c-53d1-42d3-9404-82166d9fbc4e",
-  "versionCounter": 21,
+  "versionId": "9bfa1b5b-6194-4789-9543-56ece3199e55",
+  "versionCounter": 22,
   "triggerCount": 0,
   "shared": [
     {
@@ -1239,7 +1233,7 @@
             "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
             "projectId": "w51XaKZpdbYjr1WH",
             "user": {
-              "updatedAt": "2025-11-23T23:01:49.000Z",
+              "updatedAt": "2025-11-27T23:03:30.000Z",
               "createdAt": "2025-05-13T16:58:19.526Z",
               "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
               "email": "matteoscarselletta5@gmail.com",
@@ -1262,7 +1256,7 @@
               },
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-11-23",
+              "lastActiveAt": "2025-11-27",
               "isPending": false
             }
           }

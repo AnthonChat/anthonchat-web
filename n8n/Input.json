@@ -1,0 +1,830 @@
+{
+  "updatedAt": "2025-11-25T18:04:48.000Z",
+  "createdAt": "2025-11-23T20:15:50.489Z",
+  "id": "WGjQNwUEI5QwYycz",
+  "name": "Input",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": []
+        }
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -8848,
+        2744
+      ],
+      "id": "40bb2a0a-e21b-43de-917e-2567fb8630bc",
+      "name": "WhatsApp Trigger",
+      "webhookId": "b675884f-d46f-4819-a1c5-6abed3a1d449",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "fGCFRo29UM8Vd1jN",
+          "name": "WhatsApp OAuth Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -7280,
+        2840
+      ],
+      "id": "fb8e04d6-2c70-4f51-a058-cfbd3dbc6eb8",
+      "name": "Telegram Trigger",
+      "webhookId": "9b850358-4c5d-47ec-9739-a1a3aa27c0b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "2dft3DtBL46f1EiM",
+          "name": "Telegram account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07fbf10f-9f99-4486-8d44-f1a72722fa63",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "1047bc46-92a9-402a-a12d-25a96f58b128",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "f2b111d4-59a3-450b-81aa-45d1c1fdaa9e",
+              "name": "channel",
+              "value": "={{ $json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "7013b91e-f53e-4c57-83c5-ee1bc8d21517",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "9739ea53-8eba-4861-801b-1fa251574928",
+              "name": "type",
+              "value": "={{ $json.message? 'text':'audio' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6832,
+        2744
+      ],
+      "id": "c58fa11e-ceda-4918-ab71-96526baf50d7",
+      "name": "Normalize"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e399b1e-be33-48d9-8e4b-64f3eb711b48",
+              "name": "message",
+              "value": "={{ $json.text?$json.text:$('WhatsApp Trigger').item.json.messages[0].text.body}}",
+              "type": "string"
+            },
+            {
+              "id": "098ee7fa-101d-4b2e-bded-0bb7589921a9",
+              "name": "data",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "4815d4ca-a91a-4dc4-a1f8-94292cf518bf",
+              "name": "channel",
+              "value": "whatsapp",
+              "type": "string"
+            },
+            {
+              "id": "36916b42-579f-4123-8795-69224d41b954",
+              "name": "id",
+              "value": "=+{{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -7056,
+        2648
+      ],
+      "id": "9a88235e-97cb-49f6-860f-b5bc65c5ef97",
+      "name": "Parse Whatsapp"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9204299-e972-4e87-968e-0f1deb6f6ff2",
+              "name": "message",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "cc325130-fcd9-469a-944d-cb8814ca1467",
+              "name": "data",
+              "value": "={{ $json.message.date }}",
+              "type": "string"
+            },
+            {
+              "id": "b7faacd5-dbed-4a9c-8cf6-a108edc79cde",
+              "name": "channel",
+              "value": "telegram",
+              "type": "string"
+            },
+            {
+              "id": "832b3fdd-0460-4364-b3ac-da21ad95f6da",
+              "name": "id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ddbf9219-d250-43d7-b9a9-29f6b45255bb",
+              "name": "username",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.username }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -7056,
+        2840
+      ],
+      "id": "2bb2bedb-be73-4700-88f8-5954d8d9e481",
+      "name": "Parse Telegram"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT public.get_user_by_channel('{{ $json.channel }}', '{{ $json.id }}');",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -6608,
+        2744
+      ],
+      "id": "a0946a81-cbc1-4c91-a1e1-278acd5c87af",
+      "name": "User",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "O1bUvwnDDbpsHdSG",
+          "name": "Supabase Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Esy7l7kqfkgJCexX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Esy7l7kqfkgJCexX",
+          "cachedResultName": "Anthon — Main - Test"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -8400,
+        2840
+      ],
+      "id": "6a0a9005-7122-4616-a9a7-48c369942a62",
+      "name": "Call 'Main - Test'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xN1s3Oft7TdFDJtl",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xN1s3Oft7TdFDJtl",
+          "cachedResultName": "Anthon — Static"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $json.message }}",
+            "channel": "={{ $json.channel }}",
+            "user": "={{ $json.user }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -6160,
+        2744
+      ],
+      "id": "ddfbb21c-7de4-4a63-8b14-7e180f728128",
+      "name": "Call 'Static'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0d65303c-42f5-4a4e-a889-3bda72e8717f",
+              "name": "message.text",
+              "value": "={{ $('Normalize').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "f3711700-63fd-4472-9bcd-5fc2a22ede0a",
+              "name": "message.data",
+              "value": "={{ $('Normalize').item.json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "8615fba2-c456-4ed0-a59e-afc2bbdac00e",
+              "name": "channel.name",
+              "value": "={{ $('Normalize').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "f161c64f-0f0b-4c78-b788-8ae5f2b60fbd",
+              "name": "channel.id",
+              "value": "={{ $('Normalize').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ea0f9f67-5ea8-4acc-ae1d-c963548be1ed",
+              "name": "message.type",
+              "value": "={{ $('Normalize').item.json.type }}",
+              "type": "string"
+            },
+            {
+              "id": "bd906dac-f365-435f-a0b3-b1374fc134f1",
+              "name": "user.user_id",
+              "value": "={{ $json.get_user_by_channel.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "57decab0-19e4-4caf-9607-cca850e70e52",
+              "name": "user.stripe_customer_id",
+              "value": "={{ $json.get_user_by_channel.stripe_customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9bb23d41-ba94-435d-a13e-2f34a06ce6d3",
+              "name": "user.email",
+              "value": "={{ $json.get_user_by_channel.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6384,
+        2744
+      ],
+      "id": "150a7c14-db5f-4746-9e2b-cd5c0cde9cf0",
+      "name": "Output"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a63ab886-e3a9-4c0b-80c7-3cd5f741752b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "771ebc4c-8f1a-4864-9847-7d7aca6a3564",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -8400,
+        2648
+      ],
+      "id": "33862b4e-9543-4a6c-a2c1-d5124c3cbc2c",
+      "name": "Input Type"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a29d32b9-7176-48c2-b2ed-6d2e9d94a2f3",
+              "leftValue": "={{ $json.metadata.display_phone_number }}",
+              "rightValue": "15556475202",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -8624,
+        2744
+      ],
+      "id": "3caef412-42df-4892-8ff4-01f447968c39",
+      "name": "Test"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -8176,
+        2576
+      ],
+      "id": "b74d3085-ad74-4160-a8a4-d809ac90841c",
+      "name": "Download Audio",
+      "webhookId": "500f3d50-35bf-4eb1-bc98-b7c5e56983da",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7952,
+        2576
+      ],
+      "id": "63e35923-12b1-4665-ab75-0d8e8df4e5af",
+      "name": "Get",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "wdn3wN2Esq5Kw15h",
+          "name": "WhatsApp Business Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        -7728,
+        2576
+      ],
+      "id": "da11fe19-37d7-4bb3-b840-53a882731029",
+      "name": "Transcribe audio",
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "Nu1hcuXJjnZe8vBu",
+          "name": "ElevenLabs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/688829180989827/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n       \"messaging_product\": \"whatsapp\",\n       \"status\": \"read\",\n       \"to\": \"{{$('Input Type').item.json.messages[0].from}}\",\n       \"message_id\": \"{{$('Input Type').item.json.messages[0].id}}\",\n       \"typing_indicator\": {\n         \"type\": \"text\"\n       }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -7280,
+        2648
+      ],
+      "id": "2d153378-7980-40e4-89a8-9e7fb1028262",
+      "name": "Typing Indicator",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "gu94WwOjdfUjSY0s",
+          "name": "Bearer Auth Whatsapp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab74dccf-c879-4cf2-a477-0bce3adcbb25",
+              "leftValue": "={{ $('WhatsApp Trigger').item.json.statuses }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7504,
+        2648
+      ],
+      "id": "0386a465-9667-4c39-86ac-d5d1096f1c0b",
+      "name": "Stauts Recived"
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Whatsapp": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Telegram": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output": {
+      "main": [
+        [
+          {
+            "node": "Call 'Static'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Type": {
+      "main": [
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stauts Recived",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test": {
+      "main": [
+        [
+          {
+            "node": "Input Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'Main - Test'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Get",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get": {
+      "main": [
+        [
+          {
+            "node": "Transcribe audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe audio": {
+      "main": [
+        [
+          {
+            "node": "Stauts Recived",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Typing Indicator": {
+      "main": [
+        [
+          {
+            "node": "Parse Whatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stauts Recived": {
+      "main": [
+        [
+          {
+            "node": "Typing Indicator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "bdc00472-a0f2-4e55-bd77-6b45aff291eb",
+  "versionCounter": 18,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-23T20:15:50.493Z",
+      "createdAt": "2025-11-23T20:15:50.493Z",
+      "role": "workflow:owner",
+      "workflowId": "WGjQNwUEI5QwYycz",
+      "projectId": "w51XaKZpdbYjr1WH",
+      "project": {
+        "updatedAt": "2025-09-02T16:06:58.000Z",
+        "createdAt": "2025-05-13T16:58:58.724Z",
+        "id": "w51XaKZpdbYjr1WH",
+        "name": "Anthon",
+        "type": "team",
+        "icon": {
+          "type": "icon",
+          "value": "layer-group"
+        },
+        "description": "",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-09-02T16:06:58.592Z",
+            "createdAt": "2025-09-02T16:06:58.592Z",
+            "userId": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+            "projectId": "w51XaKZpdbYjr1WH",
+            "user": {
+              "updatedAt": "2025-11-27T23:03:30.000Z",
+              "createdAt": "2025-05-13T16:58:19.526Z",
+              "id": "07ed0b83-f39b-4f52-a1ba-1b6d20b7ec1d",
+              "email": "matteoscarselletta5@gmail.com",
+              "firstName": "matteo",
+              "lastName": "scarselletta",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "4Fz9uXaTY1aVKCzC",
+                "userActivatedAt": 1747234533124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763306529691
+                },
+                "easyAIWorkflowOnboarded": true,
+                "userClaimedAiCredits": true,
+                "dismissedCallouts": {
+                  "preBuiltAgentsCalloutHttpRequest": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-11-27",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

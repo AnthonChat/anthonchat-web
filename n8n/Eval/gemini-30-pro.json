@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2025-11-23T16:04:28.000Z",
-  "createdAt": "2025-11-16T21:23:07.930Z",
-  "id": "uyGzJ1nGTLl5Dp4w",
-  "name": "minimax-m2",
+  "updatedAt": "2025-11-26T18:22:40.000Z",
+  "createdAt": "2025-11-17T15:30:25.980Z",
+  "id": "fakn3aPaB8SnCgoa",
+  "name": "gemini-3.0-pro",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -17,7 +17,7 @@
         432,
         640
       ],
-      "id": "373e2360-034a-4a3f-8ba2-013b758a7af1",
+      "id": "6ff0c954-1487-4b6a-b157-d1b864301bca",
       "name": "Qwen3-8B Knowledge 4",
       "credentials": {
         "huggingFaceApi": {
@@ -45,7 +45,7 @@
         -528,
         0
       ],
-      "id": "31a1ecb0-6d48-458f-82ec-1662b402d897",
+      "id": "143ad7dd-6eb2-4fa0-993d-960b3c6b97ec",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -63,7 +63,7 @@
         -64,
         0
       ],
-      "id": "b329c3eb-7242-47ea-8d54-546efbd00c34",
+      "id": "dd2343da-b938-4859-b9e0-6d89c033c836",
       "name": "Agent",
       "retryOnFail": true
     },
@@ -79,7 +79,7 @@
         -176,
         224
       ],
-      "id": "9ab20508-6822-4828-87f3-f7adfac6cde0",
+      "id": "a911ed4b-09de-4108-bc3c-4b3fc52201d1",
       "name": "Stripe"
     },
     {
@@ -93,7 +93,7 @@
         112,
         224
       ],
-      "id": "36dd1f33-0920-4663-885c-646155a3810b",
+      "id": "8da22a5e-e701-4208-9202-4458a4b6d3df",
       "name": "save_memory"
     },
     {
@@ -110,7 +110,7 @@
         -160,
         432
       ],
-      "id": "32e2ca48-e764-4a9c-8732-bd9f06366f15",
+      "id": "9b16959f-b81b-4b02-a4fe-20d3137e0b9d",
       "name": "StripeModel",
       "credentials": {
         "openRouterApi": {
@@ -133,7 +133,7 @@
         176,
         432
       ],
-      "id": "5a872da7-ef72-4cfb-b137-8f68f7b988d2",
+      "id": "3f35345c-a1df-4759-a933-49af8e297776",
       "name": "KnowledgeModel",
       "credentials": {
         "openRouterApi": {
@@ -152,7 +152,7 @@
         48,
         432
       ],
-      "id": "b9abe01b-5f4b-496d-a06f-64bc2aaecc7b",
+      "id": "c0e77b1a-5237-47e1-869d-5d13dbd97418",
       "name": "payment_info"
     },
     {
@@ -174,7 +174,7 @@
         352,
         432
       ],
-      "id": "63835bfa-8ed3-4261-a293-47a0ff7967a5",
+      "id": "e6259206-360c-40c9-9343-2d48b38622fd",
       "name": "knowledge",
       "credentials": {
         "pineconeApi": {
@@ -195,7 +195,7 @@
         240,
         224
       ],
-      "id": "0fcc57bd-7c68-4279-b76b-47aa4f138a54",
+      "id": "5d16fa89-c84b-4932-bd70-4895032f589d",
       "name": "Knowledge"
     },
     {
@@ -205,7 +205,7 @@
             {
               "id": "44bee18e-062e-413d-b116-51c1f26b60f9",
               "name": "model",
-              "value": "minimax-m2",
+              "value": "claude-sonnet-4.5",
               "type": "string"
             },
             {
@@ -236,12 +236,12 @@
         720,
         0
       ],
-      "id": "c7620ea9-4a45-407d-821c-e9884ef3ec6e",
+      "id": "49798aaf-d91c-481c-bf56-258c7d53f214",
       "name": "Parse Agent"
     },
     {
       "parameters": {
-        "model": "minimax/minimax-m2",
+        "model": "google/gemini-3-pro-preview",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
@@ -250,8 +250,8 @@
         -304,
         224
       ],
-      "id": "19a50b4b-6bdf-44bd-9e3f-2332fa9b1f63",
-      "name": "minimax-m2",
+      "id": "a3736328-bd14-4b74-adf6-0673383adf1d",
+      "name": "gemini-3.0-pro",
       "notesInFlow": false,
       "credentials": {
         "openRouterApi": {
@@ -372,7 +372,7 @@
         ]
       ]
     },
-    "minimax-m2": {
+    "gemini-3.0-pro": {
       "ai_languageModel": [
         [
           {
@@ -392,15 +392,15 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1275121a-bb2c-498e-bd78-17a880c31fce",
-  "versionCounter": 17,
+  "versionId": "6aed1a27-41b4-482f-b20a-9dcf01b6fe3c",
+  "versionCounter": 27,
   "triggerCount": 0,
   "shared": [
     {
-      "updatedAt": "2025-11-16T21:23:07.934Z",
-      "createdAt": "2025-11-16T21:23:07.934Z",
+      "updatedAt": "2025-11-17T15:30:25.985Z",
+      "createdAt": "2025-11-17T15:30:25.985Z",
       "role": "workflow:owner",
-      "workflowId": "uyGzJ1nGTLl5Dp4w",
+      "workflowId": "fakn3aPaB8SnCgoa",
       "projectId": "w51XaKZpdbYjr1WH",
       "project": {
         "updatedAt": "2025-09-02T16:06:58.000Z",

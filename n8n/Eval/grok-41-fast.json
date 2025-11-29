@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2025-11-23T16:04:28.000Z",
-  "createdAt": "2025-11-16T21:23:07.930Z",
-  "id": "uyGzJ1nGTLl5Dp4w",
-  "name": "minimax-m2",
+  "updatedAt": "2025-11-25T17:38:38.000Z",
+  "createdAt": "2025-11-16T21:27:02.850Z",
+  "id": "FL23XhnJxs5MO540",
+  "name": "grok-4.1-fast",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -17,7 +17,7 @@
         432,
         640
       ],
-      "id": "373e2360-034a-4a3f-8ba2-013b758a7af1",
+      "id": "7c8bfd22-365c-4741-a9b4-176c6bfe453c",
       "name": "Qwen3-8B Knowledge 4",
       "credentials": {
         "huggingFaceApi": {
@@ -45,7 +45,7 @@
         -528,
         0
       ],
-      "id": "31a1ecb0-6d48-458f-82ec-1662b402d897",
+      "id": "90f7c203-368d-4067-9253-2000b3254a74",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -63,7 +63,7 @@
         -64,
         0
       ],
-      "id": "b329c3eb-7242-47ea-8d54-546efbd00c34",
+      "id": "ad4208d7-35b8-495c-bc84-8e27a18dc803",
       "name": "Agent",
       "retryOnFail": true
     },
@@ -79,7 +79,7 @@
         -176,
         224
       ],
-      "id": "9ab20508-6822-4828-87f3-f7adfac6cde0",
+      "id": "9607b56f-0838-4551-84bf-5f80fe21667e",
       "name": "Stripe"
     },
     {
@@ -93,7 +93,7 @@
         112,
         224
       ],
-      "id": "36dd1f33-0920-4663-885c-646155a3810b",
+      "id": "f4ec4603-38ce-4210-8dfa-0797bbca17cb",
       "name": "save_memory"
     },
     {
@@ -110,7 +110,7 @@
         -160,
         432
       ],
-      "id": "32e2ca48-e764-4a9c-8732-bd9f06366f15",
+      "id": "1589446d-0632-47cc-bb01-6969a3bac136",
       "name": "StripeModel",
       "credentials": {
         "openRouterApi": {
@@ -133,7 +133,7 @@
         176,
         432
       ],
-      "id": "5a872da7-ef72-4cfb-b137-8f68f7b988d2",
+      "id": "75340284-4292-427a-8317-811379f5b0c1",
       "name": "KnowledgeModel",
       "credentials": {
         "openRouterApi": {
@@ -152,7 +152,7 @@
         48,
         432
       ],
-      "id": "b9abe01b-5f4b-496d-a06f-64bc2aaecc7b",
+      "id": "b161f35e-52ae-41f5-b0ce-efb1a6a013b9",
       "name": "payment_info"
     },
     {
@@ -174,7 +174,7 @@
         352,
         432
       ],
-      "id": "63835bfa-8ed3-4261-a293-47a0ff7967a5",
+      "id": "da3aed50-1d85-446a-9751-a30a90e8b181",
       "name": "knowledge",
       "credentials": {
         "pineconeApi": {
@@ -195,7 +195,7 @@
         240,
         224
       ],
-      "id": "0fcc57bd-7c68-4279-b76b-47aa4f138a54",
+      "id": "cc5e14a2-294c-4877-92a6-d22e993b9333",
       "name": "Knowledge"
     },
     {
@@ -205,7 +205,7 @@
             {
               "id": "44bee18e-062e-413d-b116-51c1f26b60f9",
               "name": "model",
-              "value": "minimax-m2",
+              "value": "grok-4-fast",
               "type": "string"
             },
             {
@@ -236,12 +236,12 @@
         720,
         0
       ],
-      "id": "c7620ea9-4a45-407d-821c-e9884ef3ec6e",
+      "id": "f418d380-8348-4646-bd60-a67a436b71e7",
       "name": "Parse Agent"
     },
     {
       "parameters": {
-        "model": "minimax/minimax-m2",
+        "model": "x-ai/grok-4.1-fast",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
@@ -250,8 +250,8 @@
         -304,
         224
       ],
-      "id": "19a50b4b-6bdf-44bd-9e3f-2332fa9b1f63",
-      "name": "minimax-m2",
+      "id": "d79e9411-5f64-4158-b7ca-86c9d0d5bc65",
+      "name": "grok-4.1-fast",
       "notesInFlow": false,
       "credentials": {
         "openRouterApi": {
@@ -372,7 +372,7 @@
         ]
       ]
     },
-    "minimax-m2": {
+    "grok-4.1-fast": {
       "ai_languageModel": [
         [
           {
@@ -392,15 +392,15 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1275121a-bb2c-498e-bd78-17a880c31fce",
-  "versionCounter": 17,
+  "versionId": "34b66a98-54fd-419b-9806-4e0772838467",
+  "versionCounter": 20,
   "triggerCount": 0,
   "shared": [
     {
-      "updatedAt": "2025-11-16T21:23:07.934Z",
-      "createdAt": "2025-11-16T21:23:07.934Z",
+      "updatedAt": "2025-11-16T21:27:02.853Z",
+      "createdAt": "2025-11-16T21:27:02.853Z",
       "role": "workflow:owner",
-      "workflowId": "uyGzJ1nGTLl5Dp4w",
+      "workflowId": "FL23XhnJxs5MO540",
       "projectId": "w51XaKZpdbYjr1WH",
       "project": {
         "updatedAt": "2025-09-02T16:06:58.000Z",
