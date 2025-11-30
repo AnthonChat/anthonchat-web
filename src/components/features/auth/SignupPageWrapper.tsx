@@ -16,6 +16,7 @@ interface SignupPageWrapperProps {
   message?: string | null;
   link?: string | null;
   channel?: string | null;
+  redirectTo?: string | null;
 }
 
 interface UserExistenceState {
@@ -25,7 +26,7 @@ interface UserExistenceState {
   error: string | null;
 }
 
-export default function SignupPageWrapper({ message, link, channel }: SignupPageWrapperProps) {
+export default function SignupPageWrapper({ message, link, channel, redirectTo }: SignupPageWrapperProps) {
   const { isAuthenticated, isLoading, isInitialized } = useAuthState();
   const router = useLocaleRouter();
   
@@ -37,11 +38,11 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
   });
 
   const redirectToLogin = useCallback((additionalParams: Record<string, string> = {}) => {
-    const currentParams = { message, link, channel, ...additionalParams };
+    const currentParams = { message, link, channel, redirectTo, ...additionalParams };
     const loginUrl = buildAuthRedirectUrl("LOGIN", currentParams);
     
     router.push(loginUrl);
-  }, [message, link, channel, router]);
+  }, [message, link, channel, redirectTo, router]);
 
   const t = useTranslations("auth.signupWrapper");
 
@@ -97,18 +98,21 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
 
   useEffect(() => {
     if (isInitialized && isAuthenticated) {
+      // Use redirectTo if provided, otherwise default to dashboard
+      const baseRedirectPath = redirectTo || "/dashboard";
+      
       const params = new URLSearchParams();
       if (link) params.set("link", link);
       if (channel) params.set("channel", channel);
       if (message) params.set("message", message);
       
-      const dashboardUrl = params.toString() 
-        ? `/dashboard?${params.toString()}`
-        : "/dashboard";
+      const finalUrl = params.toString() 
+        ? `${baseRedirectPath}${baseRedirectPath.includes('?') ? '&' : '?'}${params.toString()}`
+        : baseRedirectPath;
       
-      router.push(dashboardUrl);
+      router.push(finalUrl);
     }
-  }, [isAuthenticated, isInitialized, router, link, channel, message]);
+  }, [isAuthenticated, isInitialized, router, link, channel, message, redirectTo]);
 
   if (!isInitialized || isLoading) {
     return (
@@ -133,6 +137,7 @@ export default function SignupPageWrapper({ message, link, channel }: SignupPage
         message={message} 
         link={link} 
         channel={channel}
+        redirectTo={redirectTo}
         userExistenceState={userExistenceState}
         onRedirectToLogin={redirectToLogin}
       />

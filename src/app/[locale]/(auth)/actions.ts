@@ -208,6 +208,7 @@ async function linkChannelAfterLogin(
  * @param locale - Current locale
  * @param channelParams - Channel linking parameters
  * @param linkingResult - Result of channel linking attempt
+ * @param redirectTo - Custom redirect URL from form
  * @returns Redirect URL
  */
 function handlePostLoginRedirect(
@@ -220,13 +221,19 @@ function handlePostLoginRedirect(
     success: boolean;
     error?: string;
     requiresManualSetup?: boolean;
-  }
+  },
+  redirectTo?: string
 ): string {
   const hasChannelParams = Boolean(channelParams.channel || channelParams.link);
   
+  // Use custom redirectTo if provided and no channel params
+  if (redirectTo && !hasChannelParams) {
+    return getPathWithLocale(redirectTo, locale);
+  }
+  
   if (!hasChannelParams) {
-    // Standard login - redirect to dashboard
-    return getPathWithLocale("/dashboard", locale);
+    // Standard login - redirect to dashboard or custom path
+    return getPathWithLocale(redirectTo || "/dashboard", locale);
   }
 
   // Channel linking was attempted
@@ -340,6 +347,15 @@ export async function signInWithState(
 
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const redirectTo = formData.get("redirectTo")?.toString()?.trim();
+
+    // Debug: Log all form fields received
+    console.info("LOGIN DEBUG: Form data received", {
+      email: email ? "present" : "missing",
+      password: password ? "present" : "missing",
+      redirectTo: redirectTo || "NOT_PRESENT",
+      allFormKeys: Array.from(formData.keys()),
+    });
 
     // Handle channel parameters in login flow
     const channelParamResult = handleChannelParamsInLogin(formData);
@@ -349,6 +365,7 @@ export async function signInWithState(
       isValid: channelParamResult.isValid,
       channel: channelParamResult.channelParams.channel,
       hasLink: Boolean(channelParamResult.channelParams.link),
+      hasRedirectTo: Boolean(redirectTo),
     });
 
     // Validazione base
@@ -493,7 +510,8 @@ export async function signInWithState(
     const redirectUrl = handlePostLoginRedirect(
       locale,
       channelParamResult.channelParams,
-      linkingResult
+      linkingResult,
+      redirectTo
     );
 
     console.info("Redirecting after login", {
@@ -501,6 +519,7 @@ export async function signInWithState(
       redirectUrl,
       channelLinkingAttempted: channelParamResult.hasChannelParams,
       channelLinkingSuccess: linkingResult?.success,
+      customRedirectTo: Boolean(redirectTo),
     });
 
     // Redirect su successo - questo terminerà l'esecuzione

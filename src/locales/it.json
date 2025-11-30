@@ -7,14 +7,22 @@
 			"signUp": "Registrati",
 			"signOut": "Esci",
 			"cancel": "Annulla",
-			"processing": "Elaborazione..."
+			"processing": "Elaborazione...",
+			"toggleMenu": "Menu"
 		}
 	},
 	"marketing": {
+		"header": {
+			"nav": {
+				"features": "Funzionalità",
+				"howItWorks": "Come funziona",
+				"pricing": "Prezzi"
+			}
+		},
 		"hero": {
 			"title": "TRY ANTHON",
 			"subtitle": "L'AI clone di Antonio Valente",
-			"description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Accedi ora da Whasapp o Telegram.",
+			"description": "Il mental coach dei calciatori professionisti e dei VIP. Ora sempre con te 24H AL GIORNO 7 GIORNI SU 7. Accedi ora da WhatsApp o Telegram.",
 			"badge": "Coaching Mentale AI-Powered",
 			"learnMore": "Scopri di più",
 			"trust": {
@@ -46,7 +54,7 @@
 		},
 		"features": {
 			"title": "L’UNICO COACH AI ISTRUITO SUL CAMPO",
-			"description": "Allenato con migliaia di dati e aggiornato quotidianamente con strategie che producono risultati. Oggi la stessa intelligenza opera su più canali: WhatsApp, Telegram, Web Chat, Email, Instagram e altri via API.",
+			"description": "Allenato con migliaia di dati e aggiornato quotidianamente con strategie che producono risultati. Oggi la stessa intelligenza opera su più canali: WhatsApp, Telegram — altri in arrivo...",
 			"features": {
 				"1": {
 					"title": "MIGLIAIA DI DATI REALI",
@@ -98,10 +106,9 @@
 		"how": {
 			"title": "COME FUNZIONA?",
 			"steps": {
-				"1": "Scegli i canali: WhatsApp, Telegram, Web Chat, Email, Instagram o altri via API",
-				"2": "Scrivi la tua situazione o importa la tua conoscenza (FAQ, documenti, link)",
-				"3": "Chatta e imposta regole: conversazioni mirate, mini sessioni guidate dall’AI",
-				"4": "Ti sblocchi. Ti chiarisci. Agisci. Con analytics a supporto"
+				"1": "Scegli i canali: WhatsApp, Telegram (altri in arrivo...)",
+				"2": "Scrivi o invia vocali per spiegare cosa vorresti migliorare. Anthon ascolta, elabora e ti darà soluzioni preziose.",
+				"3": "Chatta e imposta regole: conversazioni mirate, mini sessioni guidate dall’AI"
 			}
 		},
 		"why": {

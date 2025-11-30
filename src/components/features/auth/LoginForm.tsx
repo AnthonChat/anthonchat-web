@@ -30,6 +30,7 @@ interface LoginFormProps {
   message?: string | null;
   link?: string | null;
   channel?: string | null;
+  redirectTo?: string | null;
 }
 
 /**
@@ -104,10 +105,11 @@ type LoginFields = z.infer<typeof LoginSchema>;
  * @param props.message - Messaggio di errore esterno (es. da URL params o redirect)
  * @param props.link - Nonce per il collegamento del canale
  * @param props.channel - ID del canale da collegare
+ * @param props.redirectTo - URL to redirect to after successful login
  *
  * @returns JSX.Element - Componente del form di login
  */
-export default function LoginForm({ message, link, channel }: LoginFormProps) {
+export default function LoginForm({ message, link, channel, redirectTo }: LoginFormProps) {
   const [formState, formAction, isPending] = useActionState(signInWithState, initialState);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -354,6 +356,13 @@ export default function LoginForm({ message, link, channel }: LoginFormProps) {
                 value="true"
               />
             )}
+            {redirectTo && (
+              <input
+                type="hidden"
+                name="redirectTo"
+                value={redirectTo}
+              />
+            )}
 
             <div className="space-y-3">
               <Label htmlFor="email" className="text-sm font-medium">
@@ -461,7 +470,7 @@ export default function LoginForm({ message, link, channel }: LoginFormProps) {
               asChild
               disabled={isPending}
             >
-              <LocaleLink href="/signup">Non hai un account? Registrati</LocaleLink>
+              <LocaleLink href={redirectTo ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}` : "/signup"}>Non hai un account? Registrati</LocaleLink>
             </Button>
           </CardFooter>
         </form>

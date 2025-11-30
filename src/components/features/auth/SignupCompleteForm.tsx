@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/db/client";
+import { useLocaleRouter } from "@/hooks/use-locale-router";
 import ChannelVerification from "../channels/ChannelVerification";
 
 interface Channel {
@@ -41,6 +41,7 @@ interface SignupCompleteFormProps {
   channels: Channel[];
   existingChannels: UserChannel[];
   channelLinkingContext?: ChannelLinkingContext;
+  redirectTo?: string | null;
 }
 
 export default function SignupCompleteForm({
@@ -48,8 +49,9 @@ export default function SignupCompleteForm({
   channels,
   existingChannels,
   channelLinkingContext,
+  redirectTo,
 }: SignupCompleteFormProps) {
-  const router = useRouter();
+  const router = useLocaleRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -204,7 +206,7 @@ export default function SignupCompleteForm({
           }
         }
 
-        router.push("/dashboard");
+        router.push(redirectTo || "/dashboard");
       } else {
         setError(
           "Setup incomplete. Please ensure at least one channel is connected."

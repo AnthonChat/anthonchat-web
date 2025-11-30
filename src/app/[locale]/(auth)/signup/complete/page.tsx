@@ -21,6 +21,7 @@ export default async function SignupCompletePage({
     skip_onboarding?: string;
     channel_error?: string;
     show_fallback?: string;
+    redirectTo?: string;
   }>;
 }) {
   const supabase = await createClient();
@@ -39,33 +40,39 @@ export default async function SignupCompletePage({
 
   const userId = claims.claims.sub;
 
-  // Check for skipOnboarding parameter - if present, redirect to dashboard immediately
+  // Get the redirectTo parameter for post-completion redirect
+  const redirectTo = resolvedSearchParams?.redirectTo;
+
+  // Check for skipOnboarding parameter - if present, redirect immediately
   const shouldSkipOnboarding = resolvedSearchParams?.skip_onboarding === 'true';
   
   if (shouldSkipOnboarding) {
-    // Build dashboard redirect URL with channel linking context
-    const dashboardParams: Record<string, string> = {};
+    // Use redirectTo if provided, otherwise default to dashboard
+    const baseRedirectPath = redirectTo || '/dashboard';
+    
+    // Build redirect URL with channel linking context
+    const redirectParams: Record<string, string> = {};
     
     if (resolvedSearchParams?.channel) {
-      dashboardParams.channel_linked = 'true';
-      dashboardParams.channel = resolvedSearchParams.channel;
+      redirectParams.channel_linked = 'true';
+      redirectParams.channel = resolvedSearchParams.channel;
     }
     
     if (resolvedSearchParams?.channel_error === 'true') {
-      dashboardParams.channel_error = 'true';
+      redirectParams.channel_error = 'true';
     }
     
     if (resolvedSearchParams?.message) {
-      dashboardParams.message = resolvedSearchParams.message;
+      redirectParams.message = resolvedSearchParams.message;
     }
 
-    // Create dashboard URL with parameters
-    const dashboardUrl = new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
-    Object.entries(dashboardParams).forEach(([key, value]) => {
-      dashboardUrl.searchParams.set(key, value);
+    // Create redirect URL with parameters
+    const redirectUrl = new URL(baseRedirectPath, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    Object.entries(redirectParams).forEach(([key, value]) => {
+      redirectUrl.searchParams.set(key, value);
     });
 
-    localeRedirect(dashboardUrl.pathname + dashboardUrl.search, locale as Locale);
+    localeRedirect(redirectUrl.pathname + redirectUrl.search, locale as Locale);
   }
 
   // 1. Check if user is already onboarded using the function
@@ -96,30 +103,34 @@ export default async function SignupCompletePage({
     !!incomingLink &&
     ["telegram", "whatsapp"].includes(incomingChannel.toLowerCase());
 
-  // If user is already onboarded and we don't need to preserve for client, redirect to dashboard
+  // If user is already onboarded and we don't need to preserve for client, redirect
   if (isOnboarded === true && !shouldPreserveForClient && !shouldSkipOnboarding) {
-    localeRedirect("/dashboard", locale as Locale);
+    // Use redirectTo if provided, otherwise default to dashboard
+    const finalRedirectPath = redirectTo || "/dashboard";
+    localeRedirect(finalRedirectPath, locale as Locale);
   }
 
   // If user is already onboarded but we have skipOnboarding parameter, redirect with context
   if (isOnboarded === true && shouldSkipOnboarding) {
-    const dashboardParams: Record<string, string> = {};
+    // Use redirectTo if provided, otherwise default to dashboard
+    const baseRedirectPath = redirectTo || '/dashboard';
+    const redirectParams: Record<string, string> = {};
     
     if (resolvedSearchParams?.channel) {
-      dashboardParams.channel_linked = 'true';
-      dashboardParams.channel = resolvedSearchParams.channel;
+      redirectParams.channel_linked = 'true';
+      redirectParams.channel = resolvedSearchParams.channel;
     }
     
     if (resolvedSearchParams?.message) {
-      dashboardParams.message = resolvedSearchParams.message;
+      redirectParams.message = resolvedSearchParams.message;
     }
 
-    const dashboardUrl = new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
-    Object.entries(dashboardParams).forEach(([key, value]) => {
-      dashboardUrl.searchParams.set(key, value);
+    const redirectUrl = new URL(baseRedirectPath, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    Object.entries(redirectParams).forEach(([key, value]) => {
+      redirectUrl.searchParams.set(key, value);
     });
 
-    localeRedirect(dashboardUrl.pathname + dashboardUrl.search, locale as Locale);
+    localeRedirect(redirectUrl.pathname + redirectUrl.search, locale as Locale);
   }
 
   // 3. If the user is NOT onboarded, we continue and fetch their profile details
@@ -205,6 +216,7 @@ export default async function SignupCompletePage({
           showFallback: showFallback,
           channel: resolvedSearchParams?.channel,
         }}
+        redirectTo={redirectTo}
       />
     </div>
   );

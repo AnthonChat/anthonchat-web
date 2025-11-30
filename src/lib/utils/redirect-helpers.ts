@@ -69,7 +69,7 @@ export function buildRedirectUrl(
  */
 function preserveParams(
   currentParams: Record<string, string | null | undefined>,
-  paramsToPreserve: string[] = ["link", "channel", "message"]
+  paramsToPreserve: string[] = ["link", "channel", "message", "redirectTo"]
 ): Record<string, string | null | undefined> {
   const preserved: Record<string, string | null | undefined> = {};
 
@@ -172,6 +172,11 @@ export function buildLoginRedirectUrl(
   // Add message for user feedback
   if (params.message) {
     redirectParams.message = params.message;
+  }
+
+  // Preserve redirectTo for post-auth navigation
+  if (params.redirectTo) {
+    redirectParams.redirectTo = params.redirectTo;
   }
 
   return buildRedirectUrl(REDIRECT_PATHS.LOGIN, redirectParams, { locale });

@@ -42,6 +42,8 @@ export interface EnhancedSignupFormData extends SignupFormData {
   userExistsOverride?: boolean;
   /** Flag to skip onboarding when channel is auto-linked */
   skipOnboarding?: boolean;
+  /** URL to redirect to after successful signup */
+  redirectTo?: string;
 }
 
 /**
@@ -239,6 +241,7 @@ export function validateEnhancedSignupFormData(
   const userExistsOverride =
     formData.get("userExistsOverride")?.toString() === "true";
   const skipOnboarding = formData.get("skipOnboarding")?.toString() === "true";
+  const redirectTo = formData.get("redirectTo")?.toString()?.trim();
 
   return {
     isValid: true,
@@ -249,6 +252,7 @@ export function validateEnhancedSignupFormData(
       link: link || undefined,
       userExistsOverride,
       skipOnboarding,
+      redirectTo: redirectTo || undefined,
     },
   };
 }

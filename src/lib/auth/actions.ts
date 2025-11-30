@@ -170,7 +170,7 @@ export async function signUp(
       );
     }
 
-    const { email, password, channel, link, userExistsOverride }: EnhancedSignupFormData = validation.data!;
+    const { email, password, channel, link, userExistsOverride, redirectTo }: EnhancedSignupFormData = validation.data!;
 
     // Step 2: Check for existing user (unless override is set)
     if (!userExistsOverride) {
@@ -428,6 +428,7 @@ export async function signUp(
       finalRedirectUrl = buildSignupCompleteRedirectUrl({
         channel,
         link,
+        redirectTo,
         skipOnboarding: 'true',
         channelLinked: channelLinkingResult?.success ? 'true' : 'false',
       }, {
@@ -440,6 +441,7 @@ export async function signUp(
       finalRedirectUrl = buildSignupCompleteRedirectUrl({
         channel,
         link,
+        redirectTo,
         channelLinked: channelLinkingResult?.success ? 'true' : 'false',
       }, {
         skipOnboarding: false,

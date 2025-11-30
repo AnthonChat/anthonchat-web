@@ -177,6 +177,45 @@ function sanitizeLocale(locale: string | null | undefined): string | null {
 }
 
 /**
+ * Sanitize redirect path by validating it's a safe internal path
+ * Only allows relative paths starting with / and prevents open redirect attacks
+ */
+export function sanitizeRedirectPath(
+  path: string | null | undefined
+): string | null {
+  if (!path || typeof path !== "string") {
+    return null;
+  }
+
+  // Remove whitespace
+  const cleaned = path.trim();
+
+  // Check if empty after cleaning
+  if (!cleaned) {
+    return null;
+  }
+
+  // Must start with / to be a relative path
+  if (!cleaned.startsWith("/")) {
+    return null;
+  }
+
+  // Prevent protocol-relative URLs (//evil.com)
+  if (cleaned.startsWith("//")) {
+    return null;
+  }
+
+  // Prevent javascript: and other dangerous protocols that might be encoded
+  const lowerCleaned = cleaned.toLowerCase();
+  if (lowerCleaned.includes("javascript:") || lowerCleaned.includes("data:")) {
+    return null;
+  }
+
+  // Return the cleaned path (limit length to prevent abuse)
+  return cleaned.slice(0, 200);
+}
+
+/**
  * Sanitize URL by validating format and removing dangerous protocols (internal helper - currently unused)
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -223,12 +262,14 @@ export function sanitizeChannelLinkingParams(params: {
   message?: string | null;
   email?: string | null;
   locale?: string | null;
+  redirectTo?: string | null;
 }): {
   link?: string;
   channel?: string;
   message?: string;
   email?: string;
   locale?: string;
+  redirectTo?: string;
 } {
   const sanitized: {
     link?: string;
@@ -236,6 +277,7 @@ export function sanitizeChannelLinkingParams(params: {
     message?: string;
     email?: string;
     locale?: string;
+    redirectTo?: string;
   } = {};
 
   // Sanitize each parameter
@@ -262,6 +304,11 @@ export function sanitizeChannelLinkingParams(params: {
   const sanitizedLocale = sanitizeLocale(params.locale);
   if (sanitizedLocale) {
     sanitized.locale = sanitizedLocale;
+  }
+
+  const sanitizedRedirectTo = sanitizeRedirectPath(params.redirectTo);
+  if (sanitizedRedirectTo) {
+    sanitized.redirectTo = sanitizedRedirectTo;
   }
 
   return sanitized;

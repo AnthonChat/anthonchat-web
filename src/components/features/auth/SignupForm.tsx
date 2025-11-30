@@ -36,6 +36,7 @@ interface SignupFormProps {
   message?: string | null;
   link?: string | null;
   channel?: string | null;
+  redirectTo?: string | null;
   userExistenceState?: UserExistenceState;
   onRedirectToLogin?: () => void;
 }
@@ -64,6 +65,7 @@ export default function SignupForm({
   message, 
   link, 
   channel, 
+  redirectTo,
   userExistenceState,
   onRedirectToLogin
 }: SignupFormProps) {
@@ -478,6 +480,7 @@ export default function SignupForm({
         <form action={formAction} onSubmit={onSubmit} noValidate>
           {channel && <input type="hidden" name="channel" value={channel} />}
           {link && <input type="hidden" name="link" value={link} />}
+          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
           <input type="hidden" name="locale" value={locale} />
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">

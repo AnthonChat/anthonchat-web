@@ -7,10 +7,18 @@
 			"signUp": "Join Free",
 			"signOut": "Log Out",
 			"cancel": "Cancel",
-			"processing": "Processing..."
+			"processing": "Processing...",
+			"toggleMenu": "Toggle menu"
 		}
 	},
 	"marketing": {
+		"header": {
+			"nav": {
+				"features": "Features",
+				"howItWorks": "How It Works",
+				"pricing": "Pricing"
+			}
+		},
 		"hero": {
 			"title": "TRY ANTHON",
 			"subtitle": "The AI Clone of Antonio Valente",
@@ -46,7 +54,7 @@
 		},
 		"features": {
 			"title": "THE ONLY AI COACH TRAINED ON REAL BATTLES",
-			"description": "Fed with thousands of real cases, updated daily with winning strategies. Works everywhere: WhatsApp, Telegram, Web Chat, Email, Instagram — and via API.",
+			"description": "Fed with thousands of real cases, updated daily with winning strategies. Works everywhere: WhatsApp, Telegram — more coming soon...",
 			"features": {
 				"1": {
 					"title": "THOUSANDS OF PROVEN CASES",
@@ -98,10 +106,9 @@
 		"how": {
 			"title": "HOW IT WORKS",
 			"steps": {
-				"1": "Pick your channels: WhatsApp, Telegram, Web Chat, Email, Instagram, or API",
-				"2": "Share your scenario or upload your knowledge base (FAQs, docs, links)",
-				"3": "Chat and set smart rules: targeted convos, AI-led mini sessions",
-				"4": "Unblock. Refocus. Execute. With full analytics."
+				"1": "Pick your channels: WhatsApp, Telegram (more coming soon...)",
+				"2": "Write or send voice notes to explain what you want to improve. Anthon listens, processes, and provides valuable solutions.",
+				"3": "Chat and set smart rules: targeted convos, AI-led mini sessions"
 			}
 		},
 		"why": {
