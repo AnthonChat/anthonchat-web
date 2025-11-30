@@ -97,6 +97,37 @@ async function getActiveSubscription(
 }
 
 /**
+ * Gets the most recent subscription for a user, regardless of status (including cancelled/expired).
+ */
+async function getLatestSubscription(
+  userId: string
+): Promise<StripeSubscription | null> {
+  const supabase = await createClient();
+
+  // First get the user's Stripe customer ID
+  const customerId = await getUserStripeCustomerId(userId);
+
+  if (!customerId) {
+    return null;
+  }
+
+  const { data: subscriptions, error } = await supabase
+    .schema("stripe")
+    .from("subscriptions")
+    .select("*")
+    .eq("customer", customerId)
+    .order("created", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error("Latest Subscription Fetch:", { error, customerId, userId });
+    return null;
+  }
+
+  return subscriptions && subscriptions.length > 0 ? subscriptions[0] : null;
+}
+
+/**
  * Gets product details by ID (internal helper).
  */
 async function getProductDetails(
@@ -336,6 +367,22 @@ export async function getUserSubscription(
   userId: string
 ): Promise<UserSubscription | null> {
   const subscription = await getActiveSubscription(userId);
+
+  if (!subscription) {
+    return null;
+  }
+
+  return buildSubscriptionResult(subscription);
+}
+
+/**
+ * Gets the most recent subscription for a user (including cancelled/expired).
+ * Useful for showing subscription history.
+ */
+export async function getUserLatestSubscription(
+  userId: string
+): Promise<UserSubscription | null> {
+  const subscription = await getLatestSubscription(userId);
 
   if (!subscription) {
     return null;

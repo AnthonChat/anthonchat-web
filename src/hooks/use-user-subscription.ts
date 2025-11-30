@@ -12,6 +12,7 @@ interface UseUserSubscriptionOptions {
 
 interface UseUserSubscriptionState {
   subscription: UserSubscription | null;
+  pastSubscription: UserSubscription | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -31,6 +32,8 @@ export function useUserSubscription(
   const [subscription, setSubscription] = useState<UserSubscription | null>(
     null
   );
+  const [pastSubscription, setPastSubscription] =
+    useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -117,6 +120,7 @@ export function useUserSubscription(
 
         const data = await response.json();
         setSubscription(data.subscription);
+        setPastSubscription(data.pastSubscription || null);
       } catch (err) {
         const error =
           err instanceof Error
@@ -133,6 +137,7 @@ export function useUserSubscription(
 
   return {
     subscription,
+    pastSubscription,
     isLoading,
     error,
     refetch,

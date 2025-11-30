@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useUserSubscription } from "@/hooks/use-user-subscription";
-import { SubscriptionManagement } from "@/components/features/subscription/SubscriptionManagement";
+import { SubscriptionStatus } from "@/components/features/subscription/SubscriptionStatus";
+import { SharedPricingPlans } from "@/components/features/subscription/SharedPricingPlans";
 
 interface SubscriptionPageClientProps {
   userId: string;
@@ -14,7 +15,8 @@ export function SubscriptionPageClient({
   userId,
 }: SubscriptionPageClientProps) {
   const searchParams = useSearchParams();
-  const { subscription, isLoading, refetch } = useUserSubscription({ userId });
+  const { subscription, pastSubscription, isLoading, refetch } =
+    useUserSubscription({ userId });
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -46,10 +48,22 @@ export function SubscriptionPageClient({
   }, [searchParams, refetch]);
 
   return (
-    <SubscriptionManagement
-      subscription={subscription}
-      isLoading={isLoading}
-      onRefresh={refetch}
-    />
+    <div className="space-y-8">
+      {/* Current subscription status - dashboard only */}
+      <SubscriptionStatus
+        subscription={subscription}
+        pastSubscription={pastSubscription}
+        isLoading={isLoading}
+        onRefresh={refetch}
+      />
+
+      {/* Shared pricing plans - same component as /pricing page */}
+      <SharedPricingPlans
+        isAuthenticated={true}
+        subscription={subscription}
+        userId={userId}
+        onCheckoutSuccess={refetch}
+      />
+    </div>
   );
 }

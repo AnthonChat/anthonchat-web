@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/db/server";
-import { getUserSubscription } from "@/lib/queries/subscription";
+import {
+  getUserSubscription,
+  getUserLatestSubscription,
+} from "@/lib/queries/subscription";
 
 export async function GET() {
   try {
@@ -13,10 +16,18 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user subscription
-    const subscription = await getUserSubscription(claims.claims.sub);
+    const userId = claims.claims.sub;
 
-    return NextResponse.json({ subscription });
+    // Get active subscription
+    const subscription = await getUserSubscription(userId);
+
+    // If no active subscription, get the latest (including cancelled/expired)
+    let pastSubscription = null;
+    if (!subscription) {
+      pastSubscription = await getUserLatestSubscription(userId);
+    }
+
+    return NextResponse.json({ subscription, pastSubscription });
   } catch (error) {
     console.error("Error fetching user subscription:", error);
     return NextResponse.json(

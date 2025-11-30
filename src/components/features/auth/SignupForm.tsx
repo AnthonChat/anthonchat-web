@@ -639,7 +639,9 @@ export default function SignupForm({
               <Checkbox
                 id="privacy"
                 checked={privacyAccepted}
-                onCheckedChange={(checked) => setPrivacyAccepted(checked === true)}
+                onCheckedChange={(checked) =>
+                  setPrivacyAccepted(checked === true)
+                }
                 disabled={isPending}
                 aria-describedby="privacy-label"
                 className="mt-0.5"
