@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -153,14 +153,14 @@ export function TemplateDispatcher({
 			return acc;
 		}, {});
 		setParameterValues(initialValues);
-	}, [selectedTemplateKey, selectedTemplate?.parameters.length]);
+	}, [selectedTemplateKey, selectedTemplate]);
 
 	const [parameterValues, setParameterValues] = useState<
 		Record<string, { value: string; filename?: string }>
 	>({});
 	const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
-	const fetchRecipients = async () => {
+	const fetchRecipients = useCallback(async () => {
 		setLoading(true);
 		setError(null);
 		setSendStatus(null);
@@ -209,7 +209,14 @@ export function TemplateDispatcher({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [
+		debouncedSearchTerm,
+		selectedStatuses,
+		selectedChannels,
+		verifiedOnly,
+		limit,
+		page,
+	]);
 
 	// Effect to trigger fetch when filters change
 	useEffect(() => {
@@ -224,14 +231,7 @@ export function TemplateDispatcher({
 
 	useEffect(() => {
 		void fetchRecipients();
-	}, [
-		page,
-		debouncedSearchTerm,
-		selectedChannels,
-		selectedStatuses,
-		verifiedOnly,
-		limit,
-	]);
+	}, [fetchRecipients]);
 
 	const toggleChannel = (channelId: string) => {
 		setSelectedChannels((prev) =>

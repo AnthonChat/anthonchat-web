@@ -12,4 +12,3 @@ export { Testimonials } from "./Testimonials";
 export { FAQ } from "./FAQ";
 export { CTA } from "./CTA";
 export { Footer } from "./Footer";
-export { Pricing } from "./Pricing";
