@@ -10,7 +10,7 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader, 
+  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, CreditCard, CheckCircle, Eye, EyeOff } from "lucide-react";
@@ -23,7 +23,6 @@ import { useTranslations, useLocale } from "next-intl";
 import { useAuthState } from "@/components/features/auth/AuthProvider";
 import { useLocaleRouter } from "@/hooks/use-locale-router";
 import { z } from "zod";
-
 
 interface UserExistenceState {
   isChecking: boolean;
@@ -61,19 +60,22 @@ const SignupSchema = z.object({
 });
 type SignupFields = z.infer<typeof SignupSchema>;
 
-export default function SignupForm({ 
-  message, 
-  link, 
-  channel, 
+export default function SignupForm({
+  message,
+  link,
+  channel,
   redirectTo,
   userExistenceState,
-  onRedirectToLogin
+  onRedirectToLogin,
 }: SignupFormProps) {
-  const [formState, formAction, isPending] = useActionState(signUp, initialState);
+  const [formState, formAction, isPending] = useActionState(
+    signUp,
+    initialState
+  );
   const [loadingStep, setLoadingStep] = useState<
     "auth" | "stripe" | "complete"
   >("auth");
-  
+
   // Add authentication state and router
   const { isAuthenticated, isLoading: authLoading } = useAuthState();
   const router = useLocaleRouter();
@@ -97,12 +99,15 @@ export default function SignupForm({
   const [showPassword, setShowPassword] = useState(false);
 
   // Client-side validation state and helpers (Zod)
-  const [errors, setErrors] = useState<Partial<Record<keyof SignupFields, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof SignupFields, string>>
+  >({});
 
   const validateField = (field: keyof SignupFields, value: string) => {
-    const parsed = SignupSchema.pick({ [field]: true } as Record<keyof SignupFields, true>).safeParse(
-      { [field]: value } as Partial<SignupFields>
-    );
+    const parsed = SignupSchema.pick({ [field]: true } as Record<
+      keyof SignupFields,
+      true
+    >).safeParse({ [field]: value } as Partial<SignupFields>);
     if (!parsed.success) {
       const msg = parsed.error.issues[0]?.message || "Valore non valido";
       setErrors((prev) => ({ ...prev, [field]: msg }));
@@ -126,80 +131,99 @@ export default function SignupForm({
       setErrors((prev) => ({ ...prev, ...fieldErrors }));
       try {
         // Reuse the toast system already in place
-        showError(
-          "Errore di validazione",
-          messages.join(" • "),
-          {
-            errorType: NotificationErrorType.VALIDATION_ERROR,
-            context: "signup_client_validation",
-            config: { duration: 6000 }
-          }
-        );
+        showError("Errore di validazione", messages.join(" • "), {
+          errorType: NotificationErrorType.VALIDATION_ERROR,
+          context: "signup_client_validation",
+          config: { duration: 6000 },
+        });
       } catch {
         // noop
       }
     }
   };
-  
+
   // Debounced email change handler for user existence checking
   const emailChangeTimeoutRef = useRef<number | null>(null);
-  
+
   const handleEmailChange = useCallback((newEmail: string) => {
     setEmail(newEmail);
     // Removed user existence checking to avoid interfering with autocomplete
     // Authentication check will happen only when signup button is clicked
   }, []);
-  
-  const { showError, showSuccess, showVerificationToast, dismissToast } = useNotifications();
-  
+
+  const { showError, showSuccess, showVerificationToast, dismissToast } =
+    useNotifications();
+
   /**
    * Handle signup button click with authentication check
    * If user is already authenticated, redirect to dashboard with channel linking
    */
-  const handleSignupClick = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
-    // Check if user is already authenticated before submitting
-    if (isAuthenticated && !authLoading) {
-      event.preventDefault();
-      
-      console.log('SignupForm: User already authenticated on signup click, redirecting to dashboard with channel params', {
-        hasChannelParams: Boolean(link && channel),
-        link: link?.substring(0, 8) + '...',
-        channel,
-      });
-      
-      // Build dashboard URL with preserved channel parameters
-      const params = new URLSearchParams();
-      if (link) params.set('link', link);
-      if (channel) params.set('channel', channel);
-      if (message) params.set('message', message);
-      
-      const dashboardUrl = params.toString() 
-        ? `/dashboard?${params.toString()}`
-        : '/dashboard';
-      
-      // Show a quick success message
-      showSuccess(
-        "Already Signed In",
-        channel ? `Connecting your ${channel} channel...` : "Redirecting to dashboard..."
-      );
-      
-      // Redirect to dashboard
-      router.push(dashboardUrl);
-      return;
-    }
-    
-    // If not authenticated, let the form submit normally
-    // Don't prevent default - let the form action handle it
-  }, [isAuthenticated, authLoading, link, channel, message, router, showSuccess]);
+  const handleSignupClick = useCallback(
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Check if user is already authenticated before submitting
+      if (isAuthenticated && !authLoading) {
+        event.preventDefault();
+
+        console.log(
+          "SignupForm: User already authenticated on signup click, redirecting to dashboard with channel params",
+          {
+            hasChannelParams: Boolean(link && channel),
+            link: link?.substring(0, 8) + "...",
+            channel,
+          }
+        );
+
+        // Build dashboard URL with preserved channel parameters
+        const params = new URLSearchParams();
+        if (link) params.set("link", link);
+        if (channel) params.set("channel", channel);
+        if (message) params.set("message", message);
+
+        const dashboardUrl = params.toString()
+          ? `/dashboard?${params.toString()}`
+          : "/dashboard";
+
+        // Show a quick success message
+        showSuccess(
+          "Already Signed In",
+          channel
+            ? `Connecting your ${channel} channel...`
+            : "Redirecting to dashboard..."
+        );
+
+        // Redirect to dashboard
+        router.push(dashboardUrl);
+        return;
+      }
+
+      // If not authenticated, let the form submit normally
+      // Don't prevent default - let the form action handle it
+    },
+    [isAuthenticated, authLoading, link, channel, message, router, showSuccess]
+  );
   // Ref per evitare toast duplicati in loop: memorizza ultimo toast mostrato (type + value)
-  const lastShownErrorRef = useRef<{ type: 'validation' | 'message' | 'external' | 'success' | 'nonce' | 'nonce_pending' | null; value?: string | null } | null>(null);
+  const lastShownErrorRef = useRef<{
+    type:
+      | "validation"
+      | "message"
+      | "external"
+      | "success"
+      | "nonce"
+      | "nonce_pending"
+      | null;
+    value?: string | null;
+  } | null>(null);
   // Ref per tenere traccia del toast di verifica in corso (così possiamo chiuderlo quando finisce)
   const pendingVerificationToastRef = useRef<string | null>(null);
   // Ref per gestire un timeout di sicurezza che chiude il toast di verifica se resta in stato "in corso" troppo a lungo
   const verificationTimeoutRef = useRef<number | null>(null);
   // Field-level errors derivati dallo stato del server (se presenti)
-  const emailError = formState.errors?.find((e) => e.field === "email")?.message;
-  const passwordError = formState.errors?.find((e) => e.field === "password")?.message;
+  const emailError = formState.errors?.find(
+    (e) => e.field === "email"
+  )?.message;
+  const passwordError = formState.errors?.find(
+    (e) => e.field === "password"
+  )?.message;
 
   const getLoadingMessage = () => {
     switch (loadingStep) {
@@ -216,18 +240,18 @@ export default function SignupForm({
 
   const validateNonceOnMount = useCallback(async () => {
     if (!link || !channel) return;
-    
+
     setNonceValidation({ isValidating: true, isValid: null });
-    
+
     try {
-      const response = await fetch('/api/link/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/link/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nonce: link, channelId: channel }),
       });
-      
+
       const result = await response.json();
-      
+
       setNonceValidation({
         isValidating: false,
         isValid: result.isValid,
@@ -266,11 +290,17 @@ export default function SignupForm({
 
     // If validation is in progress, show a verification/loading toast (once per nonce)
     if (nonceValidation.isValidating) {
-      if (lastShownErrorRef.current?.type !== 'nonce_pending' || lastShownErrorRef.current?.value !== link) {
+      if (
+        lastShownErrorRef.current?.type !== "nonce_pending" ||
+        lastShownErrorRef.current?.value !== link
+      ) {
         try {
           // mark as shown before calling the toast to avoid race-driven duplicates
-          lastShownErrorRef.current = { type: 'nonce_pending', value: link };
-          const toastId = showVerificationToast(channel || "Channel", link || "");
+          lastShownErrorRef.current = { type: "nonce_pending", value: link };
+          const toastId = showVerificationToast(
+            channel || "Channel",
+            link || ""
+          );
           // store the verification toast id so we can dismiss it when validation completes
           pendingVerificationToastRef.current = toastId;
 
@@ -288,7 +318,9 @@ export default function SignupForm({
                   t("nonce.invalid")
                 );
               } catch (e) {
-                console.error("AUTO_DISMISS_VERIFICATION_TOAST_FAILED", { error: e });
+                console.error("AUTO_DISMISS_VERIFICATION_TOAST_FAILED", {
+                  error: e,
+                });
               } finally {
                 pendingVerificationToastRef.current = null;
                 verificationTimeoutRef.current = null;
@@ -299,7 +331,7 @@ export default function SignupForm({
           // best-effort - don't break the signup form if toast fails
           console.error("SHOW_VERIFICATION_TOAST_FAILED", { error: e });
         }
-        lastShownErrorRef.current = { type: 'nonce_pending', value: link };
+        lastShownErrorRef.current = { type: "nonce_pending", value: link };
       }
       return;
     }
@@ -323,12 +355,15 @@ export default function SignupForm({
 
     // Handle success
     if (nonceValidation.isValid === true) {
-      if (lastShownErrorRef.current?.type !== 'nonce' || lastShownErrorRef.current?.value !== link) {
+      if (
+        lastShownErrorRef.current?.type !== "nonce" ||
+        lastShownErrorRef.current?.value !== link
+      ) {
         showSuccess(
           t("notifications.linkVerified"),
           t("nonce.valid", { channel })
         );
-        lastShownErrorRef.current = { type: 'nonce', value: link };
+        lastShownErrorRef.current = { type: "nonce", value: link };
       }
       return;
     }
@@ -336,24 +371,34 @@ export default function SignupForm({
     // Handle failure
     if (nonceValidation.isValid === false) {
       const errMsg = nonceValidation.error || t("nonce.invalid");
-      if (lastShownErrorRef.current?.type !== 'nonce' || lastShownErrorRef.current?.value !== errMsg) {
-        showError(
-          t("notifications.verificationError"),
-          errMsg,
-          {
-            errorType: NotificationErrorType.VERIFICATION_POLLING_ERROR,
-            context: 'nonce_validation_signup',
-            config: {
-              duration: 8000
-            }
-          }
-        );
-        lastShownErrorRef.current = { type: 'nonce', value: errMsg };
+      if (
+        lastShownErrorRef.current?.type !== "nonce" ||
+        lastShownErrorRef.current?.value !== errMsg
+      ) {
+        showError(t("notifications.verificationError"), errMsg, {
+          errorType: NotificationErrorType.VERIFICATION_POLLING_ERROR,
+          context: "nonce_validation_signup",
+          config: {
+            duration: 8000,
+          },
+        });
+        lastShownErrorRef.current = { type: "nonce", value: errMsg };
       }
       return;
     }
-  }, [nonceValidation.isValidating, nonceValidation.isValid, nonceValidation.error, showVerificationToast, showSuccess, showError, dismissToast, t, channel, link]);
- 
+  }, [
+    nonceValidation.isValidating,
+    nonceValidation.isValid,
+    nonceValidation.error,
+    showVerificationToast,
+    showSuccess,
+    showError,
+    dismissToast,
+    t,
+    channel,
+    link,
+  ]);
+
   // Handle form state changes and loading progression
   useEffect(() => {
     let t1: number | null = null;
@@ -375,9 +420,10 @@ export default function SignupForm({
 
   // unified notification handler with improved deduplication
   // extract derived values to stable variables so the effect dependency array is static
-  const errorsString = formState.errors && formState.errors.length > 0
-    ? formState.errors.map((err) => err.message).join(". ")
-    : undefined;
+  const errorsString =
+    formState.errors && formState.errors.length > 0
+      ? formState.errors.map((err) => err.message).join(". ")
+      : undefined;
   const userId = formState.userId;
 
   useEffect(() => {
@@ -385,31 +431,29 @@ export default function SignupForm({
 
     // handle external message prop first (highest priority)
     if (message) {
-      if (prev?.type !== 'external' || prev.value !== message) {
-        showError(
-          t("notifications.externalError"),
-          message,
-          {
-            errorType: NotificationErrorType.API_ERROR,
-            context: 'signup_external_message',
-            config: {
-              duration: 6000
-            }
-          }
-        );
-        lastShownErrorRef.current = { type: 'external', value: message };
+      if (prev?.type !== "external" || prev.value !== message) {
+        showError(t("notifications.externalError"), message, {
+          errorType: NotificationErrorType.API_ERROR,
+          context: "signup_external_message",
+          config: {
+            duration: 6000,
+          },
+        });
+        lastShownErrorRef.current = { type: "external", value: message };
       }
       return; // don't show other notifications when external message is present
     }
 
     // show validation errors only once per unique message
     if (errorsString) {
-      if (prev?.type !== 'validation' || prev.value !== errorsString) {
+      if (prev?.type !== "validation" || prev.value !== errorsString) {
         // set dedupe marker before showing the toast to prevent races
-        lastShownErrorRef.current = { type: 'validation', value: errorsString };
+        lastShownErrorRef.current = { type: "validation", value: errorsString };
         showError(
           t("notifications.validationError"),
-          t("notifications.validationErrorDescription", { errors: errorsString }),
+          t("notifications.validationErrorDescription", {
+            errors: errorsString,
+          }),
           {
             errorType: NotificationErrorType.VALIDATION_ERROR,
             context: "signup_form_validation",
@@ -424,30 +468,29 @@ export default function SignupForm({
 
     // show general api error only if changed
     if (formState.message && !formState.success) {
-      if (prev?.type !== 'message' || prev.value !== formState.message) {
+      if (prev?.type !== "message" || prev.value !== formState.message) {
         // set marker first to avoid duplicates during re-renders caused by toast state updates
-        lastShownErrorRef.current = { type: 'message', value: formState.message };
-        showError(
-          t("notifications.registrationError"),
-          formState.message,
-          {
-            errorType: NotificationErrorType.API_ERROR,
-            context: 'signup_form_action',
-            config: {
-              duration: 8000
-            }
-          }
-        );
+        lastShownErrorRef.current = {
+          type: "message",
+          value: formState.message,
+        };
+        showError(t("notifications.registrationError"), formState.message, {
+          errorType: NotificationErrorType.API_ERROR,
+          context: "signup_form_action",
+          config: {
+            duration: 8000,
+          },
+        });
       }
       return;
     }
 
     // show success toast once
     if (formState.success) {
-      const successValue = userId || 'success';
-      if (prev?.type !== 'success' || prev.value !== successValue) {
+      const successValue = userId || "success";
+      if (prev?.type !== "success" || prev.value !== successValue) {
         // set marker first to avoid duplicate notifications
-        lastShownErrorRef.current = { type: 'success', value: successValue };
+        lastShownErrorRef.current = { type: "success", value: successValue };
         showSuccess(
           t("notifications.success"),
           t("notifications.successDescription")
@@ -463,7 +506,7 @@ export default function SignupForm({
     userId,
     showError,
     showSuccess,
-    t
+    t,
   ]);
 
   return (
@@ -476,11 +519,12 @@ export default function SignupForm({
           </CardDescription>
         </CardHeader>
 
-
         <form action={formAction} onSubmit={onSubmit} noValidate>
           {channel && <input type="hidden" name="channel" value={channel} />}
           {link && <input type="hidden" name="link" value={link} />}
-          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
+          {redirectTo && (
+            <input type="hidden" name="redirectTo" value={redirectTo} />
+          )}
           <input type="hidden" name="locale" value={locale} />
           <CardContent className="flex flex-col w-full gap-6 text-foreground px-6">
             <div className="space-y-3">
@@ -497,12 +541,14 @@ export default function SignupForm({
                   onChange={(e) => {
                     const v = e.target.value;
                     handleEmailChange(v);
-                    validateField('email', v);
+                    validateField("email", v);
                   }}
                   required
                   disabled={isPending}
                   aria-invalid={!!(errors.email || emailError)}
-                  aria-describedby={(errors.email || emailError) ? "email-error" : undefined}
+                  aria-describedby={
+                    errors.email || emailError ? "email-error" : undefined
+                  }
                   className="h-11"
                 />
                 {userExistenceState?.isChecking && (
@@ -532,30 +578,50 @@ export default function SignupForm({
                   onChange={(e) => {
                     const v = e.target.value;
                     setPassword(v);
-                    validateField('password', v);
+                    validateField("password", v);
                   }}
                   required
                   disabled={isPending}
                   aria-invalid={!!(errors.password || passwordError)}
-                  aria-describedby={(errors.password || passwordError) ? "password-error" : undefined}
+                  aria-describedby={
+                    errors.password || passwordError
+                      ? "password-error"
+                      : undefined
+                  }
                   className="h-11 pr-10"
                 />
                 <button
                   type="button"
                   aria-pressed={showPassword}
-                  aria-label={showPassword ? t("actions.hidePassword") : t("actions.showPassword")}
+                  aria-label={
+                    showPassword
+                      ? t("actions.hidePassword")
+                      : t("actions.showPassword")
+                  }
                   onClick={() => setShowPassword((s) => !s)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
               {errors.password ? (
-                <CardDescription id="password-error" className="text-destructive" aria-live="polite">
+                <CardDescription
+                  id="password-error"
+                  className="text-destructive"
+                  aria-live="polite"
+                >
                   {errors.password}
                 </CardDescription>
               ) : passwordError ? (
-                <CardDescription id="password-error" className="text-destructive" aria-live="polite">
+                <CardDescription
+                  id="password-error"
+                  className="text-destructive"
+                  aria-live="polite"
+                >
                   {passwordError}
                 </CardDescription>
               ) : (
@@ -623,7 +689,14 @@ export default function SignupForm({
             <Button
               type="submit"
               className="w-full"
-              disabled={isPending || authLoading || !!errors.email || !!errors.password || !email || !password}
+              disabled={
+                isPending ||
+                authLoading ||
+                !!errors.email ||
+                !!errors.password ||
+                !email ||
+                !password
+              }
               onClick={handleSignupClick}
             >
               {isPending ? (
@@ -650,12 +723,13 @@ export default function SignupForm({
               type="button"
               variant="outline"
               className="w-full"
-              onClick={onRedirectToLogin || (() => window.location.href = '/login')}
+              onClick={
+                onRedirectToLogin || (() => (window.location.href = "/login"))
+              }
               disabled={isPending}
             >
               {t("signInPrompt")}
             </Button>
-
           </CardFooter>
         </form>
       </Card>

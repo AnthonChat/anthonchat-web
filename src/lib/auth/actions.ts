@@ -9,10 +9,17 @@ import {
   debugCheckCustomerExists,
   createSubscriptionWithTrial,
 } from "@/lib/stripe";
-import { updateUserData, linkChannelToUserSecure, validateChannelLinkNonce } from "@/lib/queries/user";
+import {
+  updateUserData,
+  linkChannelToUserSecure,
+  validateChannelLinkNonce,
+} from "@/lib/queries/user";
 import { checkUserExists } from "@/lib/queries/user-existence";
 import { ChannelLinkingService } from "@/lib/services/channel-linking";
-import { buildLoginRedirectUrl, buildSignupCompleteRedirectUrl } from "@/lib/utils/redirect-helpers";
+import {
+  buildLoginRedirectUrl,
+  buildSignupCompleteRedirectUrl,
+} from "@/lib/utils/redirect-helpers";
 import {
   type FormState,
   type EnhancedSignupFormData,
@@ -29,23 +36,23 @@ import {
 async function preventDuplicateAccount(email: string): Promise<boolean> {
   try {
     const userExists = await checkUserExists(email);
-    
+
     if (userExists) {
       console.warn("DUPLICATE_ACCOUNT_ATTEMPT:", {
         email: email.substring(0, 3) + "***", // Privacy-safe logging
         timestamp: new Date().toISOString(),
       });
-      
+
       return true; // Prevent account creation
     }
-    
+
     return false; // Allow account creation
   } catch (error) {
     console.error("PREVENT_DUPLICATE_ACCOUNT_ERROR:", {
       error: error instanceof Error ? error.message : "Unknown error",
       email: email.substring(0, 3) + "***", // Privacy-safe logging
     });
-    
+
     // On error, allow account creation to avoid blocking legitimate users
     return false;
   }
@@ -57,7 +64,10 @@ async function preventDuplicateAccount(email: string): Promise<boolean> {
  * @param email - Email of existing user
  * @returns Never (redirects)
  */
-async function handleExistingUserSignup(formData: FormData, email: string): Promise<never> {
+async function handleExistingUserSignup(
+  formData: FormData,
+  email: string
+): Promise<never> {
   console.info("EXISTING_USER_SIGNUP_REDIRECT:", {
     email: email.substring(0, 3) + "***", // Privacy-safe logging
     timestamp: new Date().toISOString(),
@@ -66,16 +76,19 @@ async function handleExistingUserSignup(formData: FormData, email: string): Prom
   // Extract channel parameters to preserve them
   const channel = formData.get("channel")?.toString();
   const link = formData.get("link")?.toString();
-  
+
   // Extract locale from form data or use default
   const locale = formData.get("locale")?.toString() || "en";
-  
+
   // Build login redirect URL with preserved parameters and user message
-  const redirectUrl = buildLoginRedirectUrl({
-    channel,
-    link,
-    message: "account_exists", // Message to show on login page
-  }, locale);
+  const redirectUrl = buildLoginRedirectUrl(
+    {
+      channel,
+      link,
+      message: "account_exists", // Message to show on login page
+    },
+    locale
+  );
 
   console.info("Redirecting existing user to login", {
     hasChannelParams: Boolean(channel && link),
@@ -100,17 +113,19 @@ function determinePostSignupFlow(
   userId: string
 ): { redirectPath: string; skipOnboarding: boolean; preserveParams: boolean } {
   const channelLinkingService = ChannelLinkingService.getInstance();
-  
+
   // Use the service to determine the optimal strategy
   const strategy = channelLinkingService.determineLinkingStrategy(
-    'new_user',
+    "new_user",
     hasChannelParams,
-    channelLinkingResult ? {
-      success: channelLinkingResult.success,
-      error: channelLinkingResult.error,
-      isAlreadyLinked: false,
-      requiresManualSetup: !channelLinkingResult.success,
-    } : undefined
+    channelLinkingResult
+      ? {
+          success: channelLinkingResult.success,
+          error: channelLinkingResult.error,
+          isAlreadyLinked: false,
+          requiresManualSetup: !channelLinkingResult.success,
+        }
+      : undefined
   );
 
   console.info("POST_SIGNUP_FLOW_DETERMINED:", {
@@ -130,11 +145,9 @@ function determinePostSignupFlow(
   };
 }
 
-
-
 /**
  * Server Action consolidata per il processo di signup utente
- * 
+ *
  * Implementa l'intero flusso di registrazione:
  * 1. Validazione dati form
  * 2. Creazione utente Supabase Auth
@@ -142,7 +155,7 @@ function determinePostSignupFlow(
  * 4. Sincronizzazione database via webhooks
  * 5. Fallback linking se sync fallisce
  * 6. Update user data con Stripe customer ID
- * 
+ *
  * @param _prevState - Stato precedente del form (non utilizzato ma richiesto da useFormState)
  * @param formData - Dati del form di signup
  * @returns Promise<FormState> - Stato aggiornato del form o redirect su successo
@@ -158,24 +171,31 @@ export async function signUp(
     });
 
     const validation = validateEnhancedSignupFormData(formData);
-    
+
     if (!validation.isValid) {
       console.warn("Enhanced signup validation failed", {
         errors: validation.errors,
       });
-      
+
       return createErrorFormState(
         "Dati del form non validi",
         validation.errors
       );
     }
 
-    const { email, password, channel, link, userExistsOverride, redirectTo }: EnhancedSignupFormData = validation.data!;
+    const {
+      email,
+      password,
+      channel,
+      link,
+      userExistsOverride,
+      redirectTo,
+    }: EnhancedSignupFormData = validation.data!;
 
     // Step 2: Check for existing user (unless override is set)
     if (!userExistsOverride) {
       const shouldPreventDuplicate = await preventDuplicateAccount(email);
-      
+
       if (shouldPreventDuplicate) {
         // Redirect to login with preserved parameters instead of returning error
         await handleExistingUserSignup(formData, email);
@@ -195,13 +215,13 @@ export async function signUp(
       email,
       password,
     });
-      
+
     if (authError) {
       console.error("AUTH_SIGNUP_ERROR", {
         authError: authError.message,
-        email
+        email,
       });
-      
+
       return createErrorFormState(
         authError.message || "Errore durante la creazione dell'account"
       );
@@ -211,10 +231,8 @@ export async function signUp(
 
     if (!user) {
       console.error("User not created after signup", { email });
-      
-      return createErrorFormState(
-        "Errore interno: utente non creato"
-      );
+
+      return createErrorFormState("Errore interno: utente non creato");
     }
 
     console.info("Supabase user created successfully", {
@@ -225,25 +243,33 @@ export async function signUp(
     // Persist attribution for analytics (chat vs website)
     // Use service-role client to avoid RLS/session timing issues right after signUp
     try {
-      const signupSource = channel && link ? 'chat' : 'website'
-      const { createServiceRoleClient } = await import('@/lib/db/server')
-      const svc = createServiceRoleClient()
+      const signupSource = channel && link ? "chat" : "website";
+      const { createServiceRoleClient } = await import("@/lib/db/server");
+      const svc = createServiceRoleClient();
       const { error: srcErr } = await svc
-        .from('users')
+        .from("users")
         .update({ signup_source: signupSource })
-        .eq('id', user.id)
+        .eq("id", user.id);
 
       if (srcErr) {
-        console.warn('Failed to set signup_source (service role)', {
+        console.warn("Failed to set signup_source (service role)", {
           userId: user.id,
           signupSource,
-          error: typeof srcErr === 'object' && srcErr && 'message' in srcErr ? srcErr.message : String(srcErr),
-        })
+          error:
+            typeof srcErr === "object" && srcErr && "message" in srcErr
+              ? srcErr.message
+              : String(srcErr),
+        });
       } else {
-        console.info('User signup_source set', { userId: user.id, signupSource })
+        console.info("User signup_source set", {
+          userId: user.id,
+          signupSource,
+        });
       }
     } catch (e) {
-      console.warn('Failed to set signup_source (exception)', { error: e instanceof Error ? e.message : e })
+      console.warn("Failed to set signup_source (exception)", {
+        error: e instanceof Error ? e.message : e,
+      });
     }
 
     // Step 3: Creazione customer Stripe con createStripeCustomer()
@@ -268,13 +294,10 @@ export async function signUp(
           stripe_customer_id: stripeCustomer.id,
         });
 
-        console.info(
-          "User updated with Stripe customer ID",
-          {
-            userId: user.id,
-            customerId: stripeCustomer.id,
-          }
-        );
+        console.info("User updated with Stripe customer ID", {
+          userId: user.id,
+          customerId: stripeCustomer.id,
+        });
 
         // Automatically create a Stripe subscription to activate trial (if configured)
         const trialPriceId = process.env.DEFAULT_TRIAL_PRICE_ID;
@@ -292,19 +315,27 @@ export async function signUp(
               trialPeriodDays: trialDays,
               idempotencyKey,
             });
-            console.info("Created Stripe subscription for trial during signup", {
-              userId: user.id,
-              subscriptionId: subscription.id,
-            });
+            console.info(
+              "Created Stripe subscription for trial during signup",
+              {
+                userId: user.id,
+                subscriptionId: subscription.id,
+              }
+            );
           } catch (err) {
-            console.error("Failed to create Stripe subscription during signup", {
-              error: err instanceof Error ? err.message : err,
-              userId: user.id,
-            });
+            console.error(
+              "Failed to create Stripe subscription during signup",
+              {
+                error: err instanceof Error ? err.message : err,
+                userId: user.id,
+              }
+            );
             // don't block signup; webhook or reconciliation can handle later
           }
         } else {
-          console.info("DEFAULT_TRIAL_PRICE_ID not set; skipping automatic subscription creation");
+          console.info(
+            "DEFAULT_TRIAL_PRICE_ID not set; skipping automatic subscription creation"
+          );
         }
       } else {
         // Step 6: Linking fallback con linkCustomerToUser() se sync fallisce
@@ -321,23 +352,17 @@ export async function signUp(
 
         if (customerData) {
           const linked = await linkCustomerToUser(user.id, stripeCustomer.id);
-          
+
           if (linked) {
-            console.info(
-              "Successfully linked customer after timeout",
-              {
-                userId: user.id,
-                customerId: stripeCustomer.id,
-              }
-            );
+            console.info("Successfully linked customer after timeout", {
+              userId: user.id,
+              customerId: stripeCustomer.id,
+            });
           } else {
-            console.error(
-              "Failed to link existing customer",
-              {
-                userId: user.id,
-                customerId: stripeCustomer.id,
-              }
-            );
+            console.error("Failed to link existing customer", {
+              userId: user.id,
+              customerId: stripeCustomer.id,
+            });
           }
         } else {
           console.warn(
@@ -353,35 +378,34 @@ export async function signUp(
     } catch (stripeError) {
       // Step 7: Logging strutturato
       // Log the error but don't block the signup process
-      console.error(
-        "Failed to create Stripe customer",
-        {
-          error: stripeError instanceof Error ? stripeError.message : "Unknown error",
-          userId: user.id,
-          email,
-        }
-      );
+      console.error("Failed to create Stripe customer", {
+        error:
+          stripeError instanceof Error ? stripeError.message : "Unknown error",
+        userId: user.id,
+        email,
+      });
     }
- 
+
     // Step 8: Enhanced channel linking with post-signup flow determination
-    let channelLinkingResult: { success: boolean; error?: string } | null = null;
+    let channelLinkingResult: { success: boolean; error?: string } | null =
+      null;
     const hasChannelParams = !!(channel && link);
-    
+
     if (hasChannelParams) {
       try {
         // Validate channel link nonce
         const { isValid } = await validateChannelLinkNonce(link, channel);
-        
+
         if (!isValid) {
           console.warn("INVALID_CHANNEL_LINK_ATTEMPT:", {
             userId: user.id,
             channel: channel.substring(0, 8) + "...",
             nonce: link.substring(0, 8) + "...",
           });
-          
+
           channelLinkingResult = {
             success: false,
-            error: "Invalid or expired channel link"
+            error: "Invalid or expired channel link",
           };
         } else {
           // Attempt secure channel linking
@@ -390,7 +414,7 @@ export async function signUp(
             userId: user.id,
             channel: channel.substring(0, 8) + "...",
           });
-          
+
           channelLinkingResult = { success: true };
         }
       } catch (error) {
@@ -399,17 +423,22 @@ export async function signUp(
           userId: user.id,
           channel: channel?.substring(0, 8) + "...",
         });
-        
+
         channelLinkingResult = {
           success: false,
-          error: error instanceof Error ? error.message : "Channel linking failed"
+          error:
+            error instanceof Error ? error.message : "Channel linking failed",
         };
       }
     }
 
     // Step 9: Determine post-signup flow based on channel linking results
-    const postSignupFlow = determinePostSignupFlow(hasChannelParams, channelLinkingResult, user.id);
-    
+    const postSignupFlow = determinePostSignupFlow(
+      hasChannelParams,
+      channelLinkingResult,
+      user.id
+    );
+
     console.info("Enhanced signup process completed successfully", {
       userId: user.id,
       email,
@@ -422,47 +451,55 @@ export async function signUp(
 
     // Build appropriate redirect URL based on flow determination
     let finalRedirectUrl: string;
-    
-    if (postSignupFlow.redirectPath === '/dashboard') {
+
+    if (postSignupFlow.redirectPath === "/dashboard") {
       // Skip onboarding - redirect to dashboard with success message
-      finalRedirectUrl = buildSignupCompleteRedirectUrl({
-        channel,
-        link,
-        redirectTo,
-        skipOnboarding: 'true',
-        channelLinked: channelLinkingResult?.success ? 'true' : 'false',
-      }, {
-        skipOnboarding: true,
-        channelLinkingError: !channelLinkingResult?.success,
-        fallbackOptions: !!channelLinkingResult?.error,
-      });
+      finalRedirectUrl = buildSignupCompleteRedirectUrl(
+        {
+          channel,
+          link,
+          redirectTo,
+          skipOnboarding: "true",
+          channelLinked: channelLinkingResult?.success ? "true" : "false",
+        },
+        {
+          skipOnboarding: true,
+          channelLinkingError: !channelLinkingResult?.success,
+          fallbackOptions: !!channelLinkingResult?.error,
+        }
+      );
     } else {
       // Normal onboarding flow - redirect to signup complete
-      finalRedirectUrl = buildSignupCompleteRedirectUrl({
-        channel,
-        link,
-        redirectTo,
-        channelLinked: channelLinkingResult?.success ? 'true' : 'false',
-      }, {
-        skipOnboarding: false,
-        channelLinkingError: !channelLinkingResult?.success,
-        fallbackOptions: !!channelLinkingResult?.error,
-      });
+      finalRedirectUrl = buildSignupCompleteRedirectUrl(
+        {
+          channel,
+          link,
+          redirectTo,
+          channelLinked: channelLinkingResult?.success ? "true" : "false",
+        },
+        {
+          skipOnboarding: false,
+          channelLinkingError: !channelLinkingResult?.success,
+          fallbackOptions: !!channelLinkingResult?.error,
+        }
+      );
     }
 
     console.info("Redirecting to post-signup flow", {
       userId: user.id,
-      redirectUrl: finalRedirectUrl.replace(/[?&](link|channel)=[^&]*/g, '[PARAM_HIDDEN]'), // Hide sensitive params in logs
+      redirectUrl: finalRedirectUrl.replace(
+        /[?&](link|channel)=[^&]*/g,
+        "[PARAM_HIDDEN]"
+      ), // Hide sensitive params in logs
     });
 
     // Redirect to determined path - this will throw and prevent return
     redirect(finalRedirectUrl);
-
   } catch (error) {
     // Step 9: Gestione errori robusta che ritorna FormState (non throws)
-    
+
     // Se l'errore è un redirect, lascialo propagare
-    if (error && typeof error === 'object' && 'digest' in error) {
+    if (error && typeof error === "object" && "digest" in error) {
       throw error;
     }
 

@@ -26,23 +26,38 @@ interface UserExistenceState {
   error: string | null;
 }
 
-export default function SignupPageWrapper({ message, link, channel, redirectTo }: SignupPageWrapperProps) {
+export default function SignupPageWrapper({
+  message,
+  link,
+  channel,
+  redirectTo,
+}: SignupPageWrapperProps) {
   const { isAuthenticated, isLoading, isInitialized } = useAuthState();
   const router = useLocaleRouter();
-  
-  const [userExistenceState, setUserExistenceState] = useState<UserExistenceState>({
-    isChecking: false,
-    userExists: null,
-    checkedEmail: null,
-    error: null,
-  });
 
-  const redirectToLogin = useCallback((additionalParams: Record<string, string> = {}) => {
-    const currentParams = { message, link, channel, redirectTo, ...additionalParams };
-    const loginUrl = buildAuthRedirectUrl("LOGIN", currentParams);
-    
-    router.push(loginUrl);
-  }, [message, link, channel, redirectTo, router]);
+  const [userExistenceState, setUserExistenceState] =
+    useState<UserExistenceState>({
+      isChecking: false,
+      userExists: null,
+      checkedEmail: null,
+      error: null,
+    });
+
+  const redirectToLogin = useCallback(
+    (additionalParams: Record<string, string> = {}) => {
+      const currentParams = {
+        message,
+        link,
+        channel,
+        redirectTo,
+        ...additionalParams,
+      };
+      const loginUrl = buildAuthRedirectUrl("LOGIN", currentParams);
+
+      router.push(loginUrl);
+    },
+    [message, link, channel, redirectTo, router]
+  );
 
   const t = useTranslations("auth.signupWrapper");
 
@@ -53,9 +68,11 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
           <CardContent className="flex flex-col space-y-4 py-6">
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg font-semibold">{t("accountExists.title")}</h2>
+              <h2 className="text-lg font-semibold">
+                {t("accountExists.title")}
+              </h2>
             </div>
-            
+
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -67,24 +84,23 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
                 )}
               </AlertDescription>
             </Alert>
- 
+
             <div className="flex flex-col space-y-2">
-              <Button
-                onClick={() => redirectToLogin()}
-                className="w-full"
-              >
+              <Button onClick={() => redirectToLogin()} className="w-full">
                 {t("actions.signInInstead")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              
+
               <Button
                 variant="outline"
-                onClick={() => setUserExistenceState({
-                  isChecking: false,
-                  userExists: null,
-                  checkedEmail: null,
-                  error: null,
-                })}
+                onClick={() =>
+                  setUserExistenceState({
+                    isChecking: false,
+                    userExists: null,
+                    checkedEmail: null,
+                    error: null,
+                  })
+                }
                 className="w-full"
               >
                 {t("actions.tryDifferentEmail")}
@@ -100,19 +116,29 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
     if (isInitialized && isAuthenticated) {
       // Use redirectTo if provided, otherwise default to dashboard
       const baseRedirectPath = redirectTo || "/dashboard";
-      
+
       const params = new URLSearchParams();
       if (link) params.set("link", link);
       if (channel) params.set("channel", channel);
       if (message) params.set("message", message);
-      
-      const finalUrl = params.toString() 
-        ? `${baseRedirectPath}${baseRedirectPath.includes('?') ? '&' : '?'}${params.toString()}`
+
+      const finalUrl = params.toString()
+        ? `${baseRedirectPath}${
+            baseRedirectPath.includes("?") ? "&" : "?"
+          }${params.toString()}`
         : baseRedirectPath;
-      
+
       router.push(finalUrl);
     }
-  }, [isAuthenticated, isInitialized, router, link, channel, message, redirectTo]);
+  }, [
+    isAuthenticated,
+    isInitialized,
+    router,
+    link,
+    channel,
+    message,
+    redirectTo,
+  ]);
 
   if (!isInitialized || isLoading) {
     return (
@@ -120,7 +146,9 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
         <Card className="shadow-lg">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <p className="text-sm text-muted-foreground">{t("status.checkingAuth")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("status.checkingAuth")}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -133,9 +161,9 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
     }
 
     return (
-      <SignupForm 
-        message={message} 
-        link={link} 
+      <SignupForm
+        message={message}
+        link={link}
         channel={channel}
         redirectTo={redirectTo}
         userExistenceState={userExistenceState}
@@ -149,7 +177,9 @@ export default function SignupPageWrapper({ message, link, channel, redirectTo }
       <Card className="shadow-lg">
         <CardContent className="flex flex-col items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-          <p className="text-sm text-muted-foreground">{t("status.redirectingToDashboard")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("status.redirectingToDashboard")}
+          </p>
         </CardContent>
       </Card>
     </div>

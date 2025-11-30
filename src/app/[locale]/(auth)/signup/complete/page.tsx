@@ -14,9 +14,9 @@ export default async function SignupCompletePage({
   // the request includes a registration `channel=telegram` and `link` nonce,
   // we avoid a server-side redirect to /dashboard so the client-side code
   // can run and trigger the Telegram deeplink.
-  searchParams?: Promise<{ 
-    message?: string; 
-    link?: string; 
+  searchParams?: Promise<{
+    message?: string;
+    link?: string;
     channel?: string;
     skip_onboarding?: string;
     channel_error?: string;
@@ -26,7 +26,7 @@ export default async function SignupCompletePage({
 }) {
   const supabase = await createClient();
   const locale = await getLocale();
-  const tAuth = await getTranslations('auth');
+  const tAuth = await getTranslations("auth");
   // `searchParams` may be a Promise-like object in Next.js server routes.
   // Await it to get a resolved params object before reading properties.
   // This prevents "searchParams should be awaited" runtime errors.
@@ -44,30 +44,33 @@ export default async function SignupCompletePage({
   const redirectTo = resolvedSearchParams?.redirectTo;
 
   // Check for skipOnboarding parameter - if present, redirect immediately
-  const shouldSkipOnboarding = resolvedSearchParams?.skip_onboarding === 'true';
-  
+  const shouldSkipOnboarding = resolvedSearchParams?.skip_onboarding === "true";
+
   if (shouldSkipOnboarding) {
     // Use redirectTo if provided, otherwise default to dashboard
-    const baseRedirectPath = redirectTo || '/dashboard';
-    
+    const baseRedirectPath = redirectTo || "/dashboard";
+
     // Build redirect URL with channel linking context
     const redirectParams: Record<string, string> = {};
-    
+
     if (resolvedSearchParams?.channel) {
-      redirectParams.channel_linked = 'true';
+      redirectParams.channel_linked = "true";
       redirectParams.channel = resolvedSearchParams.channel;
     }
-    
-    if (resolvedSearchParams?.channel_error === 'true') {
-      redirectParams.channel_error = 'true';
+
+    if (resolvedSearchParams?.channel_error === "true") {
+      redirectParams.channel_error = "true";
     }
-    
+
     if (resolvedSearchParams?.message) {
       redirectParams.message = resolvedSearchParams.message;
     }
 
     // Create redirect URL with parameters
-    const redirectUrl = new URL(baseRedirectPath, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    const redirectUrl = new URL(
+      baseRedirectPath,
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    );
     Object.entries(redirectParams).forEach(([key, value]) => {
       redirectUrl.searchParams.set(key, value);
     });
@@ -104,7 +107,11 @@ export default async function SignupCompletePage({
     ["telegram", "whatsapp"].includes(incomingChannel.toLowerCase());
 
   // If user is already onboarded and we don't need to preserve for client, redirect
-  if (isOnboarded === true && !shouldPreserveForClient && !shouldSkipOnboarding) {
+  if (
+    isOnboarded === true &&
+    !shouldPreserveForClient &&
+    !shouldSkipOnboarding
+  ) {
     // Use redirectTo if provided, otherwise default to dashboard
     const finalRedirectPath = redirectTo || "/dashboard";
     localeRedirect(finalRedirectPath, locale as Locale);
@@ -113,19 +120,22 @@ export default async function SignupCompletePage({
   // If user is already onboarded but we have skipOnboarding parameter, redirect with context
   if (isOnboarded === true && shouldSkipOnboarding) {
     // Use redirectTo if provided, otherwise default to dashboard
-    const baseRedirectPath = redirectTo || '/dashboard';
+    const baseRedirectPath = redirectTo || "/dashboard";
     const redirectParams: Record<string, string> = {};
-    
+
     if (resolvedSearchParams?.channel) {
-      redirectParams.channel_linked = 'true';
+      redirectParams.channel_linked = "true";
       redirectParams.channel = resolvedSearchParams.channel;
     }
-    
+
     if (resolvedSearchParams?.message) {
       redirectParams.message = resolvedSearchParams.message;
     }
 
-    const redirectUrl = new URL(baseRedirectPath, process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    const redirectUrl = new URL(
+      baseRedirectPath,
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    );
     Object.entries(redirectParams).forEach(([key, value]) => {
       redirectUrl.searchParams.set(key, value);
     });
@@ -172,30 +182,40 @@ export default async function SignupCompletePage({
   }
 
   // Check for channel linking context
-  const hasChannelError = resolvedSearchParams?.channel_error === 'true';
-  const showFallback = resolvedSearchParams?.show_fallback === 'true';
+  const hasChannelError = resolvedSearchParams?.channel_error === "true";
+  const showFallback = resolvedSearchParams?.show_fallback === "true";
   const channelLinkingMessage = resolvedSearchParams?.message;
 
   return (
     <div className="max-w-2xl w-full space-y-8">
       <div className="text-center">
         <h2 className="mt-6 text-3xl font-extrabold text-foreground">
-          {tAuth('signupComplete.title')}
+          {tAuth("signupComplete.title")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {tAuth('signupComplete.subtitle')}
+          {tAuth("signupComplete.subtitle")}
         </p>
       </div>
 
       {/* Show channel linking feedback if present */}
       {channelLinkingMessage && (
-        <div className={`p-4 rounded-md ${hasChannelError ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
-          <p className={`text-sm ${hasChannelError ? 'text-red-700' : 'text-green-700'}`}>
+        <div
+          className={`p-4 rounded-md ${
+            hasChannelError
+              ? "bg-red-50 border border-red-200"
+              : "bg-green-50 border border-green-200"
+          }`}
+        >
+          <p
+            className={`text-sm ${
+              hasChannelError ? "text-red-700" : "text-green-700"
+            }`}
+          >
             {channelLinkingMessage}
           </p>
           {hasChannelError && showFallback && (
             <p className="text-xs text-red-600 mt-2">
-              {tAuth('channelLinking.fallbackMessage')}
+              {tAuth("channelLinking.fallbackMessage")}
             </p>
           )}
         </div>

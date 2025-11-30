@@ -55,7 +55,6 @@ export default function SignupCompleteForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
   // Channel verification state
   const [, setVerifiedChannels] = useState<Record<string, string>>(() => {
     const verified: Record<string, string> = {};
@@ -69,9 +68,6 @@ export default function SignupCompleteForm({
   const [allChannelsVerified, setAllChannelsVerified] = useState(
     existingChannels.length > 0
   );
-
-
-
 
   const handleVerificationComplete = useCallback(
     async (channelId: string, link: string) => {
@@ -144,7 +140,6 @@ export default function SignupCompleteForm({
 
     try {
       const supabase = createClient();
-
 
       // Channel connections are now handled in handleVerificationComplete
       // No need to upsert here since they're already in the database
@@ -245,18 +240,19 @@ export default function SignupCompleteForm({
 
   return (
     <form onSubmit={handleSubmit}>
-
       <div className="mt-8">
         {/* Show channel linking context if present */}
         {channelLinkingContext?.hasError && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-sm text-yellow-700">
-              We couldn&apos;t automatically link your {channelLinkingContext.channel} channel. 
-              Please verify it manually below.
+              We couldn&apos;t automatically link your{" "}
+              {channelLinkingContext.channel} channel. Please verify it manually
+              below.
             </p>
             {channelLinkingContext.showFallback && (
               <p className="text-xs text-yellow-600 mt-2">
-                You can also set up the channel manually using the verification process.
+                You can also set up the channel manually using the verification
+                process.
               </p>
             )}
           </div>

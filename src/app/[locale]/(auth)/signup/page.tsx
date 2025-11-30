@@ -3,7 +3,12 @@ import SignupPageWrapper from "@/components/features/auth/SignupPageWrapper";
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message: string; link: string; channel: string; redirectTo: string }>;
+  searchParams: Promise<{
+    message: string;
+    link: string;
+    channel: string;
+    redirectTo: string;
+  }>;
 }) {
   const resolvedSearchParams = await searchParams;
 

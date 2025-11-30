@@ -4,9 +4,7 @@ import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
 	MousePointer,
-	Upload,
 	MessageSquare,
-	BarChart3,
 	LucideIcon,
 	Mic,
 } from "lucide-react";

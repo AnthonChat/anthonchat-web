@@ -6,7 +6,10 @@ import type { FormState } from "@/lib/auth/types";
 import { getPathWithLocale, type Locale, defaultLocale } from "@/i18n/routing";
 import { headers } from "next/headers";
 import { validateChannelLinkingParams } from "@/lib/utils/url-params";
-import { buildDashboardRedirectUrl, buildRedirectUrl } from "@/lib/utils/redirect-helpers";
+import {
+  buildDashboardRedirectUrl,
+  buildRedirectUrl,
+} from "@/lib/utils/redirect-helpers";
 import { ChannelLinkingService } from "@/lib/services/channel-linking";
 
 /**
@@ -14,14 +17,14 @@ import { ChannelLinkingService } from "@/lib/services/channel-linking";
  */
 async function getCurrentLocale(): Promise<Locale> {
   const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '';
-  
+  const pathname = headersList.get("x-pathname") || "";
+
   // Extract locale from pathname like /en/login or /it/signup
   const localeMatch = pathname.match(/^\/([a-z]{2})\//);
-  if (localeMatch && (localeMatch[1] === 'en' || localeMatch[1] === 'it')) {
+  if (localeMatch && (localeMatch[1] === "en" || localeMatch[1] === "it")) {
     return localeMatch[1] as Locale;
   }
-  
+
   return defaultLocale;
 }
 
@@ -52,7 +55,9 @@ async function getSiteBaseUrl(): Promise<string> {
 
   const host = h.get("x-forwarded-host") || h.get("host");
   if (host) {
-    const proto = h.get("x-forwarded-proto") || (process.env.NODE_ENV === "production" ? "https" : "http");
+    const proto =
+      h.get("x-forwarded-proto") ||
+      (process.env.NODE_ENV === "production" ? "https" : "http");
     return `${proto}://${host}`;
   }
 
@@ -76,7 +81,7 @@ async function getSiteBaseUrl(): Promise<string> {
 /**
  * Handle channel parameters in login flow
  * Detects and validates channel linking parameters from form data
- * 
+ *
  * @param formData - Form data containing potential channel parameters
  * @returns Object with channel parameters and validation status
  */
@@ -91,9 +96,9 @@ function handleChannelParamsInLogin(formData: FormData): {
 } {
   const channel = formData.get("channel")?.toString()?.trim();
   const link = formData.get("link")?.toString()?.trim();
-  
+
   const hasChannelParams = Boolean(channel || link);
-  
+
   if (!hasChannelParams) {
     return {
       hasChannelParams: false,
@@ -120,12 +125,10 @@ function handleChannelParamsInLogin(formData: FormData): {
   };
 }
 
-
-
 /**
  * Link channel after successful login
  * Attempts automatic channel linking for authenticated users
- * 
+ *
  * @param userId - The authenticated user ID
  * @param userEmail - The user's email address
  * @param channelParams - Channel linking parameters
@@ -146,17 +149,17 @@ async function linkChannelAfterLogin(
   if (!channelParams.channel || !channelParams.link) {
     return {
       success: false,
-      error: 'Missing channel linking parameters',
+      error: "Missing channel linking parameters",
       requiresManualSetup: true,
     };
   }
 
   try {
-    console.info('Attempting channel linking after login', {
+    console.info("Attempting channel linking after login", {
       userId,
       email: userEmail,
       channel: channelParams.channel,
-      nonce: channelParams.link.substring(0, 8) + '...',
+      nonce: channelParams.link.substring(0, 8) + "...",
     });
 
     const channelLinkingService = ChannelLinkingService.getInstance();
@@ -168,12 +171,12 @@ async function linkChannelAfterLogin(
     );
 
     if (result.success) {
-      console.info('Channel linking successful after login', {
+      console.info("Channel linking successful after login", {
         userId,
         channel: channelParams.channel,
       });
     } else {
-      console.warn('Channel linking failed after login', {
+      console.warn("Channel linking failed after login", {
         userId,
         channel: channelParams.channel,
         error: result.error,
@@ -185,17 +188,16 @@ async function linkChannelAfterLogin(
       error: result.error,
       requiresManualSetup: result.requiresManualSetup,
     };
-
   } catch (error) {
-    console.error('Error during post-login channel linking', {
+    console.error("Error during post-login channel linking", {
       userId,
       channel: channelParams.channel,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     });
 
     return {
       success: false,
-      error: 'Failed to link channel after login',
+      error: "Failed to link channel after login",
       requiresManualSetup: true,
     };
   }
@@ -204,7 +206,7 @@ async function linkChannelAfterLogin(
 /**
  * Handle post-login redirect with smart routing
  * Determines the appropriate redirect path based on channel linking results
- * 
+ *
  * @param locale - Current locale
  * @param channelParams - Channel linking parameters
  * @param linkingResult - Result of channel linking attempt
@@ -225,12 +227,12 @@ function handlePostLoginRedirect(
   redirectTo?: string
 ): string {
   const hasChannelParams = Boolean(channelParams.channel || channelParams.link);
-  
+
   // Use custom redirectTo if provided and no channel params
   if (redirectTo && !hasChannelParams) {
     return getPathWithLocale(redirectTo, locale);
   }
-  
+
   if (!hasChannelParams) {
     // Standard login - redirect to dashboard or custom path
     return getPathWithLocale(redirectTo || "/dashboard", locale);
@@ -243,7 +245,7 @@ function handlePostLoginRedirect(
       channelParams,
       {
         channelLinked: true,
-        success: 'Channel connected successfully',
+        success: "Channel connected successfully",
       },
       locale
     );
@@ -252,7 +254,7 @@ function handlePostLoginRedirect(
     return buildDashboardRedirectUrl(
       channelParams,
       {
-        error: linkingResult?.error || 'Failed to connect channel',
+        error: linkingResult?.error || "Failed to connect channel",
       },
       locale
     );
@@ -280,7 +282,9 @@ export async function requestPasswordReset(
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
       return {
         message: "Formato email non valido",
-        errors: [{ field: "email", message: "Inserisci un indirizzo email valido" }],
+        errors: [
+          { field: "email", message: "Inserisci un indirizzo email valido" },
+        ],
         success: false,
       };
     }
@@ -294,7 +298,9 @@ export async function requestPasswordReset(
     );
 
     const supabase = await createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(rawEmail, { redirectTo });
+    const { error } = await supabase.auth.resetPasswordForEmail(rawEmail, {
+      redirectTo,
+    });
 
     if (error) {
       console.error("PASSWORD_RESET_EMAIL_ERROR", {
@@ -303,13 +309,15 @@ export async function requestPasswordReset(
       });
       // Do not reveal whether email exists
       return {
-        message: "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
+        message:
+          "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
         success: true,
       };
     }
 
     return {
-      message: "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
+      message:
+        "Se esiste un account, riceverai un'email con le istruzioni per reimpostare la password.",
       success: true,
     };
   } catch (err) {
@@ -317,15 +325,13 @@ export async function requestPasswordReset(
       error: err instanceof Error ? err.message : String(err),
     });
     return {
-      message: "Si è verificato un errore durante la richiesta. Riprova più tardi.",
+      message:
+        "Si è verificato un errore durante la richiesta. Riprova più tardi.",
       errors: [{ field: "server", message: "Errore del server" }],
       success: false,
     };
   }
 }
-
-
-
 
 /**
  * Server Action migliorata per il login con FormState
@@ -359,7 +365,7 @@ export async function signInWithState(
 
     // Handle channel parameters in login flow
     const channelParamResult = handleChannelParamsInLogin(formData);
-    
+
     console.info("Channel parameters detected in login", {
       hasChannelParams: channelParamResult.hasChannelParams,
       isValid: channelParamResult.isValid,
@@ -374,7 +380,7 @@ export async function signInWithState(
         missingEmail: !email,
         missingPassword: !password,
       });
-      
+
       const errors = [];
       if (!email) {
         errors.push({ field: "email", message: "L'email è richiesta" });
@@ -382,7 +388,7 @@ export async function signInWithState(
       if (!password) {
         errors.push({ field: "password", message: "La password è richiesta" });
       }
-      
+
       return {
         message: "Email e password sono richiesti",
         errors,
@@ -394,7 +400,7 @@ export async function signInWithState(
       return {
         message: "Formato email non valido",
         errors: [
-          { field: "email", message: "Inserisci un indirizzo email valido" }
+          { field: "email", message: "Inserisci un indirizzo email valido" },
         ],
         success: false,
       };
@@ -405,10 +411,10 @@ export async function signInWithState(
       console.warn("Channel parameter validation failed", {
         errors: channelParamResult.errors,
       });
-      
+
       return {
         message: "Invalid channel linking parameters",
-        errors: channelParamResult.errors.map(error => ({
+        errors: channelParamResult.errors.map((error) => ({
           field: "channel",
           message: error,
         })),
@@ -431,9 +437,9 @@ export async function signInWithState(
     if (error) {
       console.error("AUTH_LOGIN_ERROR", {
         authError: error.message,
-        email
+        email,
       });
-      
+
       let message = "Credenziali non valide";
       if (error.message.includes("Invalid login credentials")) {
         message = "Email o password non corretti";
@@ -442,7 +448,7 @@ export async function signInWithState(
       } else if (error.message.includes("Too many requests")) {
         message = "Troppi tentativi di accesso. Riprova tra qualche minuto";
       }
-      
+
       return {
         message,
         errors: [{ field: "auth", message }],
@@ -452,10 +458,12 @@ export async function signInWithState(
 
     if (!data.user) {
       console.error("User not found after login", { email });
-      
+
       return {
         message: "Errore interno durante l'accesso",
-        errors: [{ field: "server", message: "Riprova o contatta il supporto" }],
+        errors: [
+          { field: "server", message: "Riprova o contatta il supporto" },
+        ],
         success: false,
       };
     }
@@ -490,17 +498,16 @@ export async function signInWithState(
           error: linkingResult.error,
           requiresManualSetup: linkingResult.requiresManualSetup,
         });
-
       } catch (error) {
         console.error("Post-login channel linking failed with exception", {
           userId: data.user.id,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
 
         // Create a fallback result
         linkingResult = {
           success: false,
-          error: 'Channel linking failed due to system error',
+          error: "Channel linking failed due to system error",
           requiresManualSetup: true,
         };
       }
@@ -524,10 +531,9 @@ export async function signInWithState(
 
     // Redirect su successo - questo terminerà l'esecuzione
     redirect(redirectUrl);
-
   } catch (error) {
     // Se l'errore è un redirect, lascialo propagare
-    if (error && typeof error === 'object' && 'digest' in error) {
+    if (error && typeof error === "object" && "digest" in error) {
       throw error;
     }
 
@@ -537,7 +543,8 @@ export async function signInWithState(
     });
 
     return {
-      message: "Si è verificato un errore inaspettato durante l'accesso. Riprova.",
+      message:
+        "Si è verificato un errore inaspettato durante l'accesso. Riprova.",
       errors: [{ field: "server", message: "Errore del server" }],
       success: false,
     };
