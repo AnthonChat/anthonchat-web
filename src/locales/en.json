@@ -295,6 +295,10 @@
 			"title": "Create an Account",
 			"subtitle": "Sign up for a new AnthonChat account",
 			"signInPrompt": "Already have an account? Sign In",
+			"privacy": {
+				"label": "I have read and accept the",
+				"link": "Privacy Policy"
+			},
 			"nonce": {
 				"validating": "Validating link...",
 				"valid": "Valid link - Your channel {channel} will be connected automatically",

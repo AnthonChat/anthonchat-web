@@ -5,6 +5,8 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -97,6 +99,7 @@ export default function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   // Client-side validation state and helpers (Zod)
   const [errors, setErrors] = useState<
@@ -631,6 +634,33 @@ export default function SignupForm({
               )}
             </div>
 
+            {/* Privacy Policy Checkbox */}
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="privacy"
+                checked={privacyAccepted}
+                onCheckedChange={(checked) => setPrivacyAccepted(checked === true)}
+                disabled={isPending}
+                aria-describedby="privacy-label"
+                className="mt-0.5"
+              />
+              <Label
+                id="privacy-label"
+                htmlFor="privacy"
+                className="text-sm font-normal leading-snug cursor-pointer"
+              >
+                {t("privacy.label")}{" "}
+                <Link
+                  href={`/${locale}/privacy`}
+                  className="text-primary underline hover:text-primary/80"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("privacy.link")}
+                </Link>
+              </Label>
+            </div>
+
             {/* Loading Progress Indicator */}
             {isPending && (
               <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
@@ -695,7 +725,8 @@ export default function SignupForm({
                 !!errors.email ||
                 !!errors.password ||
                 !email ||
-                !password
+                !password ||
+                !privacyAccepted
               }
               onClick={handleSignupClick}
             >

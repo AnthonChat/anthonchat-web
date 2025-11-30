@@ -295,6 +295,10 @@
 			"title": "Crea il tuo account",
 			"subtitle": "Inizia oggi la tua prova gratuita con AnthonChat",
 			"signInPrompt": "Hai già un account? Accedi",
+			"privacy": {
+				"label": "Ho letto e accetto la",
+				"link": "Privacy Policy"
+			},
 			"nonce": {
 				"validating": "Validazione link in corso...",
 				"valid": "Link valido - Il tuo canale {channel} verrà collegato automaticamente",

@@ -180,9 +180,7 @@ function sanitizeLocale(locale: string | null | undefined): string | null {
  * Sanitize redirect path by validating it's a safe internal path
  * Only allows relative paths starting with / and prevents open redirect attacks
  */
-function sanitizeRedirectPath(
-  path: string | null | undefined
-): string | null {
+function sanitizeRedirectPath(path: string | null | undefined): string | null {
   if (!path || typeof path !== "string") {
     return null;
   }
