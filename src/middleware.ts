@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale, isSupportedLocale, extractLocaleFromPath } from './i18n/routing';
 import { createServerClient } from '@supabase/ssr';
+import type { CookieOptions } from '@supabase/ssr';
+
+interface CookieToSet {
+  name: string;
+  value: string;
+  options?: CookieOptions;
+}
 
 /**
  * Enhanced composed middleware with robust locale handling:
@@ -82,7 +89,7 @@ export default async function middleware(req: NextRequest) {
           getAll() {
             return req.cookies.getAll();
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: CookieToSet[]) {
             try {
               cookiesToSet.forEach(({ name, value, options }) => {
                 // NextResponse cookies.set supports object form
